@@ -5,7 +5,9 @@
 ![node](https://img.shields.io/badge/node-v16.14.2-green)
 ![npm](https://img.shields.io/badge/npm-v8.5.0-green)
 ![python](https://img.shields.io/badge/python-v3.8.10-green)
-![contributors](https://img.shields.io/github/all-contributors/ChainUp-Cloud/ChainUpAggregator)
+![solidity](https://img.shields.io/badge/solidity-0.8.7-brightgreen)
+![license](https://img.shields.io/github/license/ChainUp-Cloud/ChainUpAggregator)
+![contributors](https://img.shields.io/github/contributors/ChainUp-Cloud/ChainUpAggregator)
 
 <!--
 | Statements                  | Branches                | Functions                 | Lines             |
