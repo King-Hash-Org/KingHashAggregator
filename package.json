@@ -1,0 +1,25 @@
+{
+  "name": "chainup_aggregator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "npx hardhat compile",
+    "test": "npx hardhat test",
+    "coverage": "npx hardhat coverage",
+    "typechain": "npx hardhat typechain",
+    "make-badges": "istanbul-badges-readme"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^1.0.2",
+    "@openzeppelin/contracts": "^4.7.3",
+    "@openzeppelin/contracts-upgradeable": "^4.7.3",
+    "@openzeppelin/hardhat-upgrades": "^1.20.0",
+    "dotenv": "^16.0.1",
+    "hardhat": "^2.10.2",
+    "istanbul-badges-readme": "^1.8.2",
+    "run": "^1.4.0"
+  }
+}
