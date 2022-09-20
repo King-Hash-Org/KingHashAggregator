@@ -1,10 +1,23 @@
 # ChainUp Aggregator
 
+![CHAINUP new logo-2022 浅底横](https://user-images.githubusercontent.com/103015469/191217935-895ab918-3644-4c86-bfda-9599c8639c91.png)
+
+![node](https://img.shields.io/badge/node-v16.14.2-green)
+![npm](https://img.shields.io/badge/npm-v8.5.0-green)
+![python](https://img.shields.io/badge/python-v3.8.10-green)
+![contributors](https://img.shields.io/github/all-contributors/ChainUp-Cloud/ChainUpAggregator)
+
+<!--
 | Statements                  | Branches                | Functions                 | Lines             |
 | --------------------------- | ----------------------- | ------------------------- | ----------------- |
 | ![Statements](https://img.shields.io/badge/statements-66.49%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-57.81%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-82.35%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-67.38%25-red.svg?style=flat) |
+-->
 
-This repository contains the core smart contracts for the ChainUp Aggregator Protocol. ChainUp Aggregator Protocol is a smart contract for various Eth staking strategies.
+This repository contains the core smart contracts for the [ChainUp Aggregator Protocol](https://staking.chainupcloud.com/). ChainUp Aggregator Protocol is a smart contract for various Eth staking strategies. ChainUp Aggregator Protocol is part of the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
+
+You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
+
+![image](https://user-images.githubusercontent.com/103015469/191221110-792b96bc-9f60-43eb-a836-f018efe1b5ea.png)
 
 # Quick Commands
 
