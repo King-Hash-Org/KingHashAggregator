@@ -1,6 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
-require('@openzeppelin/hardhat-upgrades');
+require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
 
 module.exports = {
@@ -9,10 +9,10 @@ module.exports = {
     ropsten: {
       url: process.env.ROPSTEN_URL,
       accounts: [process.env.ROPSTEN_PRIVATE_KEY],
-      network_id: 3
-    }
+      network_id: 3,
+    },
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_KEY
-  }
+    apiKey: process.env.ETHERSCAN_KEY,
+  },
 };

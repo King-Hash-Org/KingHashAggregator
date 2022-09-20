@@ -1,7 +1,7 @@
-{ 
-    "remappings": [ "@openzeppelin/=./node_modules/@openzeppelin/" ], 
-    "optimizer": { 
-        "enabled": true,
-        "runs": 1000
-    } 
+{
+  "remappings": ["@openzeppelin/=./node_modules/@openzeppelin/"],
+  "optimizer": {
+    "enabled": true,
+    "runs": 1000
+  }
 }

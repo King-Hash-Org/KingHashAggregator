@@ -37,6 +37,7 @@ npx hardhat coverage
 ```
 
 # Setting Up
+
 1. Ensure you have installed `node ^v16.14.2` and `npm ^8.5.0`. We recommend using `nvm` to install both `node` and `npm`. You can find the `nvm` installation instructions [here](https://github.com/nvm-sh/nvm#installing-and-updating).
 2. Run `npm install` to install the dependencies.
 3. Run `npx hardhat compile` to compile the code.
@@ -44,15 +45,16 @@ npx hardhat coverage
 5. Run `npx hardhat test` to run the tests.
 
 # Deploy
-Pre-requisite: 
+
+Pre-requisite:
 
 Setup your `.env` with the following keys:
+
 ```
 ROPSTEN_URL=https://ropsten.infura.io/v3/<YOUR_INFURA_API_KEY>
 ROPSTEN_PRIVATE_KEY=<YOUR_PRIVATE_KEY>
 ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 ```
-
 
 1. The deploy order is NftContract > Vault > Aggregator.
 2. Run `npx hardhat run scripts/deployNft.ts --network ropsten` to deploy the Nft Contract on Ropsten.
@@ -63,7 +65,9 @@ ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `vaultContract` to update them.
 
 # Other Tools
+
 ## Coverage
+
 To get code coverage do `npx hardhat coverage`.
 
 The html files inside `/coverage` folder will tell you what's missing coverage. You can use Coverage Gutter plugin on VSCode to facilitate this.
@@ -73,8 +77,9 @@ We want 100% coverage on any smart contract code that gets deployed. If code doe
 To generate the coverage badge, run `npm run make-badges` after running coverage. It generates the badge from `coverage/coverage-summary.json`.
 
 ## Slither - Security Analyzer
+
 `pip3 install slither-analyzer` and
-`slither .` inside the repo. 
+`slither .` inside the repo.
 
 We also recommend to install the [slither vscode extension](https://marketplace.visualstudio.com/items?itemName=trailofbits.slither-vscode).
 
@@ -85,6 +90,7 @@ To disable slither, you can add `// slither-disable-next-line DETECTOR_NAME`.
 You can find `DETECTOR_NAME` [here](https://github.com/crytic/slither/wiki/Detector-Documentation).
 
 ## Mythril - Fuzz tests
+
 `pip3 install mythril`
 
 Run `myth analyze ./contracts/Aggregator.sol --solc-json mythril.json --solv 0.8.7` to begin analyze. Note that this process can take a **very** long time.
@@ -94,6 +100,7 @@ You can run with `myth analyze ./contracts/Aggregator.sol --solc-json mythril.js
 You can see further instructions for Mythril [here](https://github.com/ConsenSys/mythril).
 
 ## Surya - GraphViz for Architecture
+
 Install Surya using : `npm install -g surya`
 
 To create a graphviz summary of all the function calls do, `surya graph contracts/**/*.sol > FM_full.dot` and open `FM_full.dot` using a graphviz plugin on VSCode.

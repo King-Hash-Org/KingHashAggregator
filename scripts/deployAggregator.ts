@@ -7,15 +7,9 @@ export async function deployAggregator(
   depositContract: String,
   vaultContract: String,
   nftAddress: String
-  ): Promise<any> {
+): Promise<any> {
   const Aggregator = await ethers.getContractFactory("Aggregator");
-  const aggregatorProxy = await upgrades.deployProxy(Aggregator, 
-    [
-      depositContract,
-      vaultContract,
-      nftAddress
-    ]
-  );
+  const aggregatorProxy = await upgrades.deployProxy(Aggregator, [depositContract, vaultContract, nftAddress]);
   await aggregatorProxy.deployed();
 
   console.log("Aggregator deployed: ", aggregatorProxy.address);
@@ -40,4 +34,4 @@ main()
     process.exit(1);
   });
 
-export{}
+export {};
