@@ -1,4 +1,4 @@
- ---
+---
 title: Learn about ChainUp Aggregator and Validator Nft
 ---
 
