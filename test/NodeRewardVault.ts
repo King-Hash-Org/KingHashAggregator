@@ -68,14 +68,14 @@ describe("NodeRewardVault", function () {
     it("Should have the right aggregator", async function () {
       const { nodeRewardVault, aggregator } = await loadFixture(deployBaseFixture);
 
-      expect(await nodeRewardVault._aggregatorProxyAddress()).to.equal(aggregator.address);
+      expect(await nodeRewardVault.aggregator()).to.equal(aggregator.address);
     });
 
     it("Should set the right aggregator", async function () {
       const { nodeRewardVault, otherAccount } = await loadFixture(deployBaseFixture);
       await nodeRewardVault.setAggregator(otherAccount.address);
 
-      expect(await nodeRewardVault._aggregatorProxyAddress()).to.equal(otherAccount.address);
+      expect(await nodeRewardVault.aggregator()).to.equal(otherAccount.address);
     });
 
     it("Should revert & not set the aggregator", async function () {

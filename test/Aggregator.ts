@@ -102,12 +102,10 @@ describe("Aggregator", function () {
     });
 
     it("Empty disperse reward behaviour", async function () {
-      const { aggregator, nftContract } = await loadFixture(deployBaseFixture);
+      const { aggregator, owner } = await loadFixture(deployBaseFixture);
 
-      await expect(aggregator.disperseRewards(0)).to.be.revertedWithCustomError(
-        nftContract,
-        "OwnerQueryForNonexistentToken"
-      );
+      // expect nothing
+      await aggregator.claimRewards(owner.address);
     });
   });
 
@@ -182,7 +180,7 @@ describe("Aggregator", function () {
     });
 
     it("Malformed data behaviour", async function () {
-      const { aggregator, nftContract } = await loadFixture(deployBaseFixture);
+      const { aggregator } = await loadFixture(deployBaseFixture);
 
       // Incorrect blockheight
       const incorrectBlockHeightData1 =
@@ -265,17 +263,26 @@ describe("Aggregator", function () {
 
   describe("Claiming rewards of Nft", function () {
     it("With rewards behaviour", async function () {
-      const { aggregator, owner } = await loadFixture(deployExistingRewardFixture);
+      const { aggregator, owner, nftContract } = await loadFixture(deployExistingRewardFixture);
 
-      await expect(aggregator.disperseRewards(0))
+      const prevGasHeight = await nftContract.gasHeightOf(0);
+      const prevTotalHeight = await nftContract.totalHeight();
+      await expect(aggregator.claimRewards(owner.address))
         .to.emit(aggregator, "RewardClaimed")
         .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
+
+      const currGasHeight = await nftContract.gasHeightOf(0);
+      const currTotalHeight = await nftContract.totalHeight();
+
+      expect(currGasHeight).to.greaterThan(prevGasHeight);
+      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
+      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
     });
 
     it("No rewards behaviour", async function () {
       const { aggregator, owner } = await loadFixture(deployExistingValidatorFixture);
 
-      await expect(aggregator.disperseRewards(0))
+      await expect(aggregator.claimRewards(owner.address))
         .to.emit(aggregator, "RewardClaimed")
         .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
     });
