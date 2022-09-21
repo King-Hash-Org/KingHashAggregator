@@ -15,4 +15,6 @@ interface IValidatorNft is IERC721AQueryable {
     function whiteListMint(bytes calldata data, address _to) external payable;
 
     function whiteListBurn(uint256 tokenId) external;
+
+    function claimRewards(uint256 tokenId) external;
 }

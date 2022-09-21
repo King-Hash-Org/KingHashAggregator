@@ -32,9 +32,9 @@ contract ValidatorNftRouter is Initializable {
     event Eth32Deposit(bytes _pubkey, bytes _withdrawal, address _owner);
     event RewardClaimed(address _owner, uint256 _amount, uint256 _total);
 
-    INodeRewardVault private vault;
-    IValidatorNft private nftContract;
-    IDepositContract private depositContract;
+    IValidatorNft public nftContract;
+    INodeRewardVault public vault;
+    IDepositContract public depositContract;
 
     address public nftAddress;
 
@@ -156,12 +156,12 @@ contract ValidatorNftRouter is Initializable {
     //slither-disable-next-line reentrancy-events
     function rewardRoute(uint256 tokenId) internal {
         address owner = nftContract.ownerOf(tokenId);
-        require(msg.sender == owner || msg.sender == nftAddress, "Message sender is neither owner of Nft nor Nft contract");
+        require(msg.sender == nftAddress, "Message sender is not the Nft contract");
 
         uint256 rewards = vault.rewards(tokenId);
         uint256 userReward = (10000 - vault.comission()) * rewards / 10000;
 
-        vault.transfer(userReward, msg.sender);
+        vault.transfer(userReward, owner);
         vault.transfer(rewards - userReward, vault.dao());
         emit RewardClaimed(owner, userReward, rewards);
     }

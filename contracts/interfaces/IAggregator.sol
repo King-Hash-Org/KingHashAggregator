@@ -7,5 +7,7 @@ interface IAggregator {
 
     function unstake(bytes[] calldata data) payable external returns (bool);
 
+    function claimRewards(address from_) external;
+
     function disperseRewards(uint256 tokenId) external;
 }

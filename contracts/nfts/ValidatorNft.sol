@@ -9,8 +9,8 @@ import "./ERC721AQueryable.sol";
 import "../interfaces/IAggregator.sol";
 
 contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
-  address constant private openSeaProxyAddress = 0x1E0049783F008A0085193E00003D00cd54003c71;
-  uint256 constant public maxSupply = 6942069420;
+  address constant public OPENSEA_PROXY_ADDRESS = 0x1E0049783F008A0085193E00003D00cd54003c71;
+  uint256 constant public MAX_SUPPLY = 6942069420;
 
   IAggregator private aggregator;
   
@@ -18,16 +18,20 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   bytes[] public _validators;
   uint256[] public _gasHeights;
 
-  bool private isOpenSeaProxyActive = false;
-  uint256 public _totalHeight = 0;
-  address public _aggregatorProxyAddress;
+  bool private _isOpenSeaProxyActive = false;
+  uint256 private _totalHeight = 0;
+  address private _aggregatorProxyAddress;
 
   modifier onlyAggregator() {
     require(_aggregatorProxyAddress == msg.sender, "Not allowed to mint/burn nft");
     _;
   }
 
-  constructor() ERC721A("Validator Nft", "Vat") {}
+  constructor() ERC721A("Validator Nft", "vNFT") {}
+
+  function aggregatorProxyAddress() external view returns (address) {
+    return _aggregatorProxyAddress;
+  }
 
   function totalHeight() external view returns (uint256) {
     return _totalHeight;
@@ -66,6 +70,15 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     }
   }
 
+  function tokenOfValidator(bytes calldata pubkey) external view returns (uint256) {
+    for (uint256 i = 0; i < _validators.length; i++) {
+      if (keccak256(_validators[i]) == keccak256(pubkey) && _exists(i)) {
+        return i;
+      }
+    }
+    return MAX_SUPPLY;
+  }
+
   function gasHeightOf(uint256 tokenId) external view returns (uint256) {
     require(_exists(tokenId), "Token does not exist");
 
@@ -74,7 +87,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   function whiteListMint(bytes calldata pubkey, address _to) external onlyAggregator {
     require(
-      totalSupply() + 1 <= maxSupply,
+      totalSupply() + 1 <= MAX_SUPPLY,
       "not enough remaining reserved for auction to support desired mint amount"
     );
     require(!validatorRecords[pubkey], "Pub key already in used");
@@ -106,8 +119,8 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     payable(owner()).transfer(address(this).balance);
   }
 
-  function setAggregator(address aggregatorProxyAddress) external onlyOwner {
-    _aggregatorProxyAddress = aggregatorProxyAddress;
+  function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
+    _aggregatorProxyAddress = aggregatorProxyAddress_;
     aggregator = IAggregator(_aggregatorProxyAddress);
   }
 
@@ -115,7 +128,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return _numberMinted(owner);
   }
 
-  //slither-disable-next-line reentrancy-benign
   function _claimRewards(uint256 tokenId) private {
     require(_exists(tokenId), "Token does not exist");
 
@@ -123,6 +135,10 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
     _totalHeight = _totalHeight - _gasHeights[tokenId] + block.number;
     _gasHeights[tokenId] = block.number;
+  }
+
+  function claimRewards(uint256 tokenId) external nonReentrant {
+    _claimRewards(tokenId);
   }
 
   function _beforeTokenTransfers(
@@ -153,8 +169,8 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
       // the contract using the already existing address.
 
       if (
-          isOpenSeaProxyActive &&
-          openSeaProxyAddress == operator
+          _isOpenSeaProxyActive &&
+          OPENSEA_PROXY_ADDRESS == operator
       ) {
           return true;
       }
@@ -167,12 +183,10 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   // function to disable gasless listings for security in case
   // opensea ever shuts down or is compromised
-  function setIsOpenSeaProxyActive(bool _isOpenSeaProxyActive)
+  function setIsOpenSeaProxyActive(bool isOpenSeaProxyActive_)
       external
       onlyOwner
   {
-      isOpenSeaProxyActive = _isOpenSeaProxyActive;
+      _isOpenSeaProxyActive = isOpenSeaProxyActive_;
   }
-
-   receive() external payable{}
 }

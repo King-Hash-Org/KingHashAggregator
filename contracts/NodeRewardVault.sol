@@ -9,12 +9,12 @@ import "./interfaces/INodeRewardVault.sol";
 import "./interfaces/IValidatorNft.sol";
 
 contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
-    IValidatorNft private nftContract;
+    IValidatorNft private _nftContract;
 
-    uint256 public _comission;
-    address public _dao;
-    address public _authority;
-    address public _aggregatorProxyAddress;
+    uint256 private _comission;
+    address private _dao;
+    address private _authority;
+    address private _aggregatorProxyAddress;
 
     modifier onlyAggregator() {
         require(_aggregatorProxyAddress == msg.sender, "Not allowed to touch funds");
@@ -29,7 +29,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
 
-        nftContract = IValidatorNft(nftContract_);
+        _nftContract = IValidatorNft(nftContract_);
         _aggregatorProxyAddress = address(0x1);
         _dao = address(0xd17a3B462170c53592a165Dfd007c7ED2b84F956);
         _authority = address(0xF5ade6B61BA60B8B82566Af0dfca982169a470Dc);
@@ -39,12 +39,25 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function _rewards(uint256 tokenId) private view returns (uint256) {
-        uint256 total = nftContract.totalSupply() * block.number - nftContract.totalHeight();
+        uint256 total = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
         require(total > 0, "No rewards to claim");
 
         uint256 totalReward = address(this).balance;
 
-        return totalReward * (block.number - nftContract.gasHeightOf(tokenId)) / total;
+        return totalReward * (block.number - _nftContract.gasHeightOf(tokenId)) / total;
+    }
+
+    function nftContract() external view override returns (address) {
+        return address(_nftContract);
+    }
+
+    function blockRewards() external view override returns (uint256) {
+        uint256 total = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
+        require(total > 0, "No rewards to claim");
+
+        uint256 totalReward = address(this).balance;
+
+        return totalReward / total;
     }
 
     function rewards(uint256 tokenId) external view override returns (uint256) {
@@ -61,6 +74,10 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
     function authority() external view override returns (address) {
         return _authority;
+    }
+
+    function aggregator() external view override returns (address) {
+        return _aggregatorProxyAddress;
     }
 
     function transfer(uint256 amount, address to) external override nonReentrant onlyAggregator {
@@ -83,9 +100,9 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _authority = authority_;
     }
 
-    function setAggregator(address aggregator) external onlyOwner {
-        require(aggregator != address(0), "Aggregator address provided invalid");
-        _aggregatorProxyAddress = aggregator;
+    function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
+        require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
+        _aggregatorProxyAddress = aggregatorProxyAddress_;
     }
 
     receive() external payable{}
