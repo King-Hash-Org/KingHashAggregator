@@ -128,6 +128,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return _numberMinted(owner);
   }
 
+  //slither-disable-next-line reentrancy-benign
   function _claimRewards(uint256 tokenId) private {
     require(_exists(tokenId), "Token does not exist");
 
