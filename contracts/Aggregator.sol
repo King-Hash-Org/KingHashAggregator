@@ -8,12 +8,14 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./interfaces/IAggregator.sol";
 import "./routes/ValidatorNftRouter.sol";
+import "./routes/LidoRouter.sol";
+
 /** 
  * @title Aggregator
  * @dev Implements staking aggregator for Eth
  */
 //slither-disable-next-line unprotected-upgrade
-contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable {
+contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter {
     bytes1 private constant ETH32_STRATEGY = 0x01;  // 1
     bytes1 private constant LIDO_STRATEGY = 0x02; // 3
     bytes1 private constant SWELL_STRATEGY = 0x03;
@@ -28,13 +30,17 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     function initialize(
         address depositContractAddress,
         address vaultAddress,
-        address nftContractAddress
-    ) external initializer {
+        address nftContractAddress,
+        address lidoContractAddress ,
+        address lidoControllerContractAdress 
+    ) 
+    external initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
+        __LidoRouter__init(lidoContractAddress, lidoControllerContractAdress);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -50,7 +56,8 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
                 super.eth32Route(data[i]);
                 total_ether += 32 ether;
             } else if (prefix == LIDO_STRATEGY) {
-                // lido route
+                require(data[i].length == 33, "LidoContract: invalid data.length");
+                total_ether += super.lidoRoute(data[i]);
             } else if (prefix == NODE_TRADE_STRATEGY) {
                 total_ether += super.tradeRoute(data[i]);
             }

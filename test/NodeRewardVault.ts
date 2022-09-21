@@ -18,10 +18,16 @@ describe("NodeRewardVault", function () {
 
     const DepositContract = await ethers.getContractFactory("DepositContract");
     const depositContract = await DepositContract.deploy();
+    const LidoContract = await ethers.getContractFactory("Lido");
+    const lidoContract = await LidoContract.deploy();
+
+    const LidoControllerContract = await ethers.getContractFactory("LidoController");
+    const lidoController = await LidoControllerContract.deploy();
 
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address);
+    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address );
+    // await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address);
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);

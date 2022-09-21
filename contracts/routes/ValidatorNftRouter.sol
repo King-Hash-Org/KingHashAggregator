@@ -33,14 +33,14 @@ contract ValidatorNftRouter is Initializable {
     event RewardClaimed(address _owner, uint256 _amount, uint256 _total);
 
     IValidatorNft public nftContract;
-    INodeRewardVault public vault;
+    INodeRewardVault public vaultContract;
     IDepositContract public depositContract;
 
     address public nftAddress;
 
-    function __ValidatorNftRouter__init(address depositContract_, address vault_, address nftContract_) internal onlyInitializing {
+    function __ValidatorNftRouter__init(address depositContract_, address vaultContract_, address nftContract_) internal onlyInitializing {
         depositContract = IDepositContract(depositContract_);
-        vault = INodeRewardVault(vault_);
+        vaultContract = INodeRewardVault(vaultContract_);
         nftContract = IValidatorNft(nftContract_);
         nftAddress = nftContract_;
     }
@@ -92,7 +92,7 @@ contract ValidatorNftRouter is Initializable {
         }
 
         masterHash = keccak256(abi.encodePacked(trade.prices, trade.expiredHeight, trade.receiver, masterHash));
-        signercheck(trade.signature.s, trade.signature.r, trade.signature.v, masterHash, vault.authority());
+        signercheck(trade.signature.s, trade.signature.r, trade.signature.v, masterHash, vaultContract.authority());
 
         return sum;
     }
@@ -112,7 +112,7 @@ contract ValidatorNftRouter is Initializable {
     //slither-disable-next-line calls-loop
     function eth32Route(bytes calldata data) internal returns (bool) {
         bytes32 hash = precheck(data);
-        signercheck(bytes32(data[256:288]), bytes32(data[288:320]), uint8(bytes1(data[1])), hash, vault.authority());
+        signercheck(bytes32(data[256:288]), bytes32(data[288:320]), uint8(bytes1(data[1])), hash, vaultContract.authority());
         deposit(data);
 
         nftContract.whiteListMint(data[16:64], msg.sender);
@@ -158,11 +158,11 @@ contract ValidatorNftRouter is Initializable {
         address owner = nftContract.ownerOf(tokenId);
         require(msg.sender == nftAddress, "Message sender is not the Nft contract");
 
-        uint256 rewards = vault.rewards(tokenId);
-        uint256 userReward = (10000 - vault.comission()) * rewards / 10000;
+        uint256 rewards = vaultContract.rewards(tokenId);
+        uint256 userReward = (10000 - vaultContract.comission()) * rewards / 10000;
 
-        vault.transfer(userReward, owner);
-        vault.transfer(rewards - userReward, vault.dao());
+        vaultContract.transfer(userReward, owner);
+        vaultContract.transfer(rewards - userReward, vaultContract.dao());
         emit RewardClaimed(owner, userReward, rewards);
     }
 }

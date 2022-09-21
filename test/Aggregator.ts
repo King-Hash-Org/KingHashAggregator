@@ -23,14 +23,25 @@ describe("Aggregator", function () {
     const DepositContract = await ethers.getContractFactory("DepositContract");
     const depositContract = await DepositContract.deploy();
 
+    const LidoContract = await ethers.getContractFactory("Lido");
+    const lidoContract = await LidoContract.deploy();
+
+    const LidoControllerContract = await ethers.getContractFactory("LidoController");
+    const lidoController = await LidoControllerContract.deploy();
+    await lidoController.initialize();
+
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address);
+    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address );
+    // await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address );
+
+    await lidoController.addAllowList(aggregator.address);
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
+
+    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, lidoController };
   }
 
   async function deployExistingValidatorFixture() {
@@ -287,6 +298,65 @@ describe("Aggregator", function () {
         .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
     });
   });
+
+  describe("Testing for Lido Stake", function () {
+    
+    it("Correct data behaviour for Lido Stake", async function () {
+      const { aggregator, owner  } = await deployBaseFixture();
+
+      const data1 = "0x020000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether
+      const data2 = "0x02000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
+      const data3 = "0x02000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
+
+      // Test Lido Stake Router
+      // expect(await aggregator.stake([data1], { value: ethers.utils.parseEther("2")})).to.be.equal(true);
+      // expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33")})).to.be.equal(true);
+
+      // Test LidoDeposit event emit
+      // await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address);
+
+      //multidata
+      // expect(await aggregator.callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51")})).to.be.equal(true);
+      await expect(aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("65")})).to.be.revertedWith("Incorrect Ether amount provided");
+
+    });
+
+    it("Wrong data behaviour for Lido Stake", async function () {
+      const { aggregator  } = await deployBaseFixture();
+      const data1 = "0x020000000000000000000000000000000000000000000000000000000000000000"; //0 ether
+      // Test Lido Stake Router
+      await expect(aggregator.stake([data1] )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
+
+      await expect(aggregator.stake([data1]  , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
+
+      await expect(aggregator.stake([data1]  , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
+      const data2 = "0x02000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
+      await expect(aggregator.stake([data2] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2]  )).to.be.revertedWith("Stake amount is not enough!");
+
+      const data3 = "0x020000000000000000000000000000000000000000000000004563918244F40000"; //5 ether
+      await expect(aggregator.stake([data3] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
+      const data4 = "0x020000004563918244F40000"; // too short data length
+      await expect(aggregator.stake([data4] )).to.be.revertedWith("LidoContract: invalid data.length");
+      const data5 = "0x02000000000000000000000000000000000000000000000001C9F78D2893E4000012441312"; // too long data length
+      await expect(aggregator.stake([data5] )).to.be.revertedWith("LidoContract: invalid data.length");
+
+      // case whereby there is more ether than expected
+      
+
+      // multidata
+
+      // malformed data-> too short or too long
+
+      // try different sizes of ether, try 1 wei, try 10000 eth
+
+      // check controller, if the controller parameter
+      // controller.getRethbalance(owneraddress) .getBalance();
+      // owner.address
+
+    });
+  });
+
 });
 
 /*
