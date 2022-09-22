@@ -84,6 +84,9 @@ contract ValidatorNftRouter is Initializable {
         bytes32 masterHash;
         for (i = 0; i < trade.userListings.length; i++) {
             UserListing memory userListing = trade.userListings[i];
+                        
+            require(userListing.expiredHeight > block.number, "Listing has expired");
+
             bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight));
             signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
             
