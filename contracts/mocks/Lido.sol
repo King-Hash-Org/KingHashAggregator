@@ -2,13 +2,17 @@
 
 pragma solidity ^0.8.7;
 import "hardhat/console.sol";
-import "../controller-interface/IERC20.sol";
+// import "../controller-interface/IERC20.sol";
 
 interface ILidoInterface {
     function submit(address _referral) external payable returns (uint256 StETH);
 }
 
-contract Lido is ILidoInterface , IERC20  {
+interface IERC20x {
+    function transfer(address to, uint256 amount) external returns (bool);
+}
+
+contract Lido is ILidoInterface , IERC20x  {
         // Records a deposit made by a user
     event Submitted(address indexed sender, uint256 amount, address referral);
  
@@ -30,13 +34,13 @@ function submit(address _referral) override external payable returns (uint256) {
         emit Submitted(_sender, _value, _referral);
     }
     function transfer(address to, uint256 value) override public returns (bool) {
-        _transfer(msg.sender, to, value);
+        // _transfer(msg.sender, to, value);
         return true;
     }
-        function _transfer(address from, address to, uint256 value) internal {
-        require(to != address(0));
-        emit Transfer(from, to, value);
-    }
+    //     function _transfer(address from, address to, uint256 value) internal {
+    //     require(to != address(0));
+    //     emit Transfer(from, to, value);
+    // }
 
  }
 

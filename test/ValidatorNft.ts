@@ -25,9 +25,16 @@ describe("ValidatorNft", function () {
     const LidoControllerContract = await ethers.getContractFactory("LidoController");
     const lidoController = await LidoControllerContract.deploy();
 
+    const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
+    const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
+
+    const RocketControllerContract = await ethers.getContractFactory("RocketController");
+    const rocketController = await RocketControllerContract.deploy();
+    await rocketController.initialize();
+
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address );
+    await aggregator.initialize(false, depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketDepositPoolContract.address, rocketController.address );
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);

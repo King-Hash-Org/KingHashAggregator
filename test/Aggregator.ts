@@ -30,10 +30,16 @@ describe("Aggregator", function () {
     const lidoController = await LidoControllerContract.deploy();
     await lidoController.initialize();
 
+    const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
+    const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
+
+    const RocketControllerContract = await ethers.getContractFactory("RocketController");
+    const rocketController = await RocketControllerContract.deploy();
+    await rocketController.initialize();
+
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address );
-    // await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address );
+    await aggregator.initialize(false, depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketDepositPoolContract.address, rocketController.address );
 
     await lidoController.addAllowList(aggregator.address);
 

@@ -9,13 +9,15 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./interfaces/IAggregator.sol";
 import "./routes/ValidatorNftRouter.sol";
 import "./routes/LidoRouter.sol";
+import "./routes/RocketPoolRouter.sol";
+
 
 /** 
  * @title Aggregator
  * @dev Implements staking aggregator for Eth
  */
 //slither-disable-next-line unprotected-upgrade
-contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter {
+contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter, RocketPoolRouter {
     bytes1 private constant ETH32_STRATEGY = 0x01;  // 1
     bytes1 private constant LIDO_STRATEGY = 0x02; // 3
     bytes1 private constant SWELL_STRATEGY = 0x03;
@@ -28,11 +30,14 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     constructor() {}
 
     function initialize(
+        bool mainnet,
         address depositContractAddress,
         address vaultAddress,
         address nftContractAddress,
-        address lidoContractAddress ,
-        address lidoControllerContractAdress 
+        address lidoContractAddress,
+        address lidoControllerContractAdress,
+        address rocketPoolContractAdress,
+        address rocketPoolControllerContractAdress 
     ) 
     external initializer {
         __Ownable_init();
@@ -41,6 +46,8 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
         __LidoRouter__init(lidoContractAddress, lidoControllerContractAdress);
+        __RocketPoolRouter__init(mainnet, rocketPoolContractAdress, rocketPoolControllerContractAdress);
+
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -58,7 +65,12 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
             } else if (prefix == LIDO_STRATEGY) {
                 require(data[i].length == 33, "LidoContract: invalid data.length");
                 total_ether += super.lidoRoute(data[i]);
-            } else if (prefix == NODE_TRADE_STRATEGY) {
+            } else if (prefix == ROCKETPOOL_STRATEGY) {
+                require(data[i].length == 33, "Rocket Pool Contract: invalid data.length");
+                total_ether += super.rocketPoolRoute(data[i]);
+            }
+            
+             else if (prefix == NODE_TRADE_STRATEGY) {
                 total_ether += super.tradeRoute(data[i]);
             }
         }

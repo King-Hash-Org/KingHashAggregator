@@ -5,13 +5,13 @@ import "../interfaces/ILido.sol";
 import "../controller-interface/ILidoController.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "hardhat/console.sol";
-import "../controller-interface/IERC20.sol";
+import "../controller-interface/ILidoERC20.sol";
 
 contract LidoRouter is Initializable {
 
     ILido public lidoContract;
     ILidoController public lidoController ;   
-    IERC20  public iERC20;
+    ILidoERC20  public iLidoERC20;
     address public lidoContractControllerAddress;
 
 
@@ -20,7 +20,7 @@ contract LidoRouter is Initializable {
     function __LidoRouter__init( address lidoContract_, address lidoControllerContract_ ) internal onlyInitializing {
         lidoContract = ILido(lidoContract_); 
         lidoController = ILidoController(lidoControllerContract_);
-        iERC20 = IERC20(lidoContract_);
+        iLidoERC20 = ILidoERC20(lidoContract_);
         lidoContractControllerAddress = lidoControllerContract_;
     }
 
@@ -36,7 +36,7 @@ contract LidoRouter is Initializable {
         uint256 shareAmount = lidoContract.submit{value: stake_amount}( lidoController.getReferral() );
         //transfer this share amount to controller contract
         require(lidoContractControllerAddress != address(0) ,"lidoController address cannot be empty") ;
-        iERC20.transfer(lidoContractControllerAddress , shareAmount);
+        iLidoERC20.transfer(lidoContractControllerAddress , shareAmount);
 
         lidoController.addStEthShares(msg.sender, shareAmount ) ;
         emit LidoDeposit(msg.sender, stake_amount);
