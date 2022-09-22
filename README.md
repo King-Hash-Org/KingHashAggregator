@@ -110,7 +110,7 @@ To create a graphviz summary of all the function calls do, `surya graph contract
 You can see further instructons for Surya [here](https://github.com/ConsenSys/surya).
 
 
-# Contracts
+# Contracts (Ropsten)
 Aggregator Proxy: `0x886445021EA10eC6e5d7E7fbd5B5fE587f06873a`
 
 NodeRewardVault Proxy: `0x56773CfBc3d76AAF98e7562E952744f7DC691958`
