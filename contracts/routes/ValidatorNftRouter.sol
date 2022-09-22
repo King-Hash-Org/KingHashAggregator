@@ -133,21 +133,18 @@ contract ValidatorNftRouter is Initializable {
 
         uint256 len = uint256(bytes32(data[128:160]));
         uint256[] memory prices = new uint256[](len);
+        UserListing[] memory userListings = new UserListing[](len);
         for (i = 0; i < len; i++) {
-            prices[i] = uint256(bytes32(data[160 + i * 32:192 + i * 32]));
+            prices[i] = uint256(bytes32(data[160 + i * 224:192 + i * 224]));
+            userListings[i].tokenId = uint256(bytes32(data[192 + i * 224:224 + i * 224]));
+            userListings[i].rebate = uint256(bytes32(data[224 + i * 224:256 + i * 224]));
+            userListings[i].expiredHeight = uint256(bytes32(data[256 + i * 224:288 + i * 224]));
+            userListings[i].signature.r = bytes32(data[288 + i * 224:320 + i * 224]);
+            userListings[i].signature.s = bytes32(data[320 + i * 224:352 + i * 224]);
+            userListings[i].signature.signer = address(bytes20(data[352 + i * 224:372 + i * 224]));
+            userListings[i].signature.v = uint8(bytes1(data[372 + i * 224]));
         }
         trade.prices = prices;
-
-        UserListing[] memory userListings = new UserListing[](len);
-        for (i = 0; i < len + len; i++) {
-            userListings[i].tokenId = uint256(bytes32(data[192 + i * 192:224 + i * 192]));
-            userListings[i].rebate = uint256(bytes32(data[224 + i * 192:256 + i * 192]));
-            userListings[i].expiredHeight = uint256(bytes32(data[256 + i * 192:288 + i * 192]));
-            userListings[i].signature.r = bytes32(data[288 + i * 192:320 + i * 192]);
-            userListings[i].signature.s = bytes32(data[320 + i * 192:352 + i * 192]);
-            userListings[i].signature.signer = address(bytes20(data[352 + i * 192:372 + i * 192]));
-            userListings[i].signature.v = uint8(bytes1(data[372 + i * 192]));
-        }
         trade.userListings = userListings;
 
         return _tradeRoute(trade);
