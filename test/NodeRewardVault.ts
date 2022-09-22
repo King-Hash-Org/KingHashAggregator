@@ -31,9 +31,12 @@ describe("NodeRewardVault", function () {
     const rocketController = await RocketControllerContract.deploy();
     await rocketController.initialize();
 
+    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
+    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
+    
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(false, depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketDepositPoolContract.address, rocketController.address );
+    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketDepositPoolContract.address, rocketController.address , rocketTokenRETH.address);
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);

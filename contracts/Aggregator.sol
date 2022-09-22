@@ -30,14 +30,15 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     constructor() {}
 
     function initialize(
-        bool mainnet,
+        // bool mainnet,
         address depositContractAddress,
         address vaultAddress,
         address nftContractAddress,
         address lidoContractAddress,
         address lidoControllerContractAdress,
         address rocketPoolContractAdress,
-        address rocketPoolControllerContractAdress 
+        address rocketPoolControllerContractAddress,
+        address rocketETHAddress 
     ) 
     external initializer {
         __Ownable_init();
@@ -46,7 +47,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
         __LidoRouter__init(lidoContractAddress, lidoControllerContractAdress);
-        __RocketPoolRouter__init(mainnet, rocketPoolContractAdress, rocketPoolControllerContractAdress);
+        __RocketPoolRouter__init( rocketPoolContractAdress, rocketPoolControllerContractAddress, rocketETHAddress);
 
     }
 
