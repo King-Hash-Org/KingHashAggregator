@@ -20,7 +20,6 @@ contract RocketPoolRouter is Initializable  {
     event RocketPoolDeposit(address _owner, uint rEthMinted);
 
     function __RocketPoolRouter__init( address rocketPoolContract_, address rocketPoolControllerContract_, address rocketETHAddress_ ) internal onlyInitializing {
-
         rocketPoolContract = IRocketPool(rocketPoolContract_); 
         rocketController = IRocketController(rocketPoolControllerContract_);
         rocketPoolContractControllerAddress = rocketPoolControllerContract_;
@@ -35,11 +34,10 @@ contract RocketPoolRouter is Initializable  {
     function _rocket_deposit(bytes calldata data) internal returns (uint256) {
         uint256 beforeREthBalance = iRocketERC20.balanceOf(address(this) ) ;
 
-        uint256 stake_amount = uint256(bytes32(data[1:33]));
+        uint256 stake_amount = uint256(bytes32(data[32:64]));
         require(stake_amount >= 0.01 ether, "The deposited amount is less than the minimum deposit size");
 
         rocketPoolContract.deposit{value: stake_amount}();
-        
         uint256 afterREthBalance = iRocketERC20.balanceOf(address(this) ) ;
 
         //transfer to controller contract

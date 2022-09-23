@@ -64,10 +64,10 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
                 super.eth32Route(data[i]);
                 total_ether += 32 ether;
             } else if (prefix == LIDO_STRATEGY) {
-                require(data[i].length == 33, "LidoContract: invalid data.length");
+                require(data[i].length == 64, "LidoContract: invalid data.length");
                 total_ether += super.lidoRoute(data[i]);
             } else if (prefix == ROCKETPOOL_STRATEGY) {
-                require(data[i].length == 33, "Rocket Pool Contract: invalid data.length");
+                require(data[i].length == 64, "Rocket Pool Contract: invalid data.length");
                 total_ether += super.rocketPoolRoute(data[i]);
             }
             

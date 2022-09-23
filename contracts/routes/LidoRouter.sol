@@ -30,7 +30,8 @@ contract LidoRouter is Initializable {
     }
 
     function _lido_stake(bytes calldata data) internal  returns (uint256) {
-        uint256 stake_amount = uint256(bytes32(data[1:33]));
+        uint256 stake_amount = uint256(bytes32(data[32:64]));
+
         require(msg.value >= stake_amount, "Stake amount is not enough!");
         require(stake_amount >= 1 wei, "Deposit must not be zero or must be minumum 1 wei");
         uint256 shareAmount = lidoContract.submit{value: stake_amount}( lidoController.getReferral() );
@@ -40,6 +41,7 @@ contract LidoRouter is Initializable {
 
         lidoController.addStEthShares(msg.sender, shareAmount ) ;
         emit LidoDeposit(msg.sender, stake_amount);
+
         return stake_amount;
     }
 
