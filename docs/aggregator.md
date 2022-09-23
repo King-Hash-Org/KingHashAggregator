@@ -178,8 +178,8 @@ Bytes: | OP_CODE | auth.V | auth.Address | auth.R  | auth.S  |  Auth.Block  |   
 
 The layout of each Listing Info is as follows:
 ```
-Bytes: | Price  | TokenId  | Rebate  | Block Number |  user.R   |  user.S   | user.Address | user.V |   EMPTY   |
-       | [0:32] |  [32:64] | [64:96] |   [96:128]   | [128:160] | [160:192] |   [192:212]  |  [213] | [213:224] |
+Bytes: | Price  | TokenId  | Rebate  | Block Number |  user.R   |  user.S   | user.Address | user.V | user.salt |
+       | [0:32] |  [32:64] | [64:96] |   [96:128]   | [128:160] | [160:192] |   [192:212]  |  [213] | [216:224] |
 ```
 
 **Auth**
