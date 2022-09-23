@@ -142,6 +142,33 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _claimRewards(tokenId);
   }
 
+  function claimRewardsOf(address from_) external nonReentrant {
+    unchecked {
+      uint256 tokenIdsIdx;
+      address currOwnershipAddr;
+      uint256 tokenIdsLength = balanceOf(from_);
+      TokenOwnership memory ownership;
+      for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
+          ownership = _ownershipAt(i);
+          if (ownership.burned) {
+              continue;
+          }
+          if (ownership.addr != address(0)) {
+              currOwnershipAddr = ownership.addr;
+          }
+          if (currOwnershipAddr == from_) {
+              _claimRewards(i);
+          }
+      }
+    }
+  }
+
+  function batchClaimRewards(uint256[] calldata tokenId) external nonReentrant {
+    for (uint256 i = 0; i < tokenId.length; i++) {
+      _claimRewards(tokenId[i]);
+    }
+  }
+
   function _beforeTokenTransfers(
         address from,
         address to,

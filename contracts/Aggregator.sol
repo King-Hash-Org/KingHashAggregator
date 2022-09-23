@@ -64,14 +64,6 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         return data.length == 0;
     }
 
-    //slither-disable-next-line calls-loop
-    function claimRewards(address from_) external override nonReentrant {
-        uint256[] memory tokenIds = nftContract.tokensOfOwner(from_);
-        for (uint256 i = 0; i < tokenIds.length; i++) {
-            nftContract.claimRewards(tokenIds[i]);
-        }
-    }
-
     function disperseRewards(uint256 tokenId) external override {
         require(msg.sender == nftAddress, "Message sender is not the Nft contract");
         rewardRoute(tokenId);
