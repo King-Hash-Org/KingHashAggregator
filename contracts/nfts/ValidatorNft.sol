@@ -176,8 +176,8 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
         uint256 quantity
     ) internal virtual override 
   {
-    // no need to claim reward if user is burning or minting nft
-    if (from == address(0) || to == address(0)) {
+    // no need to claim reward if user is minting nft
+    if (from == address(0)) {
       return;
     }
 
