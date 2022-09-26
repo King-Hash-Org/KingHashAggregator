@@ -25,4 +25,8 @@ interface IValidatorNft is IERC721AQueryable {
     function claimRewards(uint256 tokenId) external;
 
     function batchClaimRewards(uint256[] calldata tokenIds) external;
+
+    function updateNodeCapital(uint256 tokenId, uint256 value) external;
+
+    function nodeCapitalOf(uint256 tokenId)  external view returns (uint256);
 }

@@ -93,11 +93,22 @@ contract ValidatorNftRouter is Initializable {
             bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight, userListing.nonce));
             signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
             
-            nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
-            uint256 userPrice = price * (10000 - vault.tax()) / 10000;
+            uint256 nodeCaptical = nftContract.nodeCapitalOf(userListing.tokenId);
+            uint256 userPrice = price;
+            if (price > nodeCaptical) {
+                userPrice = price - (price - nodeCaptical) * (10000 - vault.tax()) / 10000;
+            }
+
             require(userPrice > 31 ether, "Node too cheap");
+
+            nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
+            nftContract.updateNodeCapital(userListing.tokenId, price + userListing.rebate);
+
             payable(userListing.signature.signer).transfer(userPrice);
-            payable(vault.dao()).transfer(price - userPrice);
+
+            if (price > userPrice) {
+                payable(vault.dao()).transfer(price - userPrice);
+            }
 
             emit NodeTrade(userListing.tokenId, userListing.signature.signer, trade.receiver, price);
         }
@@ -127,6 +138,7 @@ contract ValidatorNftRouter is Initializable {
         deposit(data);
 
         nftContract.whiteListMint(data[16:64], msg.sender);
+
         return true;
     }
 

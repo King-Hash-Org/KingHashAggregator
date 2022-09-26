@@ -17,6 +17,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   mapping(bytes => bool) private validatorRecords;
   bytes[] public _validators;
   uint256[] public _gasHeights;
+  uint256[] public _nodeCapital;
 
   bool private _isOpenSeaProxyActive = false;
   uint256 private _totalHeight = 0;
@@ -119,12 +120,24 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _validators.push(pubkey);
     _gasHeights.push(block.number);
     _totalHeight += block.number;
-
+    _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
   }
 
   function whiteListBurn(uint256 tokenId) external onlyAggregator {
+    _nodeCapital[tokenId] = 0;
     _burn(tokenId);
+  }
+
+  function updateNodeCapital(uint256 tokenId, uint256 value) external onlyAggregator {
+    if (value > _nodeCapital[tokenId]) {
+        _nodeCapital[tokenId] = value;
+    }
+  }
+
+  function nodeCapitalOf(uint256 tokenId)  external view returns (uint256) {
+    require(_exists(tokenId), "Token does not exist");
+     return _nodeCapital[tokenId];
   }
 
   // // metadata URI
