@@ -51,10 +51,10 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     for (uint256 i = _startTokenId(); i < total; ++i) {
         ownership = _ownershipAt(i);
         if (ownership.burned) { 
-              continue;
-          }
+          continue;
+        }
 
-          validators[tokenIdsIdx++] = _validators[i];
+        validators[tokenIdsIdx++] = _validators[i];
     }
 
     return validators;
