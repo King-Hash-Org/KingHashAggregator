@@ -61,13 +61,17 @@ As mentioned before, staking on Ethereum the vanilla way is a pain in the ass. I
 ![Nft Overview Diagram](./images/nftOverview.jpg)
 
 How the Validator Nft work is as follows:
-1. User sends a request to have a Validator Nft. This can be a direct or indirect request through the [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/).
-2. Our backend process the request and generates a cryptographic proof for the user to submit to ChainUp Aggregator Smart Contract
-3. The ChainUp Aggregator Smart Contract will verify the proof and issues a vNFT to the user. The `withdrawal_credentials` of the `DepositData` will also be set to a trusted party or escrow smart contract.
-4. Our backend will scan for the on-chain event and launch the Ethereum node.
-5. Validator rewards will be directed to the Node Reward Vault contract when launching the node.
-6. The vNFT contract will contain information of the particular node that was launched and be eternally binded.
-7. vNFT holders can claim their validator rewards anytime from the Node Reward Vault. Rewards will also be claimed automatically whenever there is a `transfer` event.
-8. If ChainUp decides to issue additional token rewards in the future, vNFT holders will also be able to claim the tokens in a similar fashion.
+1. User sends a request to have a Validator Nft. This can be a direct (business partners usually) or indirect request through the [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/).
+2. ChainUp Aggregator API will forward the request to ChainUp Cloud Engine if it is an indirect request.
+3. Our backend process the request and generates a cryptographic proof for the user to submit to ChainUp Aggregator Smart Contract
+4. User will check and sign the proof with their wallets.
+5. User will submit the transaction which they signed earlier.
+6. The ChainUp Aggregator Smart Contract will verify the proof and make an Eth2 deposit. The `withdrawal_credentials` of the `DepositData` will also be set to a trusted party or escrow smart contract (DAO governed).
+7. ChainUp Aggregator will also issue a vNFT to the user.
+8. Our backend will scan for the on-chain event and launch the Ethereum node.
+9. Validator rewards will be directed to the Node Reward Vault contract when launching the node.
+10. The vNFT contract will contain information of the particular node that was launched and be eternally binded.
+11. vNFT holders can claim their validator rewards anytime from the Node Reward Vault. Rewards will also be claimed automatically whenever there is a `transfer` event.
+12. If ChainUp decides to issue additional token rewards in the future, vNFT holders will also be able to claim the tokens in a similar fashion.
 
 Validator Nft is designed in such a way that anyone can issue their own Validator Nfts. As long as they have the infrastructure to operate the nodes, they can launch their own Validator Nfts by using our Smart Contracts. Optionally, they can reach out to ChainUp DAO to have their Validator Nfts added to the ChainUp Aggregator.

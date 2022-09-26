@@ -17,6 +17,12 @@
 
 This repository contains the core smart contracts for the [ChainUp Aggregator Protocol](https://staking.chainupcloud.com/). ChainUp Aggregator Protocol is a smart contract for various Eth staking strategies. ChainUp Aggregator Protocol is part of the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
 
+**Overview**
+
+* [Architecture](./docs/architecture.md)
+* [Aggregator](./docs/aggregator.md)
+* [ValidatorNft](./docs/validatorNft.md)
+
 You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
 
 ![image](https://user-images.githubusercontent.com/103015469/191221110-792b96bc-9f60-43eb-a836-f018efe1b5ea.png)
