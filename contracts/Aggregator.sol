@@ -18,13 +18,14 @@ import "./routes/RocketPoolRouter.sol";
  */
 //slither-disable-next-line unprotected-upgrade
 contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter, RocketPoolRouter {
-    bytes1 private constant ETH32_STRATEGY = 0x01;  // 1
-    bytes1 private constant LIDO_STRATEGY = 0x02; // 3
+    bytes1 private constant ETH32_STRATEGY = 0x01;  
+    bytes1 private constant LIDO_STRATEGY = 0x02; 
     bytes1 private constant SWELL_STRATEGY = 0x03;
-    bytes1 private constant ROCKETPOOL_STRATEGY = 0x04; // 4
+    bytes1 private constant ROCKETPOOL_STRATEGY = 0x04; 
     bytes1 private constant STAKEWISE_STRATEGY = 0x05;
     bytes1 private constant NODE_TRADE_STRATEGY = 0x06;
-    bytes1 private constant SSV_STRATEGY = 0x07; // 2
+    bytes1 private constant SSV_STRATEGY = 0x07; 
+        bytes1 private constant ONEINCH_STRATEGY = 0x08;  
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}
