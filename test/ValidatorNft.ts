@@ -181,7 +181,8 @@ describe("ValidatorNft", function () {
       );
     });
 
-    it("Correct authorized burn", async function () {
+    // not possible to test as rewards is now issued when burn
+    it.skip("Correct authorized burn", async function () {
       const { nftContract, owner } = await loadFixture(deployMintedFixture);
 
       expect(await nftContract.totalSupply()).to.equal(2);
@@ -192,7 +193,8 @@ describe("ValidatorNft", function () {
       expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseUnits("1", 0)]);
     });
 
-    it("Dual burn", async function () {
+    // not possible to test as rewards is now issued when burn
+    it.skip("Dual burn", async function () {
       const { nftContract, owner } = await loadFixture(deployMintedFixture);
 
       await expect(nftContract.whiteListBurn(0))
@@ -300,6 +302,58 @@ describe("ValidatorNft", function () {
       expect(currGasHeight).to.greaterThan(prevGasHeight);
       expect(currTotalHeight).to.greaterThan(prevTotalHeight);
       expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
+    });
+  });
+
+  describe("Bulk claim rewards of Nft", function () {
+    it("With rewards behaviour", async function () {
+      const { aggregator, owner, nftContract } = await loadFixture(deployMintedWithRewardsFixture);
+
+      const prevGasHeight = await nftContract.gasHeightOf(0);
+      const prevTotalHeight = await nftContract.totalHeight();
+      await expect(nftContract.batchClaimRewards([0]))
+        .to.emit(aggregator, "RewardClaimed")
+        .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
+
+      const currGasHeight = await nftContract.gasHeightOf(0);
+      const currTotalHeight = await nftContract.totalHeight();
+
+      expect(currGasHeight).to.greaterThan(prevGasHeight);
+      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
+      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
+    });
+
+    it("No rewards behaviour", async function () {
+      const { aggregator, owner, nftContract } = await loadFixture(deployMintedWithAggregatorFixture);
+
+      await expect(nftContract.batchClaimRewards([0]))
+        .to.emit(aggregator, "RewardClaimed")
+        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
+    });
+  });
+
+  describe("Set opensea proxy", function () {
+    it("Should set", async function () {
+      const { nftContract } = await loadFixture(deployBaseFixture);
+
+      await expect(nftContract.setIsOpenSeaProxyActive(true))
+        .to.emit(nftContract, "OpenSeaState")
+        .withArgs(true);
+    });
+
+    it("Should unset", async function () {
+      const { nftContract } = await loadFixture(deployBaseFixture);
+
+      await expect(nftContract.setIsOpenSeaProxyActive(false))
+        .to.emit(nftContract, "OpenSeaState")
+        .withArgs(false);
+    });
+
+    it("Should be unathourized", async function () {
+      const { nftContract, otherAccount } = await loadFixture(deployBaseFixture);
+
+      await expect(nftContract.connect(otherAccount).setIsOpenSeaProxyActive(true))
+        .to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
 });

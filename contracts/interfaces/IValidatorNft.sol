@@ -10,6 +10,10 @@ interface IValidatorNft is IERC721AQueryable {
 
     function validatorOf(uint256 tokenId) external view returns (bytes memory);
 
+    function validatorsOfOwner(address owner) external view returns (bytes[] memory);
+
+    function tokenOfValidator(bytes calldata pubkey) external view returns (uint256);
+
     function gasHeightOf(uint256 tokenId) external view returns (uint256);
 
     function whiteListMint(bytes calldata data, address _to) external payable;
@@ -17,4 +21,6 @@ interface IValidatorNft is IERC721AQueryable {
     function whiteListBurn(uint256 tokenId) external;
 
     function claimRewards(uint256 tokenId) external;
+
+    function batchClaimRewards(uint256[] calldata tokenIds) external;
 }
