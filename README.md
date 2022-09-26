@@ -117,13 +117,13 @@ You can see further instructons for Surya [here](https://github.com/ConsenSys/su
 
 
 # Contracts (Ropsten)
-Aggregator Proxy: `0x752fa2DfD67d14e9b01D98c2EE4A4F4A61e2eA85`
+Aggregator Proxy: `0xcCC221621e002b9320Be67598224caDAb4D3b9ee`
 
-NodeRewardVault Proxy: `0x3130055114d9F68F91D037a8CfCDAcD8ed46755F`
+NodeRewardVault Proxy: `0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C`
 
 NodeCapitalVault Proxy: `0xD9E2dc13b0d2F6f73cd21C32fBf7dE143C558e29`
 
-vNFT: `0x60b741e2F3A343B281d6bce50d5F2bA4fADc04bC`
+vNFT: `0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD`
 
 # Audits
 The following auditors were engaged to review the project before launch:
