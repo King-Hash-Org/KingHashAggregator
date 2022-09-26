@@ -17,6 +17,13 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     address private _authority;
     address private _aggregatorProxyAddress;
 
+    event ComissionChanged(uint256 _before, uint256 _after);
+    event TaxChanged(uint256 _before, uint256 _after);
+    event DaoChanged(address _before, address _after);
+    event AuthorityChanged(address _before, address _after);
+    event AggregatorChanged(address _before, address _after);
+    event Transferred(address _to, uint256 _amount);
+
     modifier onlyAggregator() {
         require(_aggregatorProxyAddress == msg.sender, "Not allowed to touch funds");
         _;
@@ -89,25 +96,36 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     function transfer(uint256 amount, address to) external override nonReentrant onlyAggregator {
         require(to != address(0), "Recipient address provided invalid");
         payable(to).transfer(amount);
+        emit Transferred(to, amount);
     }
 
     function setComission(uint256 comission_) external onlyOwner {
         require(comission_ < 10000, "Comission cannot be 100%");
+        emit ComissionChanged(_comission, comission_);
         _comission = comission_;
+    }
+
+    function setTax(uint256 tax_) external onlyOwner {
+        require(tax_ < 10000, "Tax cannot be 100%");
+        emit TaxChanged(_tax, tax_);
+        _tax = tax_;
     }
 
     function setDao(address dao_) external onlyOwner {
         require(dao_ != address(0), "DAO address provided invalid");
+        emit DaoChanged(_dao, dao_);
         _dao = dao_;
     }
 
     function setAuthority(address authority_) external onlyOwner {
         require(authority_ != address(0), "Authority address provided invalid");
+        emit AuthorityChanged(_authority, authority_);
         _authority = authority_;
     }
 
     function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
+        emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
     }
 

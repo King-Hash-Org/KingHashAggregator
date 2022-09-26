@@ -12,6 +12,8 @@ import "./interfaces/IValidatorNft.sol";
 contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     address private _aggregatorProxyAddress;
 
+    event AggregatorChanged(address _from, address _to);
+
     modifier onlyAggregator() {
         require(_aggregatorProxyAddress == msg.sender, "Not allowed to touch funds");
         _;
@@ -41,6 +43,7 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
 
     function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
+        emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
     }
 

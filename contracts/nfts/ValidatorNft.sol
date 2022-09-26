@@ -22,6 +22,11 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   uint256 private _totalHeight = 0;
   address private _aggregatorProxyAddress;
 
+  event BaseURIChanged(string _before, string _after);
+  event Transferred(address _to, uint256 _amount);
+  event AggregatorChanged(address _before, address _after);
+  event OpenSeaState(bool _isActive);
+
   modifier onlyAggregator() {
     require(_aggregatorProxyAddress == msg.sender, "Not allowed to mint/burn nft");
     _;
@@ -112,14 +117,18 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   }
 
   function setBaseURI(string calldata baseURI) external onlyOwner {
+    emit BaseURIChanged(_baseTokenURI, baseURI);
     _baseTokenURI = baseURI;
   }
 
   function withdrawMoney() external nonReentrant onlyOwner {
+    emit Transferred(owner(), address(this).balance);
     payable(owner()).transfer(address(this).balance);
   }
 
   function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
+    require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
+    emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
     _aggregatorProxyAddress = aggregatorProxyAddress_;
     aggregator = IAggregator(_aggregatorProxyAddress);
   }
@@ -142,30 +151,9 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _claimRewards(tokenId);
   }
 
-  function claimRewardsOf(address from_) external nonReentrant {
-    unchecked {
-      uint256 tokenIdsIdx;
-      address currOwnershipAddr;
-      uint256 tokenIdsLength = balanceOf(from_);
-      TokenOwnership memory ownership;
-      for (uint256 i = _startTokenId(); tokenIdsIdx != tokenIdsLength; ++i) {
-          ownership = _ownershipAt(i);
-          if (ownership.burned) {
-              continue;
-          }
-          if (ownership.addr != address(0)) {
-              currOwnershipAddr = ownership.addr;
-          }
-          if (currOwnershipAddr == from_) {
-              _claimRewards(i);
-          }
-      }
-    }
-  }
-
-  function batchClaimRewards(uint256[] calldata tokenId) external nonReentrant {
-    for (uint256 i = 0; i < tokenId.length; i++) {
-      _claimRewards(tokenId[i]);
+  function batchClaimRewards(uint256[] calldata tokenIds) external nonReentrant {
+    for (uint256 i = 0; i < tokenIds.length; i++) {
+      _claimRewards(tokenIds[i]);
     }
   }
 
@@ -177,7 +165,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     ) internal virtual override 
   {
     // no need to claim reward if user is minting nft
-    if (from == address(0)) {
+    if (from == address(0) || from == to) {
       return;
     }
 
@@ -215,6 +203,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
       external
       onlyOwner
   {
-      _isOpenSeaProxyActive = isOpenSeaProxyActive_;
+    emit OpenSeaState(isOpenSeaProxyActive_);
+    _isOpenSeaProxyActive = isOpenSeaProxyActive_;
   }
 }

@@ -30,6 +30,7 @@ contract ValidatorNftRouter is Initializable {
         Signature signature;
     }
 
+    event NodeTrade(uint256 _tokenId, address _from, address _to, uint256 _amount);
     event Eth32Deposit(bytes _pubkey, bytes _withdrawal, address _owner);
     event RewardClaimed(address _owner, uint256 _amount, uint256 _total);
 
@@ -97,6 +98,8 @@ contract ValidatorNftRouter is Initializable {
             uint256 userPrice = price * (10000 - vault.tax()) / 10000;
             payable(userListing.signature.signer).transfer(userPrice);
             payable(vault.dao()).transfer(price - userPrice);
+
+            emit NodeTrade(userListing.tokenId, userListing.signature.signer, trade.receiver, price);
         }
 
         bytes32 authHash = keccak256(data[160:]);
