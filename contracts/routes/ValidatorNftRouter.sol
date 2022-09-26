@@ -78,14 +78,13 @@ contract ValidatorNftRouter is Initializable {
         // change this in the future
         uint256 sum = 0;
         uint256 i = 0;
-        for (i = 0; i < trade.prices.length; i++) {
-            sum += trade.prices[i];
-        }
 
-        // change this in the future
         for (i = 0; i < trade.userListings.length; i++) {
             UserListing memory userListing = trade.userListings[i];
+            uint256 price = trade.prices[i];
+            sum += price;
                         
+            require(price > 31 ether, "Node too cheap");
             require(userListing.expiredHeight > block.number, "Listing has expired");
             require(nftContract.ownerOf(userListing.tokenId) == userListing.signature.signer, "Not owner");
             require(userListing.nonce == nonces[userListing.signature.signer], "Incorrect nonce");
@@ -95,6 +94,9 @@ contract ValidatorNftRouter is Initializable {
             signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
             
             nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
+            uint256 userPrice = price * (10000 - vault.tax()) / 10000;
+            payable(userListing.signature.signer).transfer(userPrice);
+            payable(vault.dao()).transfer(price - userPrice);
         }
 
         bytes32 authHash = keccak256(data[160:]);

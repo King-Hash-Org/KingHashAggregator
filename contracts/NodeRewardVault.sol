@@ -12,6 +12,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     IValidatorNft private _nftContract;
 
     uint256 private _comission;
+    uint256 private _tax;
     address private _dao;
     address private _authority;
     address private _aggregatorProxyAddress;
@@ -34,6 +35,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _dao = address(0xd17a3B462170c53592a165Dfd007c7ED2b84F956);
         _authority = address(0xF5ade6B61BA60B8B82566Af0dfca982169a470Dc);
         _comission = 1000;
+        _tax = 100;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -66,6 +68,10 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
     function comission() external view override returns (uint256) {
         return _comission;
+    }
+
+    function tax() external view override returns (uint256) {
+        return _tax;
     }
 
     function dao() external view override returns (address) {

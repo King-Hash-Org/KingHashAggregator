@@ -11,6 +11,8 @@ interface INodeRewardVault {
 
     function comission() external view returns (uint256);
 
+    function tax() external view returns (uint256);
+
     function dao() external view returns (address);
     
     function authority() external view returns (address);
