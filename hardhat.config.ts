@@ -4,7 +4,15 @@ require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
 
 module.exports = {
-  solidity: "0.8.7",
+  solidity: {
+    version: "0.8.7",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      },
+    },
+  },
   networks: {
     ropsten: {
       url: process.env.ROPSTEN_URL,

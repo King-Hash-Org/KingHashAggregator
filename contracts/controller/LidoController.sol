@@ -7,21 +7,26 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../controller-interface/ILidoController.sol";
 
- contract LidoController is  ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable  {
+/** @title Controller for Lido Strategy
+@author ChainUp Dev
+@dev Interacts with the LidoRouter and read and writes data
+**/
+contract LidoController is  ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable  {
    
     mapping(address => bool) private allowList;
     address private referral;
     mapping(address => uint256) private stEthSharesMap;
 
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {}
-
+    /**
+    * @notice Initializes the contract  by setting the required external contracts ,
+    * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable and `referral`.   
+    * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once. 
+    **/
     function initialize() external initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
-        //set referral to internal chainup address (optional)
-        referral = address(0x27e2119Bc9Fbca050dF65dDd97cB9Bd14676a08b);
+        referral = address(0x27e2119Bc9Fbca050dF65dDd97cB9Bd14676a08b); //(optional)
     }
 
     modifier onlyAllowed() {
@@ -29,31 +34,44 @@ import "../controller-interface/ILidoController.sol";
         _;
     }
     
+    /**
+     * @dev See {ILidoController-getReferral}.
+    */
     function getReferral() external view override returns (address) {
         return referral;
     }
-
-    function addStEthShares(address userAddress, uint256 stEthBalance) external override onlyAllowed nonReentrant {
+    
+    /**
+     * @dev See {ILidoController-addStEthShares}.
+    */
+    function addStEthShares(address userAddress, uint256 stEthShares) external override onlyAllowed nonReentrant {
         require( userAddress != address(0), "User should not be zero address");
-        stEthSharesMap[userAddress] += stEthBalance;
+        stEthSharesMap[userAddress] += stEthShares;
     }
 
+    /**
+     * @dev See {ILidoController-getStEthShares}.
+    */
     function getStEthShares(address userAddress ) external view override returns (uint256) {
         return  stEthSharesMap[userAddress] ;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
-  
+
+    /**
+     * @dev See {ILidoController-addAllowList}.
+    */  
     function addAllowList(address userAddress) external override onlyOwner {
         require( userAddress != address(0), "User should not be zero address");
         allowList[userAddress] = true;
     }
 
+    /**
+     * @dev See {ILidoController-removeAllowList}.
+    */ 
     function removeAllowList(address userAddress) external override onlyOwner {
         require( userAddress != address(0), "User should not be zero address");
         allowList[userAddress] = false;
     }
-
-
 
  }

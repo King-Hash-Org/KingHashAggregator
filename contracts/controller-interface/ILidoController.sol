@@ -3,14 +3,44 @@
 pragma solidity ^0.8.7;
 
 interface ILidoController   {
+    /**
+     * @dev Returns a string, `referral`.
+     * Requirements:
+     * - `referral` must exist.
+     */
     function getReferral() external view returns (address) ;
 
-    function addStEthShares(address userAddress, uint256 stEthBalance) external  ;
+    /**
+     * @dev Adds `stEthShares` shares to `stEthSharesMap` that keep tracks of stETH shares owned by each address `.
+     * Requirements:
+     * - `userAddress` must exist.
+     * - `msg.sender` must be under list of allowed addresses, `allowList`. 
+     */
+    function addStEthShares(address userAddress, uint256 stEthShares) external  ;
 
+    /**
+     * @dev Returns the number of stETH shares, `stEthBalance` owned by the address `userAddress`.
+     * @param userAddress : the user's unique address
+     * Requirements:
+     * - `userAddress` must exist 
+    * @return uint256 : the number of stETH shares owned by `userAddress`.
+     */
     function getStEthShares(address userAddress ) external view  returns (uint256) ;
 
+    /**
+    * @dev Adds `userAddress` to a list of allowed address, `allowList`.
+    @param userAddress : the user's unique address
+    * Requirements 
+    * -onlyOwner- modifier which will only allow use of function to the owner.
+    */
     function addAllowList(address userAddress) external;
 
+    /**
+    * @dev Remove `userAddress` from a list of allowed address, `allowList`.
+    * @param userAddress : the user's unique address
+    * Requirements 
+    * -onlyOwner- modifier which will only allow use of function to the owner.
+    */
     function removeAllowList(address userAddress) external;
 
 }
