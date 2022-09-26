@@ -126,6 +126,7 @@ describe("ValidatorNft", function () {
       expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseEther("0")]);
       expect(await nftContract.validatorsOfOwner(owner.address)).to.have.same.members([pubkey]);
       expect(await nftContract.validatorExists(pubkey)).to.equal(true);
+      expect(await nftContract.activeValidators()).to.have.same.members([pubkey]);
 
       // total height should be same as gas height as there is only 1 nft
       const totalHeight = await nftContract.totalHeight();
@@ -169,6 +170,7 @@ describe("ValidatorNft", function () {
       expect(await nftContract.validatorExists(pubkey)).to.equal(true);
       expect(await nftContract.validatorExists(pubkey2)).to.equal(true);
       expect(await nftContract.numberMinted(owner.address)).to.equal(2);
+      expect(await nftContract.activeValidators()).to.have.same.members([pubkey, pubkey2]);
     });
   });
 

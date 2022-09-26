@@ -6,6 +6,8 @@ import './IERC721AQueryable.sol';
 interface IValidatorNft is IERC721AQueryable {
     function totalHeight() external view returns (uint256);
 
+    function activeValidators() external view returns (bytes[] memory);
+
     function validatorExists(bytes calldata pubkey) external view returns (bool);
 
     function validatorOf(uint256 tokenId) external view returns (bytes memory);
