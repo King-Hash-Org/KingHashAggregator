@@ -85,7 +85,7 @@ contract ValidatorNftRouter is Initializable {
             uint256 price = trade.prices[i];
             sum += price;
                         
-            require(price > 31 ether, "Node too cheap");
+            
             require(userListing.expiredHeight > block.number, "Listing has expired");
             require(nftContract.ownerOf(userListing.tokenId) == userListing.signature.signer, "Not owner");
             require(userListing.nonce == nonces[userListing.signature.signer], "Incorrect nonce");
@@ -96,6 +96,7 @@ contract ValidatorNftRouter is Initializable {
             
             nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
             uint256 userPrice = price * (10000 - vault.tax()) / 10000;
+            require(userPrice > 31 ether, "Node too cheap");
             payable(userListing.signature.signer).transfer(userPrice);
             payable(vault.dao()).transfer(price - userPrice);
 
