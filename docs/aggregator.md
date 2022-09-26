@@ -26,16 +26,6 @@ Unstakes Ether.
 | --------------------------- | ----------------------- | ------------------------- |
 | data                        | bytes[] calldata        | An array of unstaking instruction. Each element of the data array is a unstake instruction the Aggregator will execute.
 
-## **claimRewards**
-
-`function claimRewards(address from_) external`
-
-Claim vNFT rewards.
-
-| Name                  | Type                | Description                 | 
-| --------------------------- | ----------------------- | ------------------------- |
-| from_                        | address        | The owner of the vNFT. It will claim all the rewards if the owner owns mulitple vNFTs.
-
 # Instruction Breakdown
 
 Both the `stake` and `unstake` instructions is composed through a series of bytes. In this section, we will explain the exact layout of the instruction.

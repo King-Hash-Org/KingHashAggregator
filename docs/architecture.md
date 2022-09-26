@@ -63,7 +63,7 @@ As mentioned before, staking on Ethereum the vanilla way is a pain in the ass. I
 How the Validator Nft work is as follows:
 1. User sends a request to have a Validator Nft. This can be a direct or indirect request through the [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/).
 2. Our backend process the request and generates a cryptographic proof for the user to submit to ChainUp Aggregator Smart Contract
-3. The ChainUp Aggregator Smart Contract will verify the proof and issues a vNFT to the user.
+3. The ChainUp Aggregator Smart Contract will verify the proof and issues a vNFT to the user. The `withdrawal_credentials` of the `DepositData` will also be set to a trusted party or escrow smart contract.
 4. Our backend will scan for the on-chain event and launch the Ethereum node.
 5. Validator rewards will be directed to the Node Reward Vault contract when launching the node.
 6. The vNFT contract will contain information of the particular node that was launched and be eternally binded.

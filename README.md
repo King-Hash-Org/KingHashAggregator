@@ -59,7 +59,7 @@ ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 1. The deploy order is NftContract > Vault > Aggregator.
 2. Run `npx hardhat run scripts/deployNft.ts --network ropsten` to deploy the Nft Contract on Ropsten.
 3. Note down the `nftContract` address and update it in `./scripts/deployVault.ts`
-4. Run `npx hardhat run scripts/deployVault.ts --network ropsten` to deploy the Vault Contract on Ropsten.
+4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network ropsten` to deploy the Vault Contract on Ropsten.
 5. Note down the `vaultContract` proxy's address and update both the `nftContract` and `vaultContract` proxy's into the `./scripts/deployAggregator.ts`.
 6. Run `npx hardhat run scripts/deployAggregator.ts --network ropsten` to deploy the Aggregator Contract on Ropsten.
 7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `vaultContract` to update them.
@@ -111,8 +111,14 @@ You can see further instructons for Surya [here](https://github.com/ConsenSys/su
 
 
 # Contracts (Ropsten)
-Aggregator Proxy: `0x886445021EA10eC6e5d7E7fbd5B5fE587f06873a`
+Aggregator Proxy: `0x4BD4cC39a54BD7f51d69E08c7fe09Ef50BF84eFA`
 
-NodeRewardVault Proxy: `0x56773CfBc3d76AAF98e7562E952744f7DC691958`
+NodeRewardVault Proxy: `0x0F5790C5736271889E37FE28Ec9388B4205e7AF9`
 
-vNFT: `0x68A22A60B6cd221d4C99b94256B8901722EcBa91`
+NodeCapitalVault Proxy: `0xD9E2dc13b0d2F6f73cd21C32fBf7dE143C558e29`
+
+vNFT: `0x7d6E43B3e191b976c5CD15038747E9361806a3A9`
+
+# Audits
+The following auditors were engaged to review the project before launch:
+* [Beosin Audit](https://beosin.com/) (In Progress)
