@@ -39,7 +39,7 @@ contract ValidatorNftRouter is Initializable {
     IDepositContract public depositContract;
 
     address public nftAddress;
-    mapping(address => uint64) public nonces;
+    mapping(uint256 => uint64) public nonces;
 
     function __ValidatorNftRouter__init(address depositContract_, address vault_, address nftContract_) internal onlyInitializing {
         depositContract = IDepositContract(depositContract_);
@@ -85,11 +85,10 @@ contract ValidatorNftRouter is Initializable {
             uint256 price = trade.prices[i];
             sum += price;
                         
-            
             require(userListing.expiredHeight > block.number, "Listing has expired");
             require(nftContract.ownerOf(userListing.tokenId) == userListing.signature.signer, "Not owner");
-            require(userListing.nonce == nonces[userListing.signature.signer], "Incorrect nonce");
-            nonces[userListing.signature.signer]++;
+            require(userListing.nonce == nonces[userListing.tokenId], "Incorrect nonce");
+            nonces[userListing.tokenId]++;
 
             bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight, userListing.nonce));
             signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
