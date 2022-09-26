@@ -108,3 +108,14 @@ Get the gas height of a vNFT. Gas height is used to determine how much rewards a
 | Name                  | Type                | Description                 | 
 | --------------------------- | ----------------------- | ------------------------- |
 | tokenId                        | uint256        | The tokenId of the vNFT.
+
+# Rewards Computation
+The rewards computation is as follows:
+
+![equation](https://latex.codecogs.com/svg.image?N&space;=&space;number&space;&space;of&space;&space;nodes)
+
+![equation](https://latex.codecogs.com/svg.image?\alpha&space;=&space;0.1&space;=&space;10\%&space;=&space;comission)
+
+![equation](https://latex.codecogs.com/svg.image?Reward_i&space;=&space;(1&space;-&space;\alpha)\frac{total\_reward&space;\times&space;(current\_height&space;-&space;gas\_height_i)}{N&space;\times&space;current\_height&space;-&space;\sum_{n=1}^{N}&space;gas\_height_n})
+
+![equation](https://latex.codecogs.com/svg.image?Fee_i&space;=&space;\frac{\alpha&space;\times&space;Reward_i}{1&space;-&space;\alpha})
