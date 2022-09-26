@@ -1,5 +1,5 @@
 const { ethers, upgrades, run } = require("hardhat");
-const nftAddress = "0x7d6E43B3e191b976c5CD15038747E9361806a3A9"; // nft contract address
+const nftAddress = "0x60b741e2F3A343B281d6bce50d5F2bA4fADc04bC"; // nft contract address
 
 export async function deployVault(nftAddress: String): Promise<any> {
   const Vault = await ethers.getContractFactory("NodeRewardVault");
