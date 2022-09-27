@@ -102,7 +102,7 @@ contract ValidatorNftRouter is Initializable {
             require(userPrice > 31 ether, "Node too cheap");
 
             nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
-            nftContract.updateNodeCapital(userListing.tokenId, price + userListing.rebate);
+            nftContract.updateNodeCapital(userListing.tokenId, price);
 
             payable(userListing.signature.signer).transfer(userPrice);
 
