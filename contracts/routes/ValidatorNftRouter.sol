@@ -19,6 +19,7 @@ contract ValidatorNftRouter is Initializable {
         uint256 rebate;
         uint256 expiredHeight; // listing expiry block height
         Signature signature;
+        uint64 nonce;
     }
 
     struct Trade {
@@ -29,18 +30,20 @@ contract ValidatorNftRouter is Initializable {
         Signature signature;
     }
 
+    event NodeTrade(uint256 _tokenId, address _from, address _to, uint256 _amount);
     event Eth32Deposit(bytes _pubkey, bytes _withdrawal, address _owner);
     event RewardClaimed(address _owner, uint256 _amount, uint256 _total);
 
     IValidatorNft public nftContract;
-    INodeRewardVault public vaultContract;
+    INodeRewardVault public vault;
     IDepositContract public depositContract;
 
     address public nftAddress;
+    mapping(uint256 => uint64) public nonces;
 
-    function __ValidatorNftRouter__init(address depositContract_, address vaultContract_, address nftContract_) internal onlyInitializing {
+    function __ValidatorNftRouter__init(address depositContract_, address vault_, address nftContract_) internal onlyInitializing {
         depositContract = IDepositContract(depositContract_);
-        vaultContract = INodeRewardVault(vaultContract_);
+        vault = INodeRewardVault(vault_);
         nftContract = IValidatorNft(nftContract_);
         nftAddress = nftContract_;
     }
@@ -65,34 +68,53 @@ contract ValidatorNftRouter is Initializable {
         bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, hash_));
         address signer = ecrecover(prefixedHash, v, r, s);
 
-        require(signer == signer_, "ChainUp did not authorized to launch node");
+        require(signer == signer_, "Not authorized");
         require(signer != address(0), "ECDSA: invalid signature");
     }
 
     //slither-disable-next-line calls-loop
-    function _tradeRoute(Trade memory trade) private returns (uint256) {
+    function _tradeRoute(Trade memory trade, bytes calldata data) private returns (uint256) {
         require(trade.expiredHeight > block.number, "Trade has expired");
 
         // change this in the future
         uint256 sum = 0;
         uint256 i = 0;
-        for (i = 0; i < trade.prices.length; i++) {
-            sum += trade.prices[i];
-        }
 
-        // change this in the future
-        bytes32 masterHash;
         for (i = 0; i < trade.userListings.length; i++) {
             UserListing memory userListing = trade.userListings[i];
-            bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight));
+            uint256 price = trade.prices[i];
+            sum += price;
+                        
+            require(userListing.expiredHeight > block.number, "Listing has expired");
+            require(nftContract.ownerOf(userListing.tokenId) == userListing.signature.signer, "Not owner");
+            require(userListing.nonce == nonces[userListing.tokenId], "Incorrect nonce");
+            nonces[userListing.tokenId]++;
+
+            bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight, userListing.nonce));
             signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
             
-            masterHash = keccak256(abi.encodePacked(hash, masterHash));
-            nftContract.safeTransferFrom(nftContract.ownerOf(userListing.tokenId), trade.receiver, userListing.tokenId);
+            uint256 nodeCapital = nftContract.nodeCapitalOf(userListing.tokenId);
+            uint256 userPrice = price;
+            if (price > nodeCapital) {
+                userPrice = price - (price - nodeCapital) * (10000 - vault.tax()) / 10000;
+            }
+
+            require(userPrice > 30 ether, "Node too cheap");
+
+            nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
+            nftContract.updateNodeCapital(userListing.tokenId, price);
+
+            payable(userListing.signature.signer).transfer(userPrice);
+
+            if (price > userPrice) {
+                payable(vault.dao()).transfer(price - userPrice);
+            }
+
+            emit NodeTrade(userListing.tokenId, userListing.signature.signer, trade.receiver, price);
         }
 
-        masterHash = keccak256(abi.encodePacked(trade.prices, trade.expiredHeight, trade.receiver, masterHash));
-        signercheck(trade.signature.s, trade.signature.r, trade.signature.v, masterHash, vaultContract.authority());
+        bytes32 authHash = keccak256(data[160:]);
+        signercheck(trade.signature.s, trade.signature.r, trade.signature.v, authHash, vault.authority());
 
         return sum;
     }
@@ -112,10 +134,11 @@ contract ValidatorNftRouter is Initializable {
     //slither-disable-next-line calls-loop
     function eth32Route(bytes calldata data) internal returns (bool) {
         bytes32 hash = precheck(data);
-        signercheck(bytes32(data[256:288]), bytes32(data[288:320]), uint8(bytes1(data[1])), hash, vaultContract.authority());
+        signercheck(bytes32(data[256:288]), bytes32(data[288:320]), uint8(bytes1(data[1])), hash, vault.authority());
         deposit(data);
 
         nftContract.whiteListMint(data[16:64], msg.sender);
+
         return true;
     }
 
@@ -133,24 +156,22 @@ contract ValidatorNftRouter is Initializable {
 
         uint256 len = uint256(bytes32(data[128:160]));
         uint256[] memory prices = new uint256[](len);
+        UserListing[] memory userListings = new UserListing[](len);
         for (i = 0; i < len; i++) {
-            prices[i] = uint256(bytes32(data[160 + i * 32:192 + i * 32]));
+            prices[i] = uint256(bytes32(data[160 + i * 224:192 + i * 224]));
+            userListings[i].tokenId = uint256(bytes32(data[192 + i * 224:224 + i * 224]));
+            userListings[i].rebate = uint256(bytes32(data[224 + i * 224:256 + i * 224]));
+            userListings[i].expiredHeight = uint256(bytes32(data[256 + i * 224:288 + i * 224]));
+            userListings[i].signature.r = bytes32(data[288 + i * 224:320 + i * 224]);
+            userListings[i].signature.s = bytes32(data[320 + i * 224:352 + i * 224]);
+            userListings[i].signature.signer = address(bytes20(data[352 + i * 224:372 + i * 224]));
+            userListings[i].signature.v = uint8(bytes1(data[372 + i * 224]));
+            userListings[i].nonce = uint64(bytes8(data[376 + i * 224:384 + i * 224]));
         }
         trade.prices = prices;
-
-        UserListing[] memory userListings = new UserListing[](len);
-        for (i = 0; i < len + len; i++) {
-            userListings[i].tokenId = uint256(bytes32(data[192 + i * 192:224 + i * 192]));
-            userListings[i].rebate = uint256(bytes32(data[224 + i * 192:256 + i * 192]));
-            userListings[i].expiredHeight = uint256(bytes32(data[256 + i * 192:288 + i * 192]));
-            userListings[i].signature.r = bytes32(data[288 + i * 192:320 + i * 192]);
-            userListings[i].signature.s = bytes32(data[320 + i * 192:352 + i * 192]);
-            userListings[i].signature.signer = address(bytes20(data[352 + i * 192:372 + i * 192]));
-            userListings[i].signature.v = uint8(bytes1(data[372 + i * 192]));
-        }
         trade.userListings = userListings;
 
-        return _tradeRoute(trade);
+        return _tradeRoute(trade, data);
     }
 
     //slither-disable-next-line reentrancy-events
@@ -158,11 +179,11 @@ contract ValidatorNftRouter is Initializable {
         address owner = nftContract.ownerOf(tokenId);
         require(msg.sender == nftAddress, "Message sender is not the Nft contract");
 
-        uint256 rewards = vaultContract.rewards(tokenId);
-        uint256 userReward = (10000 - vaultContract.comission()) * rewards / 10000;
+        uint256 rewards = vault.rewards(tokenId);
+        uint256 userReward = (10000 - vault.comission()) * rewards / 10000;
 
-        vaultContract.transfer(userReward, owner);
-        vaultContract.transfer(rewards - userReward, vaultContract.dao());
+        vault.transfer(userReward, owner);
+        vault.transfer(rewards - userReward, vault.dao());
         emit RewardClaimed(owner, userReward, rewards);
     }
 }

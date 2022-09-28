@@ -1,9 +1,8 @@
 const { ethers, upgrades, run } = require("hardhat");
-const nftAddress = "0x4e4Bf734F17e03196864CA6656911F69f46A90E0"; // nft contract address
 
-export async function deployVault(nftAddress: String): Promise<any> {
-  const Vault = await ethers.getContractFactory("NodeRewardVault");
-  const vaultProxy = await upgrades.deployProxy(Vault, [nftAddress]);
+export async function deployVault(): Promise<any> {
+  const Vault = await ethers.getContractFactory("NodeCapitalVault");
+  const vaultProxy = await upgrades.deployProxy(Vault, []);
   await vaultProxy.deployed();
 
   console.log("Vault deployed: ", vaultProxy.address);
@@ -16,7 +15,7 @@ export async function deployVault(nftAddress: String): Promise<any> {
 }
 
 async function main() {
-  await deployVault(nftAddress);
+  await deployVault();
 }
 
 main()

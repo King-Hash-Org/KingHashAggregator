@@ -56,6 +56,15 @@ describe("NodeRewardVault", function () {
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
   }
 
+  describe("Nft setting", function () {
+    it("Should have the right nft address", async function () {
+      const { nodeRewardVault, nftContract } = await loadFixture(deployBaseFixture);
+
+      expect(await nodeRewardVault.nftContract()).to.equal(nftContract.address);
+    });
+
+  });
+
   describe("Authority setting", function () {
     it("Should have the right default authority", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
@@ -150,6 +159,31 @@ describe("NodeRewardVault", function () {
     });
   });
 
+  describe("Tax settings", function () {
+    it("Should have the right tax", async function () {
+      const { nodeRewardVault } = await loadFixture(deployBaseFixture);
+
+      expect(await nodeRewardVault.tax()).to.equal(100);
+    });
+
+    it("Should set the right tax", async function () {
+      const { nodeRewardVault } = await loadFixture(deployBaseFixture);
+      await nodeRewardVault.setTax(0);
+
+      expect(await nodeRewardVault.tax()).to.equal(0);
+    });
+
+    it("Should revert & not set the tax", async function () {
+      const { nodeRewardVault, otherAccount } = await loadFixture(deployBaseFixture);
+
+      await expect(nodeRewardVault.connect(otherAccount).setTax(999)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+      await expect(nodeRewardVault.setTax(10000)).to.be.revertedWith("Tax cannot be 100%");
+      await expect(nodeRewardVault.setTax(100000)).to.be.revertedWith("Tax cannot be 100%");
+    });
+  });
+
   describe("Transfer and rewards", function () {
     it("Should have the right balance", async function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
@@ -169,6 +203,7 @@ describe("NodeRewardVault", function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
 
       await expect(nodeRewardVault.rewards(0)).to.be.revertedWith("No rewards to claim");
+      await expect(nodeRewardVault.blockRewards()).to.be.revertedWith("No rewards to claim");
     });
   });
 });

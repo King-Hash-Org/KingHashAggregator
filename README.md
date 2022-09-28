@@ -17,6 +17,12 @@
 
 This repository contains the core smart contracts for the [ChainUp Aggregator Protocol](https://staking.chainupcloud.com/). ChainUp Aggregator Protocol is a smart contract for various Eth staking strategies. ChainUp Aggregator Protocol is part of the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
 
+**Overview**
+
+* [Architecture](./docs/architecture.md)
+* [Aggregator](./docs/aggregator.md)
+* [ValidatorNft](./docs/validatorNft.md)
+
 You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
 
 ![image](https://user-images.githubusercontent.com/103015469/191221110-792b96bc-9f60-43eb-a836-f018efe1b5ea.png)
@@ -59,7 +65,7 @@ ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 1. The deploy order is NftContract > Vault > Aggregator.
 2. Run `npx hardhat run scripts/deployNft.ts --network ropsten` to deploy the Nft Contract on Ropsten.
 3. Note down the `nftContract` address and update it in `./scripts/deployVault.ts`
-4. Run `npx hardhat run scripts/deployVault.ts --network ropsten` to deploy the Vault Contract on Ropsten.
+4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network ropsten` to deploy the Vault Contract on Ropsten.
 5. Note down the `vaultContract` proxy's address and update both the `nftContract` and `vaultContract` proxy's into the `./scripts/deployAggregator.ts`.
 6. Run `npx hardhat run scripts/deployAggregator.ts --network ropsten` to deploy the Aggregator Contract on Ropsten.
 7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `vaultContract` to update them.
@@ -108,3 +114,17 @@ To create a graphviz summary of all the function calls do, `surya graph contract
 `surya describe contracts/**/*.sol` will summarize the contracts and point out fn modifiers / payments. It's useful to get an overview.
 
 You can see further instructons for Surya [here](https://github.com/ConsenSys/surya).
+
+
+# Contracts (Ropsten)
+Aggregator Proxy: `0xcCC221621e002b9320Be67598224caDAb4D3b9ee`
+
+NodeRewardVault Proxy: `0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C`
+
+NodeCapitalVault Proxy: `0xD9E2dc13b0d2F6f73cd21C32fBf7dE143C558e29`
+
+vNFT: `0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD`
+
+# Audits
+The following auditors were engaged to review the project before launch:
+* [Beosin Audit](https://beosin.com/) (In Progress)

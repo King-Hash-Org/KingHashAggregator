@@ -123,13 +123,6 @@ describe("Aggregator", function () {
 
       expect(await aggregator.callStatic.unstake([data])).to.equal(false);
     });
-
-    it("Empty disperse reward behaviour", async function () {
-      const { aggregator, owner } = await loadFixture(deployBaseFixture);
-
-      // expect nothing
-      await aggregator.claimRewards(owner.address);
-    });
   });
 
   describe("Pausing", function () {
@@ -230,27 +223,27 @@ describe("Aggregator", function () {
       const incorrectAuthorityData =
         "0x011b00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00ab726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c04879f4ab43ec7bee7818a71920693199540df0d316f12fbfcd41012e1f32a0d12e36c0fe1a9080bf24db799b91c3474527e096839e8d0fc086940aee502f1f7";
       await expect(aggregator.stake([incorrectAuthorityData])).to.be.revertedWith(
-        "ChainUp did not authorized to launch node"
+        "Not authorized"
       );
       await expect(
         aggregator.stake([incorrectAuthorityData], { value: ethers.utils.parseEther("32") })
-      ).to.be.revertedWith("ChainUp did not authorized to launch node");
+      ).to.be.revertedWith("Not authorized");
       await expect(
         aggregator.stake([incorrectAuthorityData], { value: ethers.utils.parseEther("1") })
-      ).to.be.revertedWith("ChainUp did not authorized to launch node");
+      ).to.be.revertedWith("Not authorized");
       await expect(
         aggregator.stake([incorrectAuthorityData], { value: ethers.utils.parseEther("33") })
-      ).to.be.revertedWith("ChainUp did not authorized to launch node");
+      ).to.be.revertedWith("Not authorized");
 
       // Maliciously modifying data
       const modifyWithdrawalCredentialsData =
         "0x011b00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00aa726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c04879f4ab43ec7bee7818a71920693199540df0d316f12fbfcd41012e1f32a0d12e36c0fe1a9080bf24db799b91c3474527e096839e8d0fc086940aee502f1f7";
       await expect(aggregator.stake([modifyWithdrawalCredentialsData])).to.be.revertedWith(
-        "ChainUp did not authorized to launch node"
+        "Not authorized"
       );
       await expect(
         aggregator.stake([modifyWithdrawalCredentialsData], { value: ethers.utils.parseEther("32") })
-      ).to.be.revertedWith("ChainUp did not authorized to launch node");
+      ).to.be.revertedWith("Not authorized");
     });
 
     it("Existing validator data behaviour", async function () {
@@ -281,33 +274,6 @@ describe("Aggregator", function () {
       expect(await nftContract.callStatic.validatorsOfOwner(otherAccount.address)).to.have.same.members([]);
 
       expect(await nftContract.callStatic.ownerOf(0)).to.be.equal(owner.address);
-    });
-  });
-
-  describe("Claiming rewards of Nft", function () {
-    it("With rewards behaviour", async function () {
-      const { aggregator, owner, nftContract } = await loadFixture(deployExistingRewardFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(aggregator.claimRewards(owner.address))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
-
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("No rewards behaviour", async function () {
-      const { aggregator, owner } = await loadFixture(deployExistingValidatorFixture);
-
-      await expect(aggregator.claimRewards(owner.address))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
     });
   });
 
