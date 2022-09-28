@@ -93,13 +93,13 @@ contract ValidatorNftRouter is Initializable {
             bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight, userListing.nonce));
             signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
             
-            uint256 nodeCaptical = nftContract.nodeCapitalOf(userListing.tokenId);
+            uint256 nodeCapital = nftContract.nodeCapitalOf(userListing.tokenId);
             uint256 userPrice = price;
-            if (price > nodeCaptical) {
-                userPrice = price - (price - nodeCaptical) * (10000 - vault.tax()) / 10000;
+            if (price > nodeCapital) {
+                userPrice = price - (price - nodeCapital) * (10000 - vault.tax()) / 10000;
             }
 
-            require(userPrice > 31 ether, "Node too cheap");
+            require(userPrice > 30 ether, "Node too cheap");
 
             nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
             nftContract.updateNodeCapital(userListing.tokenId, price);
