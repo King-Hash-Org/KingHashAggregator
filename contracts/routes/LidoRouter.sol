@@ -7,6 +7,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "hardhat/console.sol";
 import "../controller-interface/ILidoERC20.sol";
 
+/** @title Router for Lido Strategy
+@author ChainUp Dev
+@dev Routes incoming data(Lido pre-fix) to outbound contracts 
+**/
 contract LidoRouter is Initializable {
 
     ILido public lidoContract;
@@ -14,9 +18,13 @@ contract LidoRouter is Initializable {
     ILidoERC20  public iLidoERC20;
     address public lidoContractControllerAddress;
 
-
     event LidoDeposit(address _owner, uint256 _stake_amount);
 
+    /**
+    * @notice Initializes the contract by setting the required external contracts ,
+    * lidoContract_, lidoControllerContract_ .   
+    * @dev onlyInitializing  . 
+    **/
     function __LidoRouter__init( address lidoContract_, address lidoControllerContract_ ) internal onlyInitializing {
         lidoContract = ILido(lidoContract_); 
         lidoController = ILidoController(lidoControllerContract_);
@@ -29,6 +37,13 @@ contract LidoRouter is Initializable {
         return stake_amount;
     }
 
+    /**
+    *@dev Routes incoming data(Lido pre-fix) to outbound contracts, Lido Staking Contract for the staking function
+    and calls the controller function like adding to stETH shares and also transferring of stETH to the controller address
+    * Requirements 
+    * -msg.value has to be more than `stake_amount` 
+    * -stake_amount must be minumum 1 wei (minimum deposit)` 
+    */
     function _lido_stake(bytes calldata data) internal  returns (uint256) {
         uint256 stake_amount = uint256(bytes32(data[32:64]));
 
@@ -36,7 +51,7 @@ contract LidoRouter is Initializable {
         require(stake_amount >= 1 wei, "Deposit must not be zero or must be minumum 1 wei");
         uint256 shareAmount = lidoContract.submit{value: stake_amount}( lidoController.getReferral() );
         //transfer this share amount to controller contract
-        require(lidoContractControllerAddress != address(0) ,"lidoController address cannot be empty") ;
+        // require(lidoContractControllerAddress != address(0) ,"lidoController address cannot be empty") ;
         iLidoERC20.transfer(lidoContractControllerAddress , shareAmount);
 
         lidoController.addStEthShares(msg.sender, shareAmount ) ;
@@ -44,7 +59,5 @@ contract LidoRouter is Initializable {
 
         return stake_amount;
     }
-
-
 
 }

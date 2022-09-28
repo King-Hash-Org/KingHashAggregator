@@ -8,6 +8,10 @@ import "../controller-interface/IRocketController.sol";
 import "../controller-interface/IRocketERC20.sol";
 import "hardhat/console.sol";
 
+/** @title Router for RocketPool Strategy
+@author ChainUp Dev
+@dev Routes incoming data(RocketPool pre-fix) to outbound contracts 
+**/
 contract RocketPoolRouter is Initializable  {
 
     IRocketPool public rocketPoolContract;
@@ -19,6 +23,11 @@ contract RocketPoolRouter is Initializable  {
 
     event RocketPoolDeposit(address _owner, uint rEthMinted);
 
+    /**
+    * @notice Initializes the contract by setting the required external contracts ,
+    * rocketPoolContract_ , rocketPoolControllerContract_, rocketETHAddress_ .   
+    * @dev onlyInitializing  . 
+    **/
     function __RocketPoolRouter__init( address rocketPoolContract_, address rocketPoolControllerContract_, address rocketETHAddress_ ) internal onlyInitializing {
         rocketPoolContract = IRocketPool(rocketPoolContract_); 
         rocketController = IRocketController(rocketPoolControllerContract_);
@@ -31,6 +40,13 @@ contract RocketPoolRouter is Initializable  {
         return stake_amount;
     }
 
+    /**
+    *@dev Routes incoming data(Rocket Strategy) to outbound contracts, RocketPool Deposit Contract 
+    and calls internal controller function to adding to RETH and also transferring of stETH to the controller address
+    * Requirements 
+    * -msg.value has to be more than `stake_amount` 
+    * -stake_amount must be minumum 1 wei (minimum deposit)` 
+    */
     function _rocket_deposit(bytes calldata data) internal returns (uint256) {
         uint256 beforeREthBalance = iRocketERC20.balanceOf(address(this) ) ;
 
