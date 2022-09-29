@@ -253,73 +253,72 @@ describe("Aggregator", function () {
       expect(await nftContract.callStatic.ownerOf(0)).to.be.equal(owner.address);
     });
   });
-});
 
-/*
-  describe("Withdrawals", function () {
-    describe("Validations", function () {
-      it("Should revert with the right error if called too soon", async function () {
-        const { lock } = await loadFixture(deployBaseFixture);
-
-        await expect(lock.withdraw()).to.be.revertedWith(
-          "You can't withdraw yet"
-        );
-      });
-
-      it("Should revert with the right error if called from another account", async function () {
-        const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployBaseFixture
-        );
-
-        // We can increase the time in Hardhat Network
-        await time.increaseTo(unlockTime);
-
-        // We use lock.connect() to send a transaction from another account
-        await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-          "You aren't the owner"
-        );
-      });
-
-      it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-        const { lock, unlockTime } = await loadFixture(
-          deployBaseFixture
-        );
-
-        // Transactions are sent using the first signer by default
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).not.to.be.reverted;
-      });
+  describe("Trading single nft", function () {
+    it("Should fail as price too low", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
     });
 
-    describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
-        const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployBaseFixture
-        );
-
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw())
-          .to.emit(lock, "Withdrawal")
-          .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-      });
+    it("Should fail as not owner", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
     });
 
-    describe("Transfers", function () {
-      it("Should transfer the funds to the owner", async function () {
-        const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployBaseFixture
-        );
+    it("Should fail as listing expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
 
-        await time.increaseTo(unlockTime);
+    it("Should fail as trade expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
 
-        await expect(lock.withdraw()).to.changeEtherBalances(
-          [owner, lock],
-          [lockedAmount, -lockedAmount]
-        );
-      });
+    it("Should fail as incorrect nonce", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect user signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect authority signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should succeed", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
     });
   });
-  */
-// });
+
+  describe("Trading mutliple nfts", function () {
+    it("Should fail as price too low", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as not owner", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as listing expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as trade expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect nonce", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect user signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect authority signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should succeed", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+  });
+});

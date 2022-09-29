@@ -13,6 +13,67 @@ function remove0xPrefix(s: String): String {
   return s.replace("0x", "");
 }
 
+async function prepareTradeV2(
+  rawData: String,
+  expiredHeight: String,
+  length: String,
+  buyer: String,
+  wallet: SignerWithAddress
+) : Promise<String> {
+  const padding = "00000000000000000000";
+  const h = ethers.utils.solidityKeccak256(
+    ["bytes", "uint256", "address"],
+    [rawData, expiredHeight, buyer]
+  );
+
+  const sig = await wallet.signMessage(ethers.utils.arrayify(h));
+  let sigBreakdown = ethers.utils.splitSignature(sig);
+
+  return (
+    "0x" +
+    remove0xPrefix(sigBreakdown.v.toString(16)) +
+    padding +
+    remove0xPrefix(buyer) +
+    remove0xPrefix(sigBreakdown.r) +
+    remove0xPrefix(sigBreakdown.s) +
+    remove0xPrefix(expiredHeight) +
+    remove0xPrefix(length) +
+    remove0xPrefix(rawData)
+  )
+}
+
+async function prepareSellData(
+  price: String,
+  tokenId: String,
+  rebate: String,
+  expiredHeight: String,
+  nonce: String,
+  wallet: SignerWithAddress
+) : Promise<String> {
+  const padding = "000000";
+  const h = ethers.utils.solidityKeccak256(
+    ["uint256", "uint256", "uint256", "uint64"],
+    [tokenId, rebate, expiredHeight, nonce]
+  );
+
+  const sig = await wallet.signMessage(ethers.utils.arrayify(h));
+  let sigBreakdown = ethers.utils.splitSignature(sig);
+
+  return (
+    "0x" +
+    remove0xPrefix(price) +
+    remove0xPrefix(tokenId) +
+    remove0xPrefix(rebate) +
+    remove0xPrefix(expiredHeight) +
+    remove0xPrefix(sigBreakdown.r) +
+    remove0xPrefix(sigBreakdown.s) +
+    remove0xPrefix(wallet.address) +
+    remove0xPrefix(sigBreakdown.v.toString(16)) +
+    padding +
+    remove0xPrefix(nonce)
+  )
+}
+
 async function prepareTrade(
   pubkey: String,
   nodePrice: String,
@@ -94,6 +155,19 @@ function padding64(s: String): String {
   return s;
 }
 
+function padding16(s: String): String {
+  const xStore = "0000000000000000000000000000000000000000000000000000000000000000";
+  assert(s.lastIndexOf("0x") !== 0);
+  assert(s.length <= 16);
+
+  const diff = 16 - s.length;
+  if (diff > 0) {
+    const app = "0x" + xStore.substring(0, diff);
+    s = app + s;
+  }
+  return s;
+}
+
 async function eth32RouteData(wallet: SignerWithAddress): Promise<String> {
   const blockTime = padding64((115438892).toString(16)); // Some super large block
   const depositData: DepositData = {
@@ -124,6 +198,23 @@ function sellRouteData() {
   const padding = "000000000000000000000000000000";
 
   return "0x" + padding + pubkey + blockTime + returnValue;
+}
+
+function tradeRouteDataV2(
+  seller: SignerWithAddress,
+  buyer: SignerWithAddress,
+  authority: SignerWithAddress
+) {
+  const nodePrice = padding64((32000000000000000000).toString(16)); // 32 eth
+  const rebate = padding64((100000000000000000).toString(16)); // 0.1 eth
+  const tokenId =  padding64((1).toString(16)); // token 1
+  const expiredHeight = padding64((259200).toString(16));
+  const nonce = padding16((0).toString(16));
+
+  const rawData = await prepareSellData(nodePrice, tokenId, rebate, expiredHeight, nonce, seller);
+
+  const length =  padding64((1).toString(16)); 
+  prepareTradeV2(rawData, expiredHeight, length,buyer.address, authority);
 }
 
 export { DepositData, eth32RouteData, tradeRouteData, sellRouteData };
