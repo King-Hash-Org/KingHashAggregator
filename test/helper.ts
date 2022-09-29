@@ -200,7 +200,7 @@ function sellRouteData() {
   return "0x" + padding + pubkey + blockTime + returnValue;
 }
 
-function tradeRouteDataV2(
+async function tradeRouteDataV2(
   seller: SignerWithAddress,
   buyer: SignerWithAddress,
   authority: SignerWithAddress
