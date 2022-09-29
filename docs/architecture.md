@@ -1,18 +1,18 @@
 ---
-title: Learn about ChainUp Aggregator and Validator Nft
+title: Learn about ChainUp Aggregator and Validator NFT
 ---
 
-This is a brief introduction to ChainUp Aggregator and Validator Nft, ChainUp Aggregator the first staking aggregator protocol and Validator Nft is a novel mechanism for Ethereum staking offered by ChainUp. 
+This is a brief introduction to ChainUp Aggregator and Validator NFT, ChainUp Aggregator the first staking aggregator protocol and Validator NFT is a novel mechanism for Ethereum staking offered by ChainUp. 
 
 Just like any other aggregator protocols, the goal of aggregator is to **aggregate over something**. Decentralized Exchange Aggregators like [1inch](https://app.1inch.io/) provide users with the best trade, and Yield Aggregators like [Yearn Finance](https://yearn.finance/) aims to maximize yield returns. For a Staking Aggregator like [ChainUp Aggregator](https://staking.chainupcloud.com/), it does both! It finds the best way to stake your assets, and compound your yield! 💎
 
 There are various staking protocols for staking Eth on the Ethereum network. ChainUp Aggregator aggregates over various staking protocols on the Ethereum Network. From the user's persepctive, it is simply a one-click staking protocol that will help users to stake their Eth across existing protocols and compound the yields using various strategies based on the user's risk profile & preference. 🧸
 
-Validator Nft deals with the problem of the technical know-how user need just to stake Eth. From generating `depositData`, and operating a validator node; these are all extremely high barriers of entries to most people. The Validator Nft works by automatically creating a node on behalf of the user, and submitting a cryptographic proof onto the chain to represent the user ownership. In exchange, the user is given a Nft which reflects the underlying validator node.
+Validator NFT deals with the problem of the technical know-how user need just to stake Eth. From generating `depositData`, and operating a validator node; these are all extremely high barriers of entries to most people. The Validator NFT works by automatically creating a node on behalf of the user, and submitting a cryptographic proof onto the chain to represent the user ownership. In exchange, the user is given a NFT which reflects the underlying validator node.
 
 # Features
 The ChainUp Aggregator interfaces with a variety of staking protocols on Ethereum:
- * Validator Nfts
+ * Validator NFTs
  * Lido
  * Rocket Pool
  * Stakewise
@@ -38,7 +38,7 @@ Here's a diagram to illustrate a simple overview:
 ## Smart Contract
 The Smart Contract is broken down into several contracts. The Aggregator Contract is the single main entry point. It will route the Eth to various staking protocols and execute various strategies based on the input provided.
 
-And depending on the user's input, they may recieve Fungible Tokens (such as stETH, Share tokens) and Non-Fungible Tokens (Validator Nfts, Swell Nfts). If the user chooses fund related strategies, underlying assets can be re-invested, and all asset holdings will be govern by the DAO in their respective vault contracts.
+And depending on the user's input, they may recieve Fungible Tokens (such as stETH, Share tokens) and Non-Fungible Tokens (Validator NFTs, Swell NFTs). If the user chooses fund related strategies, underlying assets can be re-invested, and all asset holdings will be govern by the DAO in their respective vault contracts.
 
 ![Contract Overview Diagram](./images/contractOverview.jpg)
 
@@ -55,12 +55,12 @@ The Smart Engine is a tool to aid users to interact with our Smart Contract. As 
 
 The diagram shows how the Smart Engine work. We exposed the Smart Engine through the [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/), which is integrated by ChainUp's various partners. Developers are also free to integrate with our API and cater the ChainUp Aggregator Protocol to their users.
 
-# Validator Nft
+# Validator NFT
 As mentioned before, staking on Ethereum the vanilla way is a pain in the ass. It requires the user to run an Ethereum node, which consists of operating a set of Execution Client, Consensus Client and Validator Client. The user will also need to interact with the `DepositContract` to subscribe their validators on the Beacon Chain. And you need to repeat the same process for every multiple of 32 eth. Overall, it is not a trivial process and definitely not meant for beginners.
 
-![Nft Overview Diagram](./images/nftOverview.jpg)
+![NFT Overview Diagram](./images/nftOverview.jpg)
 
-How the Validator Nft work is as follows:
+How the Validator NFT work is as follows:
 1. User sends a request to have a Validator Nft. This can be a direct (business partners usually) or indirect request through the [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/).
 2. ChainUp Aggregator API will forward the request to ChainUp Cloud Engine if it is an indirect request.
 3. Our backend process the request and generates a cryptographic proof for the user to submit to ChainUp Aggregator Smart Contract
@@ -74,4 +74,4 @@ How the Validator Nft work is as follows:
 11. vNFT holders can claim their validator rewards anytime from the Node Reward Vault. Rewards will also be claimed automatically whenever there is a `transfer` event.
 12. If ChainUp decides to issue additional token rewards in the future, vNFT holders will also be able to claim the tokens in a similar fashion.
 
-Validator Nft is designed in such a way that anyone can issue their own Validator Nfts. As long as they have the infrastructure to operate the nodes, they can launch their own Validator Nfts by using our Smart Contracts. Optionally, they can reach out to ChainUp DAO to have their Validator Nfts added to the ChainUp Aggregator.
+Validator NFT is designed in such a way that anyone can issue their own Validator NFTs. As long as they have the infrastructure to operate the nodes, they can launch their own Validator NFTs by using our Smart Contracts. Optionally, they can reach out to ChainUp DAO to have their Validator NFTs added to the ChainUp Aggregator.

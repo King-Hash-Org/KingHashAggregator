@@ -21,7 +21,7 @@ This repository contains the core smart contracts for the [ChainUp Aggregator Pr
 
 * [Architecture](./docs/architecture.md)
 * [Aggregator](./docs/aggregator.md)
-* [ValidatorNft](./docs/validatorNft.md)
+* [ValidatorNFT](./docs/validatorNFT.md)
 
 You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
 
@@ -57,18 +57,18 @@ Pre-requisite:
 Setup your `.env` with the following keys:
 
 ```
-ROPSTEN_URL=https://ropsten.infura.io/v3/<YOUR_INFURA_API_KEY>
-ROPSTEN_PRIVATE_KEY=<YOUR_PRIVATE_KEY>
+GOERLI_URL=https://goerli.infura.io/v3/<YOUR_INFURA_API_KEY>
+GOERLI_PRIVATE_KEY=<YOUR_PRIVATE_KEY>
 ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 ```
 
-1. The deploy order is NftContract > Vault > Aggregator.
-2. Run `npx hardhat run scripts/deployNft.ts --network goerli` to deploy the Nft Contract on Ropsten.
-3. Note down the `nftContract` address and update it in `./scripts/deployVault.ts`
-4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network goerli` to deploy the Vault Contract on Ropsten.
-5. Note down the `vaultContract` proxy's address and update both the `nftContract` and `vaultContract` proxy's into the `./scripts/deployAggregator.ts`.
-6. Run `npx hardhat run scripts/deployAggregator.ts --network goerli` to deploy the Aggregator Contract on Ropsten.
-7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `vaultContract` to update them.
+1. The deploy order is NFTContract > Vault > Aggregator.
+2. Run `npx hardhat run scripts/deployNft.ts --network goerli` to deploy the NFT Contract on Goerli.
+3. Note down the `nftContract` address and update it in `./scripts/deployNodeRewardVault.ts`
+4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network goerli` to deploy the Node Reward Vault Contract on Goerli.
+5. Note down the `NodeRewardVaultContract` proxy's address and update both the `nftContract` and `NodeRewardVaultContract` proxy's into the `./scripts/deployAggregator.ts`.
+6. Run `npx hardhat run scripts/deployAggregator.ts --network goerli` to deploy the Aggregator Contract on Goerli.
+7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `NodeRewardVaultContract` to update them.
 
 # Other Tools
 

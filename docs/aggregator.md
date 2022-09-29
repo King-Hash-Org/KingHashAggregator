@@ -39,12 +39,12 @@ Bytes: | OP_CODE | ADDITIONAL_DATA |
 ```
 | OP_CODE                     | Description             |
 | --------------------------- | ----------------------- | 
-| 0x01                         | vNFT staking strategy. This instruction requires 32 Eth to execute and spins up a Validator Node for the sender. Sender also recieves a [vNFT](./ValidatorNft.md). |
+| 0x01                         | vNFT staking strategy. This instruction requires 32 Eth to execute and spins up a Validator Node for the sender. Sender also recieves a [vNFT](./ValidatorNFT.md). |
 | 0x02 | Lido staking strategy. This instruction requires at least 1 wei to execute. stEth is not returned to the user by default and further re-invested in the [Lidoverse](https://lido.fi/lido-ecosystem). |
 | 0x03 | Swell staking strategy. This instrucion requires at least 1 Eth to execute. Derivatives are not returned to the user by default and further re-invested in the [Swellverse](https://swellnetwork.io/). |
 | 0x04 | Rocketpool staking strategy. This instruction requires 0.01 Eth to execute. rEth is not returned to the user by default and further re-invested in the [Rocketverse](https://rocketpool.net/). |
 | 0x05 | Stakewise staking strategy. This instruction requires 1 Wei to execute. Stakewise Eth is returned to the user by default.  |
-| 0x06 | vNFT purchase strategy. This instruction purchases a vNFT from users who have listed their [vNFT](./ValidatorNft.md).
+| 0x06 | vNFT purchase strategy. This instruction purchases a vNFT from users who have listed their [vNFT](./ValidatorNFT.md).
 | 0x07 | SSV vNFT strategy. This instruction purchases a vNFT supercharged through the [SSV network](https://ssv.network/).
 | 0x08 | Frax staking strategy. This instruction requires at least 1 Weu to execute. sfrxEth is not returned to the user by default and further re-invested in the [Frax Holy Land](https://frax.finance/).
 | 0x09 - 0xFF | RESERVED
