@@ -22,14 +22,14 @@ contract RocketDepositPool is IRocketDepositPool {
     // Accept a deposit from a user
     function deposit() override external payable  {
         // Check deposit amount
+
         require(msg.value >= 0.01 ether, "The deposited amount is less than the minimum deposit size");
         require(msg.value % 1 gwei == 0, "DepositContract: deposit value not multiple of gwei");
-        uint deposit_amount = msg.value / 1 gwei;
-        require(deposit_amount <= type(uint64).max, "DepositContract: deposit value too high");
 
         //  Calculate deposit fee
         uint256 depositFee = 100 wei  ;
         uint256 depositNet = msg.value - depositFee  ;
+
         // // Mint rETH to user account
         iMockRocketERC20.mint(depositNet, msg.sender );
 

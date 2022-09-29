@@ -3,9 +3,13 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "../interfaces/IRocketPool.sol";
+// import "../interfaces/IRocketPool.sol";
 import "../controller-interface/IRocketController.sol";
-import "../controller-interface/IRocketERC20.sol";
+// import "../controller-interface/IRocketERC20.sol";
+import "../interfaces/RocketDepositPoolInterface.sol";
+import "../controller-interface/RocketTokenRETHInterface.sol";
+import "../controller-interface/RocketStorageInterface.sol";
+
 import "hardhat/console.sol";
 
 /** @title Router for RocketPool Strategy
@@ -14,25 +18,33 @@ import "hardhat/console.sol";
 **/
 contract RocketPoolRouter is Initializable  {
 
-    IRocketPool public rocketPoolContract;
     IRocketController public rocketController ;   
-    IRocketERC20  public iRocketERC20;
+    RocketDepositPoolInterface  public rocketDepositPool;
+    RocketTokenRETHInterface  public rocketTokenRETH ;
+    RocketStorageInterface public rocketStorage  ;
+
     address public rocketPoolContractControllerAddress;
-    // address constant public rocketETHGoerliAddress= 0x178E141a0E3b34152f73Ff610437A7bf9B83267A ; //goerli
-    // address constant public rocketETHMainNetAddress= 0x178E141a0E3b34152f73Ff610437A7bf9B83267A ; //mainnet
+    // address constant public _goerliRocketStorageAddress= 0xd8Cd47263414aFEca62d6e2a3917d6600abDceB3 ;
+    // address constant public _mainnetRocketStorageAddress= 0x1d8f8f00cfa6758d7bE78336684788Fb0ee0Fa46 ;
 
     event RocketPoolDeposit(address _owner, uint rEthMinted);
 
     /**
     * @notice Initializes the contract by setting the required external contracts ,
-    * rocketPoolContract_ , rocketPoolControllerContract_, rocketETHAddress_ .   
+    * rocketPoolControllerContract_ .   
     * @dev onlyInitializing  . 
     **/
-    function __RocketPoolRouter__init( address rocketPoolContract_, address rocketPoolControllerContract_, address rocketETHAddress_ ) internal onlyInitializing {
-        rocketPoolContract = IRocketPool(rocketPoolContract_); 
-        rocketController = IRocketController(rocketPoolControllerContract_);
+    function __RocketPoolRouter__init( address _rocketStorageAddress , address rocketPoolControllerContract_ ) internal onlyInitializing {
+        rocketStorage = RocketStorageInterface(_rocketStorageAddress);
+        address rocketDepositPoolAddress = rocketStorage.getAddress(keccak256(abi.encodePacked("contract.address", "rocketDepositPool")));
+
+        rocketDepositPool = RocketDepositPoolInterface(rocketDepositPoolAddress);
+        address rocketTokenRETHAddress = rocketStorage.getAddress(keccak256(abi.encodePacked("contract.address", "rocketTokenRETH")));
+
+        rocketTokenRETH = RocketTokenRETHInterface(rocketTokenRETHAddress);
         rocketPoolContractControllerAddress = rocketPoolControllerContract_;
-        iRocketERC20 = IRocketERC20(rocketETHAddress_);
+        rocketController = IRocketController(rocketPoolControllerContract_);
+
     }
 
     function rocketPoolRoute(bytes calldata data) internal returns (uint256) {
@@ -42,31 +54,29 @@ contract RocketPoolRouter is Initializable  {
 
     /**
     *@dev Routes incoming data(Rocket Strategy) to outbound contracts, RocketPool Deposit Contract 
-    and calls internal controller function to adding to RETH and also transferring of stETH to the controller address
+    and calls internal controller functions and also transferring of stETH to the RocketPoolController Contract
     * Requirements 
-    * -msg.value has to be more than `stake_amount` 
-    * -stake_amount must be minumum 1 wei (minimum deposit)` 
+    * - `stake_amount` must be minumum 0.01 ether (minimum deposit)
+    * - if the deposit to RocketPool is successful, `afterREthBalance` must be more than `beforeREthBalance`
     */
     function _rocket_deposit(bytes calldata data) internal returns (uint256) {
-        uint256 beforeREthBalance = iRocketERC20.balanceOf(address(this) ) ;
+
+        uint256 beforeREthBalance = rocketTokenRETH.balanceOf(address(this) ) ;
 
         uint256 stake_amount = uint256(bytes32(data[32:64]));
         require(stake_amount >= 0.01 ether, "The deposited amount is less than the minimum deposit size");
 
-        rocketPoolContract.deposit{value: stake_amount}();
-        uint256 afterREthBalance = iRocketERC20.balanceOf(address(this) ) ;
+        rocketDepositPool.deposit{value: stake_amount}();
+        uint256 afterREthBalance = rocketTokenRETH.balanceOf(address(this) ) ;
 
-        //transfer to controller contract
         require(afterREthBalance > beforeREthBalance, "No rETH was minted");
         uint256 actualRethMinted =  afterREthBalance - beforeREthBalance ;
-
-        iRocketERC20.transfer(rocketPoolContractControllerAddress, actualRethMinted);
+        rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
 
         rocketController.addREthBalance(msg.sender, actualRethMinted ) ;
         emit RocketPoolDeposit(msg.sender, actualRethMinted);
 
         return stake_amount;
     }
-
 
 }

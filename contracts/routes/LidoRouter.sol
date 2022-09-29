@@ -38,7 +38,7 @@ contract LidoRouter is Initializable {
     }
 
     /**
-    *@dev Routes incoming data(Lido pre-fix) to outbound contracts, Lido Staking Contract for the staking function
+    *@dev Routes incoming data (Lido Strategy) to outbound contracts, Lido Staking Contract for the staking function
     and calls the controller function like adding to stETH shares and also transferring of stETH to the controller address
     * Requirements 
     * -msg.value has to be more than `stake_amount` 

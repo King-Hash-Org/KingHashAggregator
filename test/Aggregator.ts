@@ -33,24 +33,30 @@ describe("Aggregator", function () {
     const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
     const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
 
+    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
+    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
+
+    const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
+    const rocketStorage = await RocketStorageContract.deploy();
+    rocketStorage.setAddressStorage("0x65DD923DDFC8D8AE6088F80077201D2403CBD565F0BA25E09841E2799EC90BB2", rocketDepositPoolContract.address ) ;
+    rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address ) ;
+
+    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
+
     const RocketControllerContract = await ethers.getContractFactory("RocketController");
     const rocketController = await RocketControllerContract.deploy();
     await rocketController.initialize();
 
-    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
-    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
     
-
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketDepositPoolContract.address, rocketController.address , rocketTokenRETH.address);
+    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketStorage.address , rocketController.address );
 
     await lidoController.addAllowList(aggregator.address);
     await rocketController.addAllowList(aggregator.address);
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
-    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
 
 
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, lidoController };

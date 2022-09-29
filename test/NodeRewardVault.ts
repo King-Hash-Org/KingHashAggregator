@@ -27,16 +27,21 @@ describe("NodeRewardVault", function () {
     const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
     const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
 
+    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
+    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
+
+    const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
+    const rocketStorage = await RocketStorageContract.deploy();
+
+    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
+
     const RocketControllerContract = await ethers.getContractFactory("RocketController");
     const rocketController = await RocketControllerContract.deploy();
     await rocketController.initialize();
-
-    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
-    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
     
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketDepositPoolContract.address, rocketController.address , rocketTokenRETH.address);
+    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketStorage.address , rocketController.address );
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
