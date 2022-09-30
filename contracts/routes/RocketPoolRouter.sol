@@ -12,7 +12,7 @@ import "hardhat/console.sol";
 
 /** @title Router for RocketPool Strategy
 @author ChainUp Dev
-@dev Routes incoming data(RocketPool pre-fix) to outbound contracts 
+@dev Routes incoming data(RocketPool strategy) to outbound contracts 
 **/
 contract RocketPoolRouter is Initializable  {
 
@@ -28,12 +28,14 @@ contract RocketPoolRouter is Initializable  {
     event RocketPoolDeposit(address _owner, uint rEthMinted);
 
     /**
-    * @notice Initializes the contract by setting the required external contracts ,
-    * rocketPoolControllerContract_ .   
-    * @dev onlyInitializing  . 
+    * @notice Initializes the contract by setting the required external contracts
+    * @param  rocketStorageAddress_ - deployed rocket storage contract address
+    * @param  rocketPoolControllerContract_ - deployed rocketpool controller address    
+    * @dev The RocketStorage contract also stores the addresses of all other network contracts,
+    * therefore the rocketpool-related contracts are queried before use to prevent outdated addresses.
     **/
-    function __RocketPoolRouter__init( address _rocketStorageAddress , address rocketPoolControllerContract_ ) internal onlyInitializing {
-        rocketStorage = RocketStorageInterface(_rocketStorageAddress);
+    function __RocketPoolRouter__init( address rocketStorageAddress_ , address rocketPoolControllerContract_ ) internal onlyInitializing {
+        rocketStorage = RocketStorageInterface(rocketStorageAddress_);
         address rocketDepositPoolAddress = rocketStorage.getAddress(keccak256(abi.encodePacked("contract.address", "rocketDepositPool")));
 
         rocketDepositPool = RocketDepositPoolInterface(rocketDepositPoolAddress);
@@ -51,11 +53,11 @@ contract RocketPoolRouter is Initializable  {
     }
 
     /**
-    *@dev Routes incoming data(Rocket Strategy) to outbound contracts, RocketPool Deposit Contract 
-    and calls internal controller functions and also transferring of stETH to the RocketPoolController Contract
-    * Requirements 
-    * - `stake_amount` must be minumum 0.01 ether (minimum deposit)
-    * - if the deposit to RocketPool is successful, `afterREthBalance` must be more than `beforeREthBalance`
+    * @notice Routes incoming data(Rocket Strategy) to outbound contracts, RocketPool Deposit Contract 
+    * and calls internal controller functions and also transferring of stETH to the RocketPoolController Contract
+    * @dev `stake_amount` must be minumum 0.01 ether (minimum deposit)
+    * if the deposit to RocketPool is successful, `afterREthBalance` must be more than `beforeREthBalance`
+    * @return stake_amount - successfully staked ether to rocketpool deposit contract
     */
     function _rocket_deposit(bytes calldata data) internal returns (uint256) {
 

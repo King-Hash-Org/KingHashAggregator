@@ -6,6 +6,10 @@ import "../interfaces/IDepositContract.sol";
 import "../interfaces/IValidatorNft.sol";
 import "../interfaces/INodeRewardVault.sol";
 
+/** @title Router for RocketPool Strategy
+@author ChainUp Dev
+@dev Routes incoming data(ValidatorNftRouter strategy) to outbound contracts 
+**/
 contract ValidatorNftRouter is Initializable {
     struct Signature {
         address signer;
@@ -49,6 +53,12 @@ contract ValidatorNftRouter is Initializable {
     }
 
     //slither-disable-next-line calls-loop
+
+    /**
+    * @notice Pre-processing before performing the signer verification.  
+    * @return bytes32 hashed value of the pubkey, withdrawalCredentials, signature,
+    *  depositDataRoot, bytes32(blockNumber
+    **/
     function precheck(bytes calldata data) private view returns (bytes32) {
         bytes calldata pubkey = data[16:64];
         bytes calldata withdrawalCredentials = data[64:96];
@@ -63,6 +73,12 @@ contract ValidatorNftRouter is Initializable {
         return keccak256(abi.encodePacked(pubkey, withdrawalCredentials, signature, depositDataRoot, bytes32(blockNumber)));
     }
 
+    /**
+    * @notice Performs signer verification, prevents unauthorized usage .  
+    * @param v, r, and s parts of a signature
+    * @param hash_ - hashed value from precheck
+    * @param signer_ - authentic signer to check against
+    **/
     function signercheck(bytes32 s, bytes32 r, uint8 v, bytes32 hash_, address signer_) private pure {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, hash_));
@@ -72,6 +88,13 @@ contract ValidatorNftRouter is Initializable {
         require(signer != address(0), "ECDSA: invalid signature");
     }
 
+    //slither-disable-next-line calls-loop
+    /**
+    * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+    * and calls internal functions for pre-processing and signer verfication
+    * check for expired transaction through block height
+    * @return uint256 sum of the trades
+    */
     //slither-disable-next-line calls-loop
     function _tradeRoute(Trade memory trade, bytes calldata data) private returns (uint256) {
         require(trade.expiredHeight > block.number, "Trade has expired");
@@ -119,6 +142,9 @@ contract ValidatorNftRouter is Initializable {
         return sum;
     }
 
+    /**
+    * @notice Allows transfer funds of 32 ETH to the Official Ethereum 2.0 deposit contract
+    */
     //slither-disable-next-line reentrancy-events
     function deposit(bytes calldata data) private {
         bytes calldata pubkey = data[16:64];
@@ -131,6 +157,10 @@ contract ValidatorNftRouter is Initializable {
         emit Eth32Deposit(pubkey, withdrawalCredentials, msg.sender);
     }
 
+    /**
+    * @notice Routes incoming data(ETH32 Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+    * and calls internal functions for pre-processing and signer verfication, minting of nft to user.
+    */
     //slither-disable-next-line calls-loop
     function eth32Route(bytes calldata data) internal returns (bool) {
         bytes32 hash = precheck(data);
@@ -142,6 +172,12 @@ contract ValidatorNftRouter is Initializable {
         return true;
     }
 
+    /**
+    * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+    * and calls internal functions for pre-processing and signer verfication
+    * check for expired transaction through block height
+    * @return uint256 sum of the trades
+    */
     function tradeRoute(bytes calldata data) internal returns (uint256) {
         //slither-disable-next-line uninitialized-local
         Trade memory trade;
@@ -174,6 +210,9 @@ contract ValidatorNftRouter is Initializable {
         return _tradeRoute(trade, data);
     }
 
+    /**
+    * @dev See {IAggregator-disperseRewards}.
+    */
     //slither-disable-next-line reentrancy-events
     function rewardRoute(uint256 tokenId) internal {
         address owner = nftContract.ownerOf(tokenId);

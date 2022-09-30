@@ -8,17 +8,17 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../controller-interface/IRocketController.sol";
 import "hardhat/console.sol";
 
-/** @title Controller for Rocket Pool Strategy
-@author ChainUp Dev
-@dev Interacts with the RocketPoolRouter and read and writes data
-**/
+ /** @title Controller for Rocket Pool Strategy
+  * @author ChainUp Dev
+  * @dev Interacts with the RocketPoolRouter and read and writes data
+ **/
  contract RocketController is  IRocketController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable  {
    
     mapping(address => bool) private allowList;
     mapping(address => uint256) private rEthBalanceMap;
 
     /**
-    * @notice Initializes the contract  by setting the required external contracts ,
+    * @notice Initializes the contract by setting the required external contracts ,
     * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable and `referral`.   
     * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once. 
     **/
@@ -36,7 +36,7 @@ import "hardhat/console.sol";
     function _authorizeUpgrade(address) internal override onlyOwner {}
   
     /**
-     * @dev See {IRocketController-addREthBalance}.
+    * @dev See {IRocketController-addREthBalance}.
     */
     function addREthBalance(address userAddress, uint256 rEthBalance) external override onlyAllowed nonReentrant {
         require( userAddress != address(0), "User should not be zero address");
@@ -44,21 +44,21 @@ import "hardhat/console.sol";
     }
   
     /**
-     * @dev See {IRocketController-getREthBalance}.
+    * @dev See {IRocketController-getREthBalance}.
     */
     function getREthBalance(address userAddress ) external view override returns (uint256) {
         return  rEthBalanceMap[userAddress] ;
     }
 
     /**
-     * @dev See {IRocketController-addAllowList}.
+    * @dev See {IRocketController-addAllowList}.
     */
     function addAllowList(address userAddress) external override onlyOwner {
         allowList[userAddress] = true;
     }
 
     /**
-     * @dev See {IRocketController-removeAllowList}.
+    * @dev See {IRocketController-removeAllowList}.
     */
     function removeAllowList(address userAddress) external override onlyOwner {
         allowList[userAddress] = false;

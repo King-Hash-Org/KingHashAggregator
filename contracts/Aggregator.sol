@@ -12,11 +12,10 @@ import "./routes/LidoRouter.sol";
 import "./routes/RocketPoolRouter.sol";
 
 
-/** 
- * @title Aggregator
- * @dev Implements staking aggregator for Eth
- */
-//slither-disable-next-line unprotected-upgrade
+/** @title Staking Aggregator for Eth
+  * @author ChainUp Dev
+  * @dev Accepts incoming data and and route to different startegies. 
+ **/
 contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter, RocketPoolRouter {
     bytes1 private constant ETH32_STRATEGY = 0x01;  
     bytes1 private constant LIDO_STRATEGY = 0x02; 
@@ -30,6 +29,12 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}
 
+    /**
+    * @notice Initializes the contract by setting the required external
+    *  contracts for different strategies (Eth32,Lido,Rocket, Stakewise)
+    * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable .  
+    * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once. 
+    **/
     function initialize(
         address depositContractAddress,
         address vaultAddress,
@@ -52,6 +57,9 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
+    /**
+    * @dev See {IAggregator-stake}.
+    */
     function stake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         uint256 total_ether = 0;
 
@@ -69,20 +77,24 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
                 require(data[i].length == 64, "Rocket Pool Contract: invalid data.length");
                 total_ether += super.rocketPoolRoute(data[i]);
             }
-            
              else if (prefix == NODE_TRADE_STRATEGY) {
                 total_ether += super.tradeRoute(data[i]);
             }
         }
-
         require(msg.value == total_ether, "Incorrect Ether amount provided");
         return true;
     }
 
+    /**
+    * @dev See {IAggregator-unstake}.
+    */
     function unstake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         return data.length == 0;
     }
 
+    /**
+    * @dev See {IAggregator-disperseRewards}.
+    */
     function disperseRewards(uint256 tokenId) external override {
         require(msg.sender == nftAddress, "Message sender is not the Nft contract");
         rewardRoute(tokenId);

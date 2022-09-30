@@ -28,18 +28,16 @@ interface ILidoController   {
     function getStEthShares(address userAddress ) external view  returns (uint256) ;
 
     /**
-    * @dev Adds `userAddress` to a list of allowed address, `allowList`.
-    @param userAddress : the user's unique address
-    * Requirements 
-    * -onlyOwner- modifier which will only allow use of function to the owner.
+    * @dev Adds `userAddress` to a list of allowed address, `allowList`
+    * onlyOwner- modifier which will only allow use of function to the owner.
+    * @param userAddress : the user's unique address
     */
     function addAllowList(address userAddress) external;
 
     /**
     * @dev Remove `userAddress` from a list of allowed address, `allowList`.
+    * onlyOwner- modifier which will only allow use of function to the owner.
     * @param userAddress : the user's unique address
-    * Requirements 
-    * -onlyOwner- modifier which will only allow use of function to the owner.
     */
     function removeAllowList(address userAddress) external;
 

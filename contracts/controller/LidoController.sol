@@ -8,8 +8,8 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../controller-interface/ILidoController.sol";
 
 /** @title Controller for Lido Strategy
-@author ChainUp Dev
-@dev Interacts with the LidoRouter and read and writes data
+*   @author ChainUp Dev
+*   @dev Interacts with the LidoRouter and read and writes data
 **/
 contract LidoController is  ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable  {
    
@@ -53,7 +53,7 @@ contract LidoController is  ILidoController, ReentrancyGuardUpgradeable, Ownable
      * @dev See {ILidoController-getStEthShares}.
     */
     function getStEthShares(address userAddress ) external view override returns (uint256) {
-        return  stEthSharesMap[userAddress] ;
+        return stEthSharesMap[userAddress] ;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
