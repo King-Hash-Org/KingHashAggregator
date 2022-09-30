@@ -3,9 +3,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 require("@openzeppelin/hardhat-upgrades");
 require("dotenv").config();
-const { ProxyAgent, setGlobalDispatcher } = require("undici");
-const proxyAgent = new ProxyAgent('http://127.0.0.1:7890'); // change to yours
-setGlobalDispatcher(proxyAgent);
+
 module.exports = {
   solidity: "0.8.7",
   networks: {
