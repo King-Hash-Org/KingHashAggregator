@@ -11,7 +11,7 @@ describe("Aggregator", function () {
   // and reset Hardhat Network to that snapshot in every test.
   async function deployBaseFixture() {
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, otherAccount, authority] = await ethers.getSigners();
 
     const NftContract = await ethers.getContractFactory("ValidatorNft");
     const nftContract = await NftContract.deploy();
@@ -59,7 +59,7 @@ describe("Aggregator", function () {
     await nftContract.setAggregator(aggregator.address);
 
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, lidoController, rocketController };
+    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, authority, lidoController, rocketController };
   }
 
   async function deployExistingValidatorFixture() {
@@ -70,6 +70,24 @@ describe("Aggregator", function () {
     await aggregator.stake([data], { value: ethers.utils.parseEther("32") });
 
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
+  }
+
+  async function deployExistingValidatorsFixture() {
+    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount, authority } = await deployBaseFixture();
+
+    const data =
+      "0x011c00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00ab726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c74d6236b57a7c5d40c93f00c6d16a790b88bd29496b0cdd1809befd5464c2cd35655745adc507246b9f9db13d38c3d988fab56b6b752dfc2a2ecbe43dbb0eef3";
+    const data1 = 
+      "0x011c000000000000000000000000000093d9f1e58ab7cf478d35f1661c59a841eb3a1c627e55b3ecdaf8aa7d2999e8d5c5aae5af3834d8244f2501d16f7a40ad010000000000000000000000bb5b420f1d3967756d4e46f830e1ca142e1e0545a6eb199e52568df716ebb2d4a4a7638c86737b4f39f9a1776f39d6488f8c0b73946e66575cb50e49e58d1867890b48b311ff2784dc18b2a7087cf199ed980c137c8e8f6b4ac4a07b182533a3d462385d14ea8cc560e32e0bc005c0eb71bc634e67ff826e8d32f2967db660f6361036e6d9f129693741ecbf03ebd8084961ebb10000000000000000000000000000000000000000000000000000000006e1752c2a13a5bd053923eb63463474deeef9aff43294971c6d10a262eb0421f71717d9dee9b45d60bb7d8a97113dc6d094cbc0bd03ad2a50fa7aab3d3b40fb80e249e9";
+    const data2 =
+      "0x011b0000000000000000000000000000a9b8c5e5ba5ff379c3216f8e09154b3cf56dee608eabfb24ef7d3dd99d4a6cba34bfde5c493c8e05ee942a3d705ab2c3002fa1256542629e76418786502f8dc5b78703c89e53f3aae3c5ed5708b7ffa8954fb880517ad78212a580fc50cfb761450ae93fe2f44d3b50c7b039d21e59bdef3ec4cb2e300f1bc2eb205d263e129015198918ff8853e7535e188ccb678967fd48a2d7f1206fbdcc6cc529c15cf598554425d84039c7ecb9cb2f2a69943bc6e06833af98caa3051a4eb4f887db982dc7048c3d40a8b9bf64edcf2fd621bfe20000000000000000000000000000000000000000000000000000000006e1752c3e8788a4ff23fda9506b559056f0646d0c5fae1c5479a0a828ea0a03568068303723646e88de0e5ecbb31c9cb8744b0f70eae53f68dfdc5bdfa713dd61336cd2";
+    const data3 = 
+      "0x011c000000000000000000000000000086ce949d229effaf0487577a24a98b336d35da5fe3ead525f02c62cdce162c3d0c8b9fef079e74a23510b719d4e973b0010000000000000000000000bb5b420f1d3967756d4e46f830e1ca142e1e0545ac5eaf2ae6de79a149f94c48e07cb334c112a362c96fb76917ffe55b2130da88c39fcf418b1b06d7d606874d69bcf667013c41f4cf7ed8f06e84c7fbf4f8fcbd0906cdf2875a15e144fa5fb8dbd0c8793254598553aabc21b54c9c4f4580456abf65a725024fa14745d02122d810ec1fe75d9c464e787c09eff16fe998cc09c20000000000000000000000000000000000000000000000000000000006e1752c5b499492c34bd2f1b1f57cd2480bca7f3c88f224f501713b462ce72e198661f90c830f6337cb8db9eb3320ed370c62d70a9f46153b9a0f4f7cf2544ce7c894aa";
+    await aggregator.stake([data, data1, data2, data3], { value: ethers.utils.parseEther("128") });
+
+    await nodeRewardVault.setAuthority(authority.address);
+
+    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, authority };
   }
 
   async function deployExistingRewardFixture() {
@@ -398,74 +416,150 @@ describe("Aggregator", function () {
     });
   });
 
+  describe("Trading single nft", function () {
+    it("Should have the right pubkeys", async function () {
+      const { nftContract, owner } = await loadFixture(deployExistingValidatorsFixture);
 
-});
 
-/*
-  describe("Withdrawals", function () {
-    describe("Validations", function () {
-      it("Should revert with the right error if called too soon", async function () {
-        const { lock } = await loadFixture(deployBaseFixture);
-
-        await expect(lock.withdraw()).to.be.revertedWith(
-          "You can't withdraw yet"
-        );
-      });
-
-      it("Should revert with the right error if called from another account", async function () {
-        const { lock, unlockTime, otherAccount } = await loadFixture(
-          deployBaseFixture
-        );
-
-        // We can increase the time in Hardhat Network
-        await time.increaseTo(unlockTime);
-
-        // We use lock.connect() to send a transaction from another account
-        await expect(lock.connect(otherAccount).withdraw()).to.be.revertedWith(
-          "You aren't the owner"
-        );
-      });
-
-      it("Shouldn't fail if the unlockTime has arrived and the owner calls it", async function () {
-        const { lock, unlockTime } = await loadFixture(
-          deployBaseFixture
-        );
-
-        // Transactions are sent using the first signer by default
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw()).not.to.be.reverted;
-      });
+      const pubkeys = [
+        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf", 
+        "0x93d9f1e58ab7cf478d35f1661c59a841eb3a1c627e55b3ecdaf8aa7d2999e8d5c5aae5af3834d8244f2501d16f7a40ad",
+        "0xa9b8c5e5ba5ff379c3216f8e09154b3cf56dee608eabfb24ef7d3dd99d4a6cba34bfde5c493c8e05ee942a3d705ab2c3",
+        "0x86ce949d229effaf0487577a24a98b336d35da5fe3ead525f02c62cdce162c3d0c8b9fef079e74a23510b719d4e973b0"
+      ]
+      expect(await nftContract.totalSupply()).to.be.equal(4);
+      expect(await nftContract.callStatic.validatorsOfOwner(owner.address)).to.have.same.members(pubkeys);
     });
 
-    describe("Events", function () {
-      it("Should emit an event on withdrawals", async function () {
-        const { lock, unlockTime, lockedAmount } = await loadFixture(
-          deployBaseFixture
-        );
-
-        await time.increaseTo(unlockTime);
-
-        await expect(lock.withdraw())
-          .to.emit(lock, "Withdrawal")
-          .withArgs(lockedAmount, anyValue); // We accept any value as `when` arg
-      });
+    it("Should fail as price incorrect", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
+      await expect(
+        aggregator.connect(otherAccount).stake([data])
+      ).to.be.revertedWithoutReason();
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("1") })
+      ).to.be.revertedWithoutReason();
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("33") })
+      ).to.be.revertedWith("Incorrect Ether amount provided");
     });
 
-    describe("Transfers", function () {
-      it("Should transfer the funds to the owner", async function () {
-        const { lock, unlockTime, lockedAmount, owner } = await loadFixture(
-          deployBaseFixture
-        );
+    it("Should fail as not owner", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8275f149a169ae15e717c6ed4752d836a282c43b0a0d175e3df8a160fe4027b0022530890d34cbd72c48c25cb683dcb19c546c554cea47fe8c86964bcaf381e2c000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f4804a4c5b548fb9400fd5414873f57283646ae1300e3eac24c507c644f6be84a6585b475db111442a5c4c12fba52d0b8672f6dd3437a93cdc478f35e68c806aba3d70997970C51812dc3A010C7d01b50e0d17dc79C81c0000000000000000000000";
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Not owner");
+    });
 
-        await time.increaseTo(unlockTime);
+    it("Should fail as listing expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061c0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8bbf79a406ce578ca38af6efc0a1a63e8e1a8e6db3a33c79b3d0e368882736bab17a3a939989d02cf15dd03df30eb58dd943492dc8e29226059981303c08958a3000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a000000000000000000000000000000000000000000000000000000000000000000015be34ca407fc60edc877b777ad2cd6c7ffdc93767e80463ffb3d18aba2d1783364e97ba353a892eeffae7c4f8bfa458005934ae9ff6338a8afeffb55089227b8f39Fd6e51aad88F6F4ce6aB8827279cffFb922661c0000000000000000000000";
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Listing has expired");
+    });
 
-        await expect(lock.withdraw()).to.changeEtherBalances(
-          [owner, lock],
-          [lockedAmount, -lockedAmount]
-        );
-      });
+    it("Should fail as trade expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C81da67b2920aa7ad00432add2e80f06a5134557bee5d7a883f26a281d1826e5396b3cba8a8c1565943e0c6738cdf4d5cd84f9b84c2b5ee418a41ac3bc5734d38300000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a000000000000000000000000000000000000000000000000000000000000000000015be34ca407fc60edc877b777ad2cd6c7ffdc93767e80463ffb3d18aba2d1783364e97ba353a892eeffae7c4f8bfa458005934ae9ff6338a8afeffb55089227b8f39Fd6e51aad88F6F4ce6aB8827279cffFb922661c0000000000000000000000";
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Trade has expired");
+    });
+
+    it("Should fail as incorrect nonce", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061c0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8eae0115007c4a58a7b3103a2c1db0cc94cb37df760dfb91f85d60fc04be7bbc854e556a738910558d23e3787d25347fe2b50145751b685e11c22ba9b32af0f63000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f4802a45e5f127208d9fbc5ea62bb0b812206cd6e1884fb7af80b7f9087f49c179e209e33d251fe7a87505e16f4da54931a7f051ee110f8dd9ae62555f88f345926ef39Fd6e51aad88F6F4ce6aB8827279cffFb922661c0000000000000000000001";
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Incorrect nonce");
+    });
+
+    it("Should fail as incorrect user signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8275f149a169ae15e717c6ed4752d836a282c43b0a0d175e3df8a160fe4027b0022530890d34cbd72c48c25cb683dcb19c546c554cea47fe8c86964bcaf381e2c000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f4804a4c5b548fb9400fd5414873f57283646ae1300e3eac24c507c644f6be84a6585b475db111442a5c4c12fba52d0b8672f6dd3437a93cdc478f35e68c806aba3df39Fd6e51aad88F6F4ce6aB8827279cffFb922661c0000000000000000000000";
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Not authorized");
+    });
+
+    it("Should fail as incorrect authority signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C87da9c646508bcb440b3584e96ecb47e47bea5215c4fd18fb01733dff830d21ff2c2c9ff815b04d33695f5beb00acfdd8be61a8ad3cf6ba414b017d51e851b53d000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Not authorized");
+    });
+
+    it("Should fail as incorrect buyer signature", async function () {
+      const { aggregator } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
+      await expect(
+        aggregator.stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Not allowed to make this trade");
+    });
+
+    it("Should fail as buyer try to spoof", async function () {
+      const { aggregator } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061b00000000000000000000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";                           
+      await expect(
+        aggregator.stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.revertedWith("Not authorized");
+    });
+
+    it("Should succeed", async function () {
+      const { aggregator, nftContract, otherAccount, owner } = await loadFixture(deployExistingValidatorsFixture);
+      const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
+      expect(
+        await aggregator.connect(otherAccount).callStatic.stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.be.equals(true);
+      await expect(
+        aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
+      ).to.emit(aggregator, "NodeTrade").withArgs("1", owner.address, otherAccount.address, ethers.utils.parseEther("32"));
+      expect(
+        await nftContract.callStatic.ownerOf(1)
+      ).to.be.equals(otherAccount.address);
     });
   });
-  */
+
+  describe("Trading mutliple nfts", function () {
+    it("Should fail as price too low", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as not owner", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as listing expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as trade expired", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect nonce", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect user signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should fail as incorrect authority signature", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+
+    it("Should succeed", async function () {
+      const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorFixture);
+    });
+  });
+});
+
+
 // });

@@ -21,7 +21,7 @@ This repository contains the core smart contracts for the [ChainUp Aggregator Pr
 
 * [Architecture](./docs/architecture.md)
 * [Aggregator](./docs/aggregator.md)
-* [ValidatorNft](./docs/validatorNft.md)
+* [ValidatorNFT](./docs/validatorNFT.md)
 
 You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
 
@@ -36,8 +36,8 @@ npx hardhat help
 npx hardhat test
 GAS_REPORT=true npx hardhat test
 npx hardhat node
-npx hardhat run scripts/deploy.ts --network ropsten
-npx hardhat run scripts/upgrade.ts --network ropsten
+npx hardhat run scripts/deploy.ts --network goerli
+npx hardhat run scripts/upgrade.ts --network goerli
 npx hardhat clean
 npx hardhat coverage
 ```
@@ -57,18 +57,18 @@ Pre-requisite:
 Setup your `.env` with the following keys:
 
 ```
-ROPSTEN_URL=https://ropsten.infura.io/v3/<YOUR_INFURA_API_KEY>
-ROPSTEN_PRIVATE_KEY=<YOUR_PRIVATE_KEY>
+GOERLI_URL=https://goerli.infura.io/v3/<YOUR_INFURA_API_KEY>
+GOERLI_PRIVATE_KEY=<YOUR_PRIVATE_KEY>
 ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 ```
 
-1. The deploy order is NftContract > Vault > Aggregator.
-2. Run `npx hardhat run scripts/deployNft.ts --network ropsten` to deploy the Nft Contract on Ropsten.
-3. Note down the `nftContract` address and update it in `./scripts/deployVault.ts`
-4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network ropsten` to deploy the Vault Contract on Ropsten.
-5. Note down the `vaultContract` proxy's address and update both the `nftContract` and `vaultContract` proxy's into the `./scripts/deployAggregator.ts`.
-6. Run `npx hardhat run scripts/deployAggregator.ts --network ropsten` to deploy the Aggregator Contract on Ropsten.
-7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `vaultContract` to update them.
+1. The deploy order is NFTContract > Vault > Aggregator.
+2. Run `npx hardhat run scripts/deployNft.ts --network goerli` to deploy the NFT Contract on Goerli.
+3. Note down the `nftContract` address and update it in `./scripts/deployNodeRewardVault.ts`
+4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network goerli` to deploy the Node Reward Vault Contract on Goerli.
+5. Note down the `NodeRewardVaultContract` proxy's address and update both the `nftContract` and `NodeRewardVaultContract` proxy's into the `./scripts/deployAggregator.ts`.
+6. Run `npx hardhat run scripts/deployAggregator.ts --network goerli` to deploy the Aggregator Contract on Goerli.
+7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `NodeRewardVaultContract` to update them.
 
 # Other Tools
 
@@ -116,7 +116,8 @@ To create a graphviz summary of all the function calls do, `surya graph contract
 You can see further instructons for Surya [here](https://github.com/ConsenSys/surya).
 
 
-# Contracts (Ropsten)
+# Contracts 
+## Ropsten
 Aggregator Proxy: `0xcCC221621e002b9320Be67598224caDAb4D3b9ee`
 
 NodeRewardVault Proxy: `0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C`
@@ -125,6 +126,14 @@ NodeCapitalVault Proxy: `0xD9E2dc13b0d2F6f73cd21C32fBf7dE143C558e29`
 
 vNFT: `0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD`
 
+## Goerli
+Aggregator Proxy: `SOON`
+
+NodeRewardVault Proxy: `SOON`
+
+NodeCapitalVault Proxy: `SOON`
+
+vNFT: `SOON`
 # Audits
 The following auditors were engaged to review the project before launch:
 * [Beosin Audit](https://beosin.com/) (In Progress)

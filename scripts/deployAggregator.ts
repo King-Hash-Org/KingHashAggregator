@@ -1,5 +1,7 @@
 const { ethers, upgrades, run } = require("hardhat");
-const depositContract = "0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D";
+//goerli: 0x07b39F4fDE4A38bACe212b546dAc87C58DfE3fDC
+//ropsten: 0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D
+const depositContract = "0x07b39F4fDE4A38bACe212b546dAc87C58DfE3fDC";
 const vaultContract = "0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C";
 const nftAddress = "0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD"; // nft contract address
 

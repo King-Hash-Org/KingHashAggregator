@@ -1,10 +1,10 @@
 ---
-title: Specification on the Validator Nft Contract
+title: Specification on the Validator NFT Contract
 ---
 
-The Validator Nft Contract exposes several APIs for both users and ChainUp Aggregator to call. It is possible for users/institutions to launch their own Validator Nft Contract and interfacet with ChainUp Aggregator. It is also possible to launch their own Staking Aggregator all together. The Validator Nft Contract uses [`ERC721A`](https://github.com/chiru-labs/ERC721A) as the base and inherits from it.
+The Validator NFT Contract exposes several APIs for both users and ChainUp Aggregator to call. It is possible for users/institutions to launch their own Validator NFT Contract and interfacet with ChainUp Aggregator. It is also possible to launch their own Staking Aggregator all together. The Validator NFT Contract uses [`ERC721A`](https://github.com/chiru-labs/ERC721A) as the base and inherits from it.
 
-# Validator Nft API
+# Validator NFT API
 
 ## **whiteListMint**
 
