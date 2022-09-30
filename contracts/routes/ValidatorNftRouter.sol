@@ -75,7 +75,7 @@ contract ValidatorNftRouter is Initializable {
     //slither-disable-next-line calls-loop
     function _tradeRoute(Trade memory trade, bytes calldata data) private returns (uint256) {
         require(trade.expiredHeight > block.number, "Trade has expired");
-        require(trade.receiver == msg.sender, "Not authorized");
+        require(trade.receiver == msg.sender, "Not allowed to make this trade");
 
         // change this in the future
         uint256 sum = 0;

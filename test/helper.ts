@@ -21,6 +21,7 @@ async function prepareTradeV2(
   wallet: SignerWithAddress
 ) : Promise<String> {
   const padding = "00000000000000000000";
+  const strategy = "06";
   const h = ethers.utils.solidityKeccak256(
     ["bytes", "uint256", "address"],
     [rawData, expiredHeight, buyer]
@@ -31,6 +32,7 @@ async function prepareTradeV2(
 
   return (
     "0x" +
+    strategy +
     remove0xPrefix(sigBreakdown.v.toString(16)) +
     padding +
     remove0xPrefix(buyer) +
@@ -204,7 +206,7 @@ async function tradeRouteDataV2(
   seller: SignerWithAddress,
   buyer: SignerWithAddress,
   authority: SignerWithAddress
-) {
+): Promise<String> {
   const nodePrice = padding64((32000000000000000000).toString(16)); // 32 eth
   const rebate = padding64((100000000000000000).toString(16)); // 0.1 eth
   const tokenId =  padding64((1).toString(16)); // token 1
@@ -214,7 +216,7 @@ async function tradeRouteDataV2(
   const rawData = await prepareSellData(nodePrice, tokenId, rebate, expiredHeight, nonce, seller);
 
   const length =  padding64((1).toString(16)); 
-  prepareTradeV2(rawData, expiredHeight, length,buyer.address, authority);
+  return prepareTradeV2(rawData, expiredHeight, length, buyer.address, authority);
 }
 
-export { DepositData, eth32RouteData, tradeRouteData, sellRouteData };
+export { DepositData, eth32RouteData, tradeRouteData, sellRouteData, tradeRouteDataV2 };
