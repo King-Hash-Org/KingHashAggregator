@@ -70,6 +70,10 @@ describe("NodeRewardVault", function () {
       await expect(nodeRewardVault.connect(otherAccount).setAuthority(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
       );
+
+      await expect(nodeRewardVault.setAuthority(AddressZero)).to.be.revertedWith(
+        "Authority address provided invalid"
+      );
     });
   });
 
@@ -116,6 +120,10 @@ describe("NodeRewardVault", function () {
       await expect(nodeRewardVault.connect(otherAccount).setDao(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
       );
+
+      await expect(nodeRewardVault.setDao(AddressZero)).to.be.revertedWith(
+        "DAO address provided invalid"
+      );
     });
   });
 
@@ -153,7 +161,7 @@ describe("NodeRewardVault", function () {
 
     it("Should set the right tax", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
-      await nodeRewardVault.setTax(10);
+      await expect(nodeRewardVault.setTax(10)).to.emit(nodeRewardVault, "TaxChanged").withArgs(0, 10);
 
       expect(await nodeRewardVault.tax()).to.equal(10);
     });
