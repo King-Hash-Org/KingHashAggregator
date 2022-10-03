@@ -148,14 +148,14 @@ describe("NodeRewardVault", function () {
     it("Should have the right tax", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
 
-      expect(await nodeRewardVault.tax()).to.equal(100);
+      expect(await nodeRewardVault.tax()).to.equal(0);
     });
 
     it("Should set the right tax", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
-      await nodeRewardVault.setTax(0);
+      await nodeRewardVault.setTax(10);
 
-      expect(await nodeRewardVault.tax()).to.equal(0);
+      expect(await nodeRewardVault.tax()).to.equal(10);
     });
 
     it("Should revert & not set the tax", async function () {
@@ -187,8 +187,9 @@ describe("NodeRewardVault", function () {
     it("Should not have rewards", async function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
 
-      await expect(nodeRewardVault.rewards(0)).to.be.revertedWith("No rewards to claim");
-      await expect(nodeRewardVault.blockRewards()).to.be.revertedWith("No rewards to claim");
+      await expect(nodeRewardVault.rewards(0)).to.be.revertedWith(
+        "No rewards to claim"
+      );
     });
   });
 });
