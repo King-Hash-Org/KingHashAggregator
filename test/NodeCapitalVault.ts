@@ -31,6 +31,7 @@ describe("NodeCapitalVault", function () {
   describe("Aggregator settings", function () {
     it("Should set the right aggregator", async function () {
       const { nodeCapitalVault, otherAccount } = await loadFixture(deployBaseFixture);
+      expect(await nodeCapitalVault.aggregator()).to.equal("0x0000000000000000000000000000000000000001");
       await expect(nodeCapitalVault.setAggregator(otherAccount.address)).to.emit(nodeCapitalVault, "AggregatorChanged").withArgs("0x0000000000000000000000000000000000000001", otherAccount.address);
 
       expect(await nodeCapitalVault.aggregator()).to.equal(otherAccount.address);
@@ -65,6 +66,8 @@ describe("NodeCapitalVault", function () {
       await expect(nodeCapitalVault.transfer(ethers.utils.parseEther("100"), AddressZero)).to.be.revertedWith(
         "Recipient address provided invalid"
       );
+
+      await expect(nodeCapitalVault.transfer(ethers.utils.parseEther("110"), owner.address)).to.be.revertedWithoutReason();
     });
 
     it("Should be able to transfer", async function () {

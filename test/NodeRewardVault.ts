@@ -97,6 +97,10 @@ describe("NodeRewardVault", function () {
       await expect(nodeRewardVault.connect(otherAccount).setAggregator(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
       );
+
+      await expect(nodeRewardVault.setAggregator(AddressZero)).to.be.revertedWith(
+        "Aggregator address provided invalid"
+      );
     });
   });
 
