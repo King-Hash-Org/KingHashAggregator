@@ -49,7 +49,12 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
         require(to != address(0), "Recipient address provided invalid");
         payable(to).transfer(amount);
     }
-
+    
+    /**
+    * @notice Set proxy address of aggregator
+    * @param aggregatorProxyAddress_ proxy address of aggregator
+    * @dev will only allow call of function by the address registered as the owner
+    **/
     function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);

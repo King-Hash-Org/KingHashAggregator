@@ -29,14 +29,14 @@ interface ILidoController   {
 
     /**
     * @dev Adds `userAddress` to a list of allowed address, `allowList`
-    * onlyOwner- modifier which will only allow use of function to the owner.
+    * will only allow call of function by the address registered as the owner
     * @param userAddress : the user's unique address
     */
     function addAllowList(address userAddress) external;
 
     /**
     * @dev Remove `userAddress` from a list of allowed address, `allowList`.
-    * onlyOwner- modifier which will only allow use of function to the owner.
+    * will only allow call of function by the address registered as the owner
     * @param userAddress : the user's unique address
     */
     function removeAllowList(address userAddress) external;

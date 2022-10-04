@@ -61,6 +61,7 @@ import "hardhat/console.sol";
     * @dev See {IRocketController-removeAllowList}.
     */
     function removeAllowList(address userAddress) external override onlyOwner {
+        require(userAddress != address(0), "User should not be zero address");
         allowList[userAddress] = false;
     }
     
