@@ -1,6 +1,4 @@
 {
   "slither.solcPath": "",
-  "slither.hiddenDetectors": [
-    "incorrect-equality"
-  ]
+  "slither.hiddenDetectors": []
 }

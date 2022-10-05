@@ -2,6 +2,10 @@
 
 pragma solidity ^0.8.7;
 
+  /**
+  * @title Interface for NodeRewardVault
+  * Vault will manage methods for rewards, commissions, tax
+  */
 interface INodeRewardVault {
     function nftContract() external view returns (address);
 

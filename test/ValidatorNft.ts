@@ -19,9 +19,33 @@ describe("ValidatorNft", function () {
     const DepositContract = await ethers.getContractFactory("DepositContract");
     const depositContract = await DepositContract.deploy();
 
+    const LidoContract = await ethers.getContractFactory("Lido");
+    const lidoContract = await LidoContract.deploy();
+
+    const LidoControllerContract = await ethers.getContractFactory("LidoController");
+    const lidoController = await LidoControllerContract.deploy();
+    await lidoController.initialize();
+
+    const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
+    const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
+
+    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
+    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
+
+    const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
+    const rocketStorage = await RocketStorageContract.deploy();
+    rocketStorage.setAddressStorage("0x65DD923DDFC8D8AE6088F80077201D2403CBD565F0BA25E09841E2799EC90BB2", rocketDepositPoolContract.address ) ;
+    rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address ) ;
+
+    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
+
+    const RocketControllerContract = await ethers.getContractFactory("RocketController");
+    const rocketController = await RocketControllerContract.deploy();
+    await rocketController.initialize();
+    
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address);
+    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketStorage.address , rocketController.address );
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
