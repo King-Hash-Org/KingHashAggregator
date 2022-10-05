@@ -17,6 +17,7 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
     address private _aggregatorProxyAddress;
 
     event AggregatorChanged(address _from, address _to);
+    event Transferred(address _to, uint256 _amount);
 
     modifier onlyAggregator() {
         require(_aggregatorProxyAddress == msg.sender, "Not allowed to touch funds");
@@ -48,6 +49,7 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
     function transfer(uint256 amount, address to) external nonReentrant onlyAggregator {
         require(to != address(0), "Recipient address provided invalid");
         payable(to).transfer(amount);
+        emit Transferred(to, amount);
     }
     
     /**

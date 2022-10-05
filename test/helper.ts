@@ -207,16 +207,20 @@ async function tradeRouteDataV2(
   buyer: SignerWithAddress,
   authority: SignerWithAddress
 ): Promise<String> {
-  const nodePrice = padding64((32000000000000000000).toString(16)); // 32 eth
+  const nodePrice = padding64((33000000000000000000).toString(16)); // 33 eth
   const rebate = padding64((100000000000000000).toString(16)); // 0.1 eth
   const tokenId =  padding64((1).toString(16)); // token 1
   const expiredHeight = padding64((259200).toString(16));
   const nonce = padding16((0).toString(16));
 
   const rawData = await prepareSellData(nodePrice, tokenId, rebate, expiredHeight, nonce, seller);
+  const nodePrice2 = padding64((31000000000000000000).toString(16)); // 31 eth
+  const tokenId2 =  padding64((2).toString(16)); // token 2
 
-  const length =  padding64((1).toString(16)); 
-  return prepareTradeV2(rawData, expiredHeight, length, buyer.address, authority);
+  const rawData2 = await prepareSellData(nodePrice2, tokenId2, rebate, expiredHeight, nonce, seller);
+
+  const length =  padding64((2).toString(16)); 
+  return prepareTradeV2(rawData.concat(remove0xPrefix(rawData2).toString()), expiredHeight, length, buyer.address, authority);
 }
 
 export { DepositData, eth32RouteData, tradeRouteData, sellRouteData, tradeRouteDataV2 };

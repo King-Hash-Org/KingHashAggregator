@@ -120,20 +120,14 @@ contract ValidatorNftRouter is Initializable {
             uint256 nodeCapital = nftContract.nodeCapitalOf(userListing.tokenId);
             uint256 userPrice = price;
             if (price > nodeCapital) {
-                userPrice = price - (price - nodeCapital) * (10000 - vault.tax()) / 10000;
+                userPrice = price - (price - nodeCapital) * vault.comission() / 10000;
+                payable(vault.dao()).transfer(price - userPrice);
             }
-
-            require(userPrice > 30 ether, "Node too cheap");
-
+            payable(userListing.signature.signer).transfer(userPrice);
             nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
             nftContract.updateNodeCapital(userListing.tokenId, price);
 
-            payable(userListing.signature.signer).transfer(userPrice);
-
-            if (price > userPrice) {
-                payable(vault.dao()).transfer(price - userPrice);
-            }
-
+            require(userPrice > 30 ether, "Node too cheap");
             emit NodeTrade(userListing.tokenId, userListing.signature.signer, trade.receiver, price);
         }
 

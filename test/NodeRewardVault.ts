@@ -90,6 +90,10 @@ describe("NodeRewardVault", function () {
       await expect(nodeRewardVault.connect(otherAccount).setAuthority(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
       );
+
+      await expect(nodeRewardVault.setAuthority(AddressZero)).to.be.revertedWith(
+        "Authority address provided invalid"
+      );
     });
   });
 
@@ -113,6 +117,10 @@ describe("NodeRewardVault", function () {
       await expect(nodeRewardVault.connect(otherAccount).setAggregator(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
       );
+
+      await expect(nodeRewardVault.setAggregator(AddressZero)).to.be.revertedWith(
+        "Aggregator address provided invalid"
+      );
     });
   });
 
@@ -135,6 +143,10 @@ describe("NodeRewardVault", function () {
 
       await expect(nodeRewardVault.connect(otherAccount).setDao(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
+      );
+
+      await expect(nodeRewardVault.setDao(AddressZero)).to.be.revertedWith(
+        "DAO address provided invalid"
       );
     });
   });
@@ -168,14 +180,14 @@ describe("NodeRewardVault", function () {
     it("Should have the right tax", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
 
-      expect(await nodeRewardVault.tax()).to.equal(100);
+      expect(await nodeRewardVault.tax()).to.equal(0);
     });
 
     it("Should set the right tax", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
-      await nodeRewardVault.setTax(0);
+      await expect(nodeRewardVault.setTax(10)).to.emit(nodeRewardVault, "TaxChanged").withArgs(0, 10);
 
-      expect(await nodeRewardVault.tax()).to.equal(0);
+      expect(await nodeRewardVault.tax()).to.equal(10);
     });
 
     it("Should revert & not set the tax", async function () {
@@ -207,8 +219,9 @@ describe("NodeRewardVault", function () {
     it("Should not have rewards", async function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
 
-      await expect(nodeRewardVault.rewards(0)).to.be.revertedWith("No rewards to claim");
-      await expect(nodeRewardVault.blockRewards()).to.be.revertedWith("No rewards to claim");
+      await expect(nodeRewardVault.rewards(0)).to.be.revertedWith(
+        "No rewards to claim"
+      );
     });
   });
 });
