@@ -80,12 +80,19 @@ describe("RocketTest", function () {
     
         });
 
+        it("Allowlist Behavior 2", async function () {
+            const { rocketController, owner, otherAccount } = await deployBaseFixture();
+            await rocketController.addAllowList(otherAccount.address) ;
+            await expect( await rocketController.getAllowList(otherAccount.address)).to.equal(true);
+          });
+
         it("Zero address behaviour", async function () {
         const { rocketController, owner , otherAccount } = await deployBaseFixture();
         //Zero address behaviour
         await rocketController.addAllowList(owner.address);
         await expect(rocketController.addREthBalance("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("3"))).to.be.rejectedWith("User should not be zero address"); 
-        });
+        
+    });
 
         it("UUPSUpgradeable Behavior", async function () {
           const {  otherAccount, rocketController  } = await deployBaseFixture();

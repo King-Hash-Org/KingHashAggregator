@@ -12,7 +12,8 @@ import "hardhat/console.sol";
   * @author ChainUp Dev
   * @dev Interacts with the RocketPoolRouter and read and writes data
  **/
- contract RocketController is  IRocketController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable  {
+//  contract RocketController is  IRocketController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable  {
+ contract RocketController is  IRocketController, ReentrancyGuardUpgradeable, OwnableUpgradeable  {
    
     mapping(address => bool) private allowList;
     mapping(address => uint256) private rEthBalanceMap;
@@ -24,7 +25,7 @@ import "hardhat/console.sol";
     **/
     function initialize() external initializer {
         __Ownable_init();
-        __UUPSUpgradeable_init();
+        // __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
     }
 
@@ -33,7 +34,7 @@ import "hardhat/console.sol";
         _;
     }
 
-    function _authorizeUpgrade(address) internal override onlyOwner {}
+    // function _authorizeUpgrade(address) internal override onlyOwner {}
   
     /**
     * @dev See {IRocketController-addREthBalance}.
@@ -65,5 +66,9 @@ import "hardhat/console.sol";
         allowList[userAddress] = false;
     }
     
+    function getAllowList(address userAddress) external view returns (bool) {
+        require(userAddress != address(0), "User should not be zero address");
+        return allowList[userAddress] ;
+    }
 
  }
