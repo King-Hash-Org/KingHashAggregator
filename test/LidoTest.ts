@@ -76,7 +76,7 @@ describe("LidoTest", function () {
           const {lidoController, owner  } = await deployBaseFixture();
           await lidoController.addAllowList(owner.address ) ;
           await lidoController.removeAllowList(owner.address ) ;
-          await  expect(lidoController.addStEthShares( owner.address , ethers.utils.parseEther("2") ) ).to.be.rejectedWith("Not allowed to add RETH Balance");
+          await  expect(lidoController.addStEthShares( owner.address , ethers.utils.parseEther("2") ) ).to.be.rejectedWith("Not allowed to add SETH Shares Balance");
     
         });
 
@@ -97,6 +97,12 @@ describe("LidoTest", function () {
           await expect(lidoController.transferOwnership(otherAccount.address)).to.emit(lidoController, "OwnershipTransferred").withArgs(  owner.address , otherAccount.address) ;
           expect( await lidoController.owner()).to.be.equal(otherAccount.address);
         });
+
+        it("ReentrancyGuardUpgradeable Behavior", async function () {
+            const { owner, otherAccount, aggregator, lidoController, anotherAccount  } = await deployBaseFixture();
+            await expect(lidoController.transferOwnership(otherAccount.address)).to.emit(lidoController, "OwnershipTransferred").withArgs(  owner.address , otherAccount.address) ;
+            expect( await lidoController.owner()).to.be.equal(otherAccount.address);
+          });
         
       });
 

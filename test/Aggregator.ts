@@ -395,10 +395,8 @@ describe("Aggregator", function () {
     });
 
     it("Wrong Behavior for RocketPool Stake", async function () {
-      // const { aggregator } = await loadFixture(lidoFixture);
       const { aggregator, rocketController, owner  } = await deployBaseFixture();
       await rocketController.addAllowList(aggregator.address ) ;
-
       const data = "0x040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038D7EA4C68000";
       // Test  Rocket Stake Router
       await expect(aggregator.stake([data])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
