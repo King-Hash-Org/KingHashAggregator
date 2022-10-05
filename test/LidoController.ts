@@ -102,25 +102,21 @@ describe("LidoTest", function () {
       await lidoController.addAllowList(otherAccount.address);
       await expect(lidoController.connect(otherAccount).addStEthShares("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("33"))).to.be.revertedWith("User should not be zero address");
       await expect(lidoController.connect(otherAccount).addStEthShares("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("3"))).to.be.revertedWith('User should not be zero address');
-      // expect(await lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address, ethers.utils.parseEther("3"))).to.be.revertedWith("Not allowed to add SETH Shares Balance"); 
     });
 
-    it("UUPSUpgradeable Behavior", async function () {
-      const { otherAccount, rocketController } = await deployBaseFixture();
-      // await expect(lidoController.upgradeTo(otherAccount.address)).to.emit(rocketController, "Upgraded").withArgs( otherAccount.address) ;
+    it.skip("UUPSUpgradeable Behavior", async function () {
+      const { otherAccount, lidoController } = await deployBaseFixture();
+      await expect(lidoController.upgradeTo(otherAccount.address)).to.emit(lidoController, "Upgraded").withArgs( otherAccount.address) ;
     });
 
     it("OwnableUpgradeable Behavior 1", async function () {
       const { owner, otherAccount, lidoController, anotherAccount } = await deployBaseFixture();
       await expect(lidoController.transferOwnership(otherAccount.address)).to.emit(lidoController, "OwnershipTransferred").withArgs(owner.address, otherAccount.address);
       expect(await lidoController.owner()).to.be.equal(otherAccount.address);
-      // await expect(lidoController.transferOwnership(anotherAccount.address)).to.emit(lidoController, "OwnershipTransferred").withArgs(otherAccount.address, anotherAccount.address);
-      // expect(await lidoController.owner()).to.be.equal(anotherAccount.address);
     });
 
     it("OwnableUpgradeable Behavior 2", async function () {
       const { owner, otherAccount, lidoController, anotherAccount } = await deployBaseFixture();
-      // await expect(lidoController.transferOwnership(anotherAccount.address)).to.be.revertedWith('Ownable: caller is not the owner');
       await expect(lidoController.transferOwnership(anotherAccount.address)).to.emit(lidoController, "OwnershipTransferred").withArgs(owner.address, anotherAccount.address);
       expect(await lidoController.owner()).to.be.equal(anotherAccount.address);
     });
