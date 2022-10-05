@@ -45,8 +45,6 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
      * @dev See {ILidoController-addStEthShares}.
      */
     function addStEthShares(address userAddress, uint256 stEthShares) external override onlyAllowed nonReentrant {
-        console.log("addStEthShares userAddress: ", userAddress);
-        console.log("address(0) : ", address(0));
         require(userAddress != address(0), "User should not be zero address");
         stEthSharesMap[userAddress] += stEthShares;
     }
@@ -64,7 +62,6 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
      * @dev See {ILidoController-addAllowList}.
      */
     function addAllowList(address userAddress) external override onlyOwner {
-        console.log(" address(0)",  address(0)) ;
         require(userAddress != address(0), "User should not be zero address");
         allowList[userAddress] = true;
     }
