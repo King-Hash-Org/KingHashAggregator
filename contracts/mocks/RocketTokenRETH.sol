@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: CC0-1.0
 
 pragma solidity ^0.8.7;
-import "hardhat/console.sol";
 import "./IMockRocketERC20.sol";
 
 

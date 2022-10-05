@@ -6,14 +6,12 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../controller-interface/ILidoController.sol";
-import "hardhat/console.sol";
 
 /** @title Controller for Lido Strategy
  *   @author ChainUp Dev
  *   @dev Interacts with the LidoRouter and read and writes data
  **/
-// contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
-contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable {
+contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
     mapping(address => bool) private allowList;
     address private referral;
     mapping(address => uint256) private stEthSharesMap;
@@ -25,13 +23,12 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
      **/
     function initialize() external initializer {
         __Ownable_init();
-        // __UUPSUpgradeable_init();
+        __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
         referral = address(0x27e2119Bc9Fbca050dF65dDd97cB9Bd14676a08b); //(optional)
     }
 
     modifier onlyAllowed() {
-        console.log("msg.sender: ", msg.sender);
         require(allowList[msg.sender], "Not allowed to add SETH Shares Balance");
         _;
     }
@@ -46,9 +43,7 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
     /**
      * @dev See {ILidoController-addStEthShares}.
      */
-    function addStEthShares(address userAddress, uint256 stEthShares) external override onlyAllowed nonReentrant {
-        console.log("msg.sender: " , msg.sender) ;
-        console.log("userAddress: " , userAddress) ;
+    function addStEthShares(address userAddress, uint256 stEthShares) external override onlyAllowed nonReentrant {;
         require(userAddress != address(0), "User should not be zero address");
         stEthSharesMap[userAddress] += stEthShares;
     }
@@ -60,7 +55,7 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
         return stEthSharesMap[userAddress];
     }
 
-    // function _authorizeUpgrade(address) internal override onlyOwner {}
+    function _authorizeUpgrade(address) internal override onlyOwner {}
 
     /**
      * @dev See {ILidoController-addAllowList}.

@@ -73,24 +73,22 @@ describe("LidoTest", function () {
     it("Allowlist Behavior 1", async function () {
       const { lidoController, owner, anotherAccount } = await deployBaseFixture();
       await expect(lidoController.addStEthShares(owner.address, ethers.utils.parseEther("2"))).to.be.rejectedWith("Not allowed to add SETH Shares Balance");
-      expect( lidoController.addStEthShares(anotherAccount.address, ethers.utils.parseEther("3"))).to.be.revertedWith("Not allowed to add SETH Shares Balance"); 
+      expect(lidoController.addStEthShares(anotherAccount.address, ethers.utils.parseEther("3"))).to.be.revertedWith("Not allowed to add SETH Shares Balance");
     });
 
     it("Allowlist Behavior 2", async function () {
       const { lidoController, owner, anotherAccount } = await deployBaseFixture();
-      await lidoController.addAllowList(anotherAccount.address) ;
-      expect( lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address, ethers.utils.parseEther("10"))) ; 
-      await lidoController.removeAllowList(anotherAccount.address) ;
-      console.log("anotherAccount.address: ", anotherAccount.address) ;
-      // expect( lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address, ethers.utils.parseEther("10"))).to.be.revertedWith("Not allowed to add SETH Shares Balance"); 
-       await expect( lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address, 
-        ethers.utils.parseEther("10"))).to.be.revertedWith("Not allowed to add SETH Shares Balance"); 
+      await lidoController.addAllowList(anotherAccount.address);
+      expect(lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address, ethers.utils.parseEther("10")));
+      await lidoController.removeAllowList(anotherAccount.address);
+      await expect(lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address,
+        ethers.utils.parseEther("10"))).to.be.revertedWith("Not allowed to add SETH Shares Balance");
     });
 
     it("Allowlist Behavior 3", async function () {
       const { lidoController, owner, otherAccount } = await deployBaseFixture();
-      await lidoController.addAllowList(otherAccount.address) ;
-      await expect( await lidoController.getAllowList(otherAccount.address)).to.equal(true);
+      await lidoController.addAllowList(otherAccount.address);
+      await expect(await lidoController.getAllowList(otherAccount.address)).to.equal(true);
     });
 
     it("Referral Behavior", async function () {
@@ -102,8 +100,8 @@ describe("LidoTest", function () {
       const { lidoController, owner, otherAccount, anotherAccount } = await deployBaseFixture();
       //Zero address behaviour
       await lidoController.addAllowList(otherAccount.address);
-      await expect ( lidoController.connect(otherAccount).addStEthShares("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("33"))).to.be.revertedWith("User should not be zero address");
-      await expect( lidoController.connect(otherAccount).addStEthShares("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("3"))).to.be.revertedWith('User should not be zero address');
+      await expect(lidoController.connect(otherAccount).addStEthShares("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("33"))).to.be.revertedWith("User should not be zero address");
+      await expect(lidoController.connect(otherAccount).addStEthShares("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("3"))).to.be.revertedWith('User should not be zero address');
       // expect(await lidoController.connect(anotherAccount).addStEthShares(anotherAccount.address, ethers.utils.parseEther("3"))).to.be.revertedWith("Not allowed to add SETH Shares Balance"); 
     });
 

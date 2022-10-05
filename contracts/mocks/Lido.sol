@@ -1,8 +1,6 @@
  // SPDX-License-Identifier: CC0-1.0
 
 pragma solidity ^0.8.7;
-import "hardhat/console.sol";
-// import "../controller-interface/IERC20.sol";
 
 interface ILidoInterface {
     function submit(address _referral) external payable returns (uint256 StETH);
