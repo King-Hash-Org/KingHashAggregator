@@ -180,5 +180,7 @@ contract ValidatorNftRouter is Initializable {
         vault.transfer(userReward, owner);
         vault.transfer(rewards - userReward, vault.dao());
         emit RewardClaimed(owner, userReward, rewards);
+
+        nftContract.setGasHeight(tokenId, vault.rewardsHeight());
     }
 }

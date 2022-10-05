@@ -17,6 +17,9 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     address private _authority;
     address private _aggregatorProxyAddress;
 
+    uint256[] public cumValues;
+    uint256[] public cumHeights;
+
     event ComissionChanged(uint256 _before, uint256 _after);
     event TaxChanged(uint256 _before, uint256 _after);
     event DaoChanged(address _before, address _after);
@@ -43,34 +46,41 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _authority = address(0xF5ade6B61BA60B8B82566Af0dfca982169a470Dc);
         _comission = 1000;
         _tax = 0;
+        cumValues.push(0);
+        cumHeights.push(0);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function _rewards(uint256 tokenId) private view returns (uint256) {
-        uint256 total = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
-        require(total > 0, "No rewards to claim");
+        uint256 gasHeight = _nftContract.gasHeightOf(tokenId);
+        uint256 low = 0;
+        uint256 high = cumValues.length;
 
-        uint256 totalReward = address(this).balance;
+        while (low < high) {
+            uint256 mid = (low + high) >> 1;
 
-        return totalReward * (block.number - _nftContract.gasHeightOf(tokenId)) / total;
+            if (cumHeights[mid] > gasHeight) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+
+        // At this point `low` is the exclusive upper bound. We will use it.
+        return cumValues[cumValues.length - 1] - cumValues[low - 1];
     }
 
     function nftContract() external view override returns (address) {
         return address(_nftContract);
     }
 
-    function blockRewards() external view override returns (uint256) {
-        uint256 total = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
-        require(total > 0, "No rewards to claim");
-
-        uint256 totalReward = address(this).balance;
-
-        return totalReward / total;
-    }
-
     function rewards(uint256 tokenId) external view override returns (uint256) {
         return _rewards(tokenId);
+    }
+
+    function rewardsHeight() external view override returns (uint256) {
+        return cumHeights[cumHeights.length - 1] + 1;
     }
 
     function comission() external view override returns (uint256) {
@@ -127,6 +137,17 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
+    }
+
+    function push(uint256[] calldata values, uint256[] calldata heights) external onlyOwner {
+        require(values.length == heights.length, "Length mismatched");
+        uint256 currentValue = cumValues[cumValues.length - 1];
+
+        for (uint256 i = 0; i < values.length; i++) {
+            currentValue += values[i]; 
+            cumValues.push(currentValue);
+            cumHeights.push(heights[i]);
+        }
     }
 
     receive() external payable{}

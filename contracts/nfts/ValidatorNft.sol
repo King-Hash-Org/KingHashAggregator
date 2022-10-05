@@ -20,7 +20,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   uint256[] public _nodeCapital;
 
   bool private _isOpenSeaProxyActive = false;
-  uint256 private _totalHeight = 0;
   address private _aggregatorProxyAddress;
 
   event BaseURIChanged(string _before, string _after);
@@ -37,10 +36,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   function aggregatorProxyAddress() external view returns (address) {
     return _aggregatorProxyAddress;
-  }
-
-  function totalHeight() external view returns (uint256) {
-    return _totalHeight;
   }
 
   function activeValidators() external view returns (bytes[] memory) {
@@ -119,7 +114,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     validatorRecords[pubkey] = true;
     _validators.push(pubkey);
     _gasHeights.push(block.number);
-    _totalHeight += block.number;
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
   }
@@ -164,6 +158,12 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     aggregator = IAggregator(_aggregatorProxyAddress);
   }
 
+  function setGasHeight(uint256 tokenId, uint256 value) external onlyAggregator {
+    if (value > _gasHeights[tokenId]) {
+      _gasHeights[tokenId] = value;
+    }
+  }
+
   function numberMinted(address owner) external view returns (uint256) {
     return _numberMinted(owner);
   }
@@ -173,9 +173,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     require(_exists(tokenId), "Token does not exist");
 
     aggregator.disperseRewards(tokenId);
-
-    _totalHeight = _totalHeight - _gasHeights[tokenId] + block.number;
-    _gasHeights[tokenId] = block.number;
   }
 
   function claimRewards(uint256 tokenId) external nonReentrant {
