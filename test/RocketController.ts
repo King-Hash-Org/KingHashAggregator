@@ -21,7 +21,7 @@ describe("RocketTest", function () {
     const RocketControllerContract = await ethers.getContractFactory("RocketController");
     const rocketController = await RocketControllerContract.deploy();
     await rocketController.initialize();
-    
+
     return { owner, otherAccount, anotherAccount, authority, rocketController };
   }
 
@@ -34,9 +34,28 @@ describe("RocketTest", function () {
       //Test Add/Get RETH Balance
       await rocketController.addREthBalance(otherAccount.address, ethers.utils.parseEther("5"))
       const rEthBalance = await rocketController.getREthBalance(otherAccount.address);
-      await expect(ethers.utils.formatUnits(rEthBalance, 18)).to.equal("5.0");
+      expect(await ethers.utils.formatUnits(rEthBalance, 18)).to.equal("5.0");
+    });
+
+    it("Test Behavior- Not Allowed to add to AllowedList if not Owner ", async function () {
+      const { rocketController, otherAccount } = await deployBaseFixture();
+      await expect(rocketController.connect(otherAccount).addAllowList("0x0000000000000000000000000000000000000000")).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Test Behavior- Not Allowed to remove from AllowedList if not Owner ", async function () {
+      const { rocketController, otherAccount, anotherAccount } = await deployBaseFixture();
+      await rocketController.addAllowList(otherAccount.address);
+      await expect(rocketController.connect(anotherAccount).removeAllowList(otherAccount.address)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(rocketController.connect(otherAccount).removeAllowList(otherAccount.address)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Test Behavior- Not Allowed to add ZeroList to AddList ", async function () {
+      const { rocketController, otherAccount } = await deployBaseFixture();
+      await expect(rocketController.addAllowList("0x0000000000000000000000000000000000000000")).to.be.revertedWith("User should not be zero address");
+      await expect(rocketController.connect(otherAccount).addAllowList("0x0000000000000000000000000000000000000000")).to.be.revertedWith("Ownable: caller is not the owner");
 
     });
+
 
     it("Test Behavior- Not Allowed to add RETH Balance Without address approved in allowList ", async function () {
       const { rocketController, owner } = await deployBaseFixture();
@@ -54,11 +73,11 @@ describe("RocketTest", function () {
     });
 
     it("Test Behavior- getAllowList", async function () {
-        const { rocketController, owner, otherAccount } = await deployBaseFixture();
-        await rocketController.addAllowList(owner.address);
-        expect( await rocketController.getAllowList(owner.address)).to.be.eq(true) ; 
-        expect( await rocketController.getAllowList(otherAccount.address)).to.be.eq(false) ; 
-      });
+      const { rocketController, owner, otherAccount } = await deployBaseFixture();
+      await rocketController.addAllowList(owner.address);
+      expect(await rocketController.getAllowList(owner.address)).to.eq(true);
+      expect(await rocketController.getAllowList(otherAccount.address)).to.eq(false);
+    });
 
     it("Zero address behaviour", async function () {
       const { rocketController, owner } = await deployBaseFixture();
@@ -74,11 +93,11 @@ describe("RocketTest", function () {
     it("OwnableUpgradeable Behavior", async function () {
       const { owner, otherAccount, rocketController, anotherAccount } = await deployBaseFixture();
       await expect(rocketController.transferOwnership(otherAccount.address)).to.emit(rocketController, "OwnershipTransferred").withArgs(owner.address, otherAccount.address);
-      expect(await rocketController.owner()).to.be.equal(otherAccount.address);
+      expect(await rocketController.owner()).to.equal(otherAccount.address);
     });
 
     it.skip("ReentrancyGuardUpgradeable Behavior", async function () {
-        const { owner, otherAccount, rocketController } = await deployBaseFixture();
+      const { owner, otherAccount, rocketController } = await deployBaseFixture();
 
     });
 
