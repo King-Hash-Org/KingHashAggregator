@@ -14,7 +14,7 @@ describe("Aggregator", function () {
   async function deployBaseFixture() {
 
     // Contracts are deployed using the first signer/account by default
-    const [owner, otherAccount, authority, anotherAccount ] = await ethers.getSigners();
+    const [owner, otherAccount, authority, anotherAccount] = await ethers.getSigners();
 
     const NftContract = await ethers.getContractFactory("ValidatorNft");
     const nftContract = await NftContract.deploy();
@@ -41,10 +41,10 @@ describe("Aggregator", function () {
 
     const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
     const rocketStorage = await RocketStorageContract.deploy();
-    rocketStorage.setAddressStorage("0x65DD923DDFC8D8AE6088F80077201D2403CBD565F0BA25E09841E2799EC90BB2", rocketDepositPoolContract.address ) ;
-    rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address ) ;
+    rocketStorage.setAddressStorage("0x65DD923DDFC8D8AE6088F80077201D2403CBD565F0BA25E09841E2799EC90BB2", rocketDepositPoolContract.address);
+    rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address);
 
-    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
+    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address);
 
     const RocketControllerContract = await ethers.getContractFactory("RocketController");
     const rocketController = await RocketControllerContract.deploy();
@@ -52,13 +52,13 @@ describe("Aggregator", function () {
 
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketStorage.address , rocketController.address );
-    
+    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
+
     await lidoController.addAllowList(aggregator.address);
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, anotherAccount , authority, lidoController, rocketController };
+    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, anotherAccount, authority, lidoController, rocketController };
   }
 
   async function deployExistingValidatorFixture() {
@@ -76,11 +76,11 @@ describe("Aggregator", function () {
 
     const data =
       "0x011c00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00ab726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c74d6236b57a7c5d40c93f00c6d16a790b88bd29496b0cdd1809befd5464c2cd35655745adc507246b9f9db13d38c3d988fab56b6b752dfc2a2ecbe43dbb0eef3";
-    const data1 = 
+    const data1 =
       "0x011c000000000000000000000000000093d9f1e58ab7cf478d35f1661c59a841eb3a1c627e55b3ecdaf8aa7d2999e8d5c5aae5af3834d8244f2501d16f7a40ad010000000000000000000000bb5b420f1d3967756d4e46f830e1ca142e1e0545a6eb199e52568df716ebb2d4a4a7638c86737b4f39f9a1776f39d6488f8c0b73946e66575cb50e49e58d1867890b48b311ff2784dc18b2a7087cf199ed980c137c8e8f6b4ac4a07b182533a3d462385d14ea8cc560e32e0bc005c0eb71bc634e67ff826e8d32f2967db660f6361036e6d9f129693741ecbf03ebd8084961ebb10000000000000000000000000000000000000000000000000000000006e1752c2a13a5bd053923eb63463474deeef9aff43294971c6d10a262eb0421f71717d9dee9b45d60bb7d8a97113dc6d094cbc0bd03ad2a50fa7aab3d3b40fb80e249e9";
     const data2 =
       "0x011b0000000000000000000000000000a9b8c5e5ba5ff379c3216f8e09154b3cf56dee608eabfb24ef7d3dd99d4a6cba34bfde5c493c8e05ee942a3d705ab2c3002fa1256542629e76418786502f8dc5b78703c89e53f3aae3c5ed5708b7ffa8954fb880517ad78212a580fc50cfb761450ae93fe2f44d3b50c7b039d21e59bdef3ec4cb2e300f1bc2eb205d263e129015198918ff8853e7535e188ccb678967fd48a2d7f1206fbdcc6cc529c15cf598554425d84039c7ecb9cb2f2a69943bc6e06833af98caa3051a4eb4f887db982dc7048c3d40a8b9bf64edcf2fd621bfe20000000000000000000000000000000000000000000000000000000006e1752c3e8788a4ff23fda9506b559056f0646d0c5fae1c5479a0a828ea0a03568068303723646e88de0e5ecbb31c9cb8744b0f70eae53f68dfdc5bdfa713dd61336cd2";
-    const data3 = 
+    const data3 =
       "0x011c000000000000000000000000000086ce949d229effaf0487577a24a98b336d35da5fe3ead525f02c62cdce162c3d0c8b9fef079e74a23510b719d4e973b0010000000000000000000000bb5b420f1d3967756d4e46f830e1ca142e1e0545ac5eaf2ae6de79a149f94c48e07cb334c112a362c96fb76917ffe55b2130da88c39fcf418b1b06d7d606874d69bcf667013c41f4cf7ed8f06e84c7fbf4f8fcbd0906cdf2875a15e144fa5fb8dbd0c8793254598553aabc21b54c9c4f4580456abf65a725024fa14745d02122d810ec1fe75d9c464e787c09eff16fe998cc09c20000000000000000000000000000000000000000000000000000000006e1752c5b499492c34bd2f1b1f57cd2480bca7f3c88f224f501713b462ce72e198661f90c830f6337cb8db9eb3320ed370c62d70a9f46153b9a0f4f7cf2544ce7c894aa";
     await aggregator.stake([data, data1, data2, data3], { value: ethers.utils.parseEther("128") });
 
@@ -157,6 +157,7 @@ describe("Aggregator", function () {
       );
 
       await expect(aggregator.pause()).to.emit(aggregator, "Paused");
+
       await expect(aggregator.stake([])).to.be.revertedWith("Pausable: paused");
       await expect(aggregator.unstake([])).to.be.revertedWith("Pausable: paused");
 
@@ -305,7 +306,7 @@ describe("Aggregator", function () {
       const { nftContract, owner } = await loadFixture(deployExistingValidatorsFixture);
 
       const pubkeys = [
-        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf", 
+        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf",
         "0x93d9f1e58ab7cf478d35f1661c59a841eb3a1c627e55b3ecdaf8aa7d2999e8d5c5aae5af3834d8244f2501d16f7a40ad",
         "0xa9b8c5e5ba5ff379c3216f8e09154b3cf56dee608eabfb24ef7d3dd99d4a6cba34bfde5c493c8e05ee942a3d705ab2c3",
         "0x86ce949d229effaf0487577a24a98b336d35da5fe3ead525f02c62cdce162c3d0c8b9fef079e74a23510b719d4e973b0"
@@ -316,7 +317,7 @@ describe("Aggregator", function () {
 
     it("Should fail as price incorrect", async function () {
       const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
-      
+
       const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
       await expect(
         aggregator.connect(otherAccount).stake([data])
@@ -331,7 +332,7 @@ describe("Aggregator", function () {
 
     it("Should fail as not owner", async function () {
       const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
-      
+
       const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8275f149a169ae15e717c6ed4752d836a282c43b0a0d175e3df8a160fe4027b0022530890d34cbd72c48c25cb683dcb19c546c554cea47fe8c86964bcaf381e2c000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f4804a4c5b548fb9400fd5414873f57283646ae1300e3eac24c507c644f6be84a6585b475db111442a5c4c12fba52d0b8672f6dd3437a93cdc478f35e68c806aba3d70997970C51812dc3A010C7d01b50e0d17dc79C81c0000000000000000000000";
       await expect(
         aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
@@ -388,7 +389,7 @@ describe("Aggregator", function () {
 
     it("Should fail as buyer try to spoof", async function () {
       const { aggregator } = await loadFixture(deployExistingValidatorsFixture);
-      const data = "0x061b00000000000000000000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";                           
+      const data = "0x061b00000000000000000000f39Fd6e51aad88F6F4ce6aB8827279cffFb92266792bc6535fe593562c14dcb72f234f461a4412f60423a3811ff87ef4aa96218c74a4b13c9b83e291ee6f04d0d7b38b2c454e01fc3ff286e7a971a3fa141cac41000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001bc16d674ec8000000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
       await expect(
         aggregator.stake([data], { value: ethers.utils.parseEther("32") })
       ).to.be.revertedWith("Not authorized");
@@ -396,7 +397,7 @@ describe("Aggregator", function () {
 
     it("Should fail as node too cheap", async function () {
       const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
-      const data = "0x061c0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8f4d10ab540e4d18239fa2f6ae630686481619d1f7eeeeb8138b26d46709ea5261bbe22d7e1e6e68d9887799305d7cf92e028b6e4022cd0c8dfc9b8b36c1d7306000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001a055690d9db800000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";                           
+      const data = "0x061c0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8f4d10ab540e4d18239fa2f6ae630686481619d1f7eeeeb8138b26d46709ea5261bbe22d7e1e6e68d9887799305d7cf92e028b6e4022cd0c8dfc9b8b36c1d7306000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000001a055690d9db800000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000";
       await expect(
         aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("32") })
       ).to.be.revertedWith("Node too cheap");
@@ -439,7 +440,7 @@ describe("Aggregator", function () {
 
   describe("Lido Staking", function () {
     it("Correct data behaviour for Lido Stake", async function () {
-      const { aggregator, owner , lidoController, otherAccount } = await deployBaseFixture();
+      const { aggregator, owner, lidoController, otherAccount } = await deployBaseFixture();
       await lidoController.addAllowList(aggregator.address);
 
       const data1 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether
@@ -447,100 +448,213 @@ describe("Aggregator", function () {
       const data3 = "0x0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
 
       // Test Lido Stake Router
-      expect(await aggregator.callStatic.stake([data1], { value: ethers.utils.parseEther("2")})).to.be.equal(true);
-      expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33")})).to.be.equal(true);
-      expect(await aggregator.callStatic.stake([data3], { value: ethers.utils.parseEther("16")})).to.be.equal(true);
+      expect(await aggregator.callStatic.stake([data1], { value: ethers.utils.parseEther("2") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data1], { value: ethers.utils.parseEther("2") })).to.be.equal(true);
+      expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.equal(true);
+      expect(await aggregator.callStatic.stake([data3], { value: ethers.utils.parseEther("16") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data3], { value: ethers.utils.parseEther("16") })).to.be.equal(true);
 
-      // Test LidoDeposit event emit
-      expect(await aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("2") );
-      expect(await aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("33") );
-      expect(await aggregator.stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("16") );
+      // Test LidoDeposit event emit, test StEthbalance
+      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "LidoDeposit").withArgs(owner.address, ethers.utils.parseEther("2"));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("2.0");
+      await expect(aggregator.connect(otherAccount).stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "LidoDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("2"));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("2.0");
+
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "LidoDeposit").withArgs(owner.address, ethers.utils.parseEther("33"));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("35.0");
+      await expect(aggregator.connect(otherAccount).stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "LidoDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("33"));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("35.0");
+
+      await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "LidoDeposit").withArgs(owner.address, ethers.utils.parseEther("16"));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("51.0");
+      await expect(aggregator.connect(otherAccount).stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "LidoDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("16"));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("51.0");
 
       //multidata
-      expect(await aggregator.callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51")})).to.be.equal(true);
-      expect(await aggregator.stake([data1, data3], { value: ethers.utils.parseEther("18")})) ;
-      
-      // test AllowList and get/addStEthShares
-      await aggregator.stake([data1], { value: ethers.utils.parseEther("2")});
-      const stEthShare1 = await lidoController.getStEthShares( owner.address );  
-      const stEthShare2 = ethers.utils.formatUnits(stEthShare1, 18) ;
-      await expect(stEthShare2).to.equal("71.0");
+      expect(await aggregator.callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") })).to.be.equal(true);
+
+      expect(await aggregator.stake([data1, data3], { value: ethers.utils.parseEther("18") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("69.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data3], { value: ethers.utils.parseEther("18") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("69.0");
+
+      expect(await aggregator.stake([data1, data2], { value: ethers.utils.parseEther("35") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("104.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data2], { value: ethers.utils.parseEther("35") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("104.0");
+
+      expect(await aggregator.stake([data2, data3], { value: ethers.utils.parseEther("49") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("153.0");
+      expect(await aggregator.connect(otherAccount).stake([data2, data3], { value: ethers.utils.parseEther("49") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("153.0");
+
+      expect(await aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(owner.address), 18)).to.equal("204.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data2, data3], { value: ethers.utils.parseEther("51") }));
+      expect(ethers.utils.formatUnits(await lidoController.getStEthShares(otherAccount.address), 18)).to.equal("204.0");
 
     });
 
     it("Wrong data behaviour for Lido Stake", async function () {
-      const { aggregator, owner , lidoController  } = await deployBaseFixture();
+      const { aggregator, owner, lidoController } = await deployBaseFixture();
       await lidoController.addAllowList(aggregator.address);
 
       const data1 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"; //0 ether
-      // // Test Lido Stake Router
-      await expect(aggregator.stake([data1] )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
-      await expect(aggregator.stake([data1]  , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
-      await expect(aggregator.stake([data1]  , { value: ethers.utils.parseEther("33") } )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
-    
-      const data2 = "0x0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
-      await expect(aggregator.stake([data2] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
-      await expect(aggregator.stake([data2]  )).to.be.revertedWith("Stake amount is not enough!");
+      const data2 = "0x0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether, correct data length
+      const data3 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether, correct data length
+      const data4 = "0x020000004563918244F40000"; // 5 ether, too short data length
+      const data5 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008AC7230489E80000"; // 10 ether, too long data length
 
-      const data3 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether
-      await expect(aggregator.stake([data3] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
-      const data4 = "0x020000004563918244F40000"; // too short data length
-      await expect(aggregator.stake([data4] )).to.be.revertedWith("LidoContract: invalid data.length");
-      const data5 = "0x02000000000000000000000000000000000000000000000001C9F78D2893E4000012441312"; // too long data length
-      await expect(aggregator.stake([data5] )).to.be.revertedWith("LidoContract: invalid data.length");
+      //  Test Lido Stake Router minimum deposit
+      await expect(aggregator.stake([data1])).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1, data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1, data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("38") })).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
 
-      // case whereby there is more ether than expected
-      
+      //  Test Lido Stake Router stake amount 
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2])).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2, data3, data1], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
 
-      // multidata
+      // // malformed data-> too short or too long
+      await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data4])).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("LidoContract: invalid data.length");
 
-      // malformed data-> too short or too long
-      
-      // try different sizes of ether, try 1 wei, try 10000 eth
-      await lidoController.removeAllowList(aggregator.address ) ;
-      await expect(lidoController.removeAllowList("0x0000000000000000000000000000000000000000" )).to.be.revertedWith("User should not be zero address"); 
-      await  expect(lidoController.addStEthShares( owner.address , ethers.utils.parseEther("2") ) ).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      //  case whereby there is more ether than expected
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("34") })).to.be.revertedWith("Incorrect Ether amount provided");
+      await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("60") })).to.be.revertedWith("Incorrect Ether amount provided");
+      await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("100") })).to.be.revertedWith("Incorrect Ether amount provided");
+
+      // test case where aggreggtor try to stake without allowList
+      await lidoController.removeAllowList(aggregator.address);
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.connect(owner).stake([data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.connect(owner).stake([data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+
     });
 
   });
 
   describe("Rocket Staking", function () {
     it("Correct data behaviour for Rocket Stake", async function () {
-      const { aggregator ,rocketController, owner } = await deployBaseFixture();
+      const { aggregator, rocketController, owner, otherAccount } = await deployBaseFixture();
       await rocketController.addAllowList(aggregator.address);
 
       const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether 
       const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
       const data3 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
+
       // Test  Rocket Stake Router
-      expect(await aggregator.callStatic.stake([data1], { value: ethers.utils.parseEther("2")})).to.be.equal(true);
-      expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33")})).to.be.equal(true);
-      expect(await aggregator.callStatic.stake([data3], { value: ethers.utils.parseEther("16")})).to.be.equal(true);
+      expect(await aggregator.callStatic.stake([data1], { value: ethers.utils.parseEther("2") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data1], { value: ethers.utils.parseEther("2") })).to.be.equal(true);
+      expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.equal(true);
+      expect(await aggregator.callStatic.stake([data3], { value: ethers.utils.parseEther("16") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data3], { value: ethers.utils.parseEther("16") })).to.be.equal(true);
 
-      // test AllowList and get/addStEthShares
-      await aggregator.stake([data1], { value: ethers.utils.parseEther("2")});
-      const rEthShare1 = await rocketController.getREthBalance(owner.address );  
-      await expect( ethers.utils.formatUnits(rEthShare1, 18)).to.equal("1.9999999999999999");
+      //   Test RocketPoolDeposit event emit , test rETHbalance
+      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("2"));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("2.0");
+      expect(await aggregator.connect(otherAccount).stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("2"));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("2.0");
 
-      await aggregator.stake([data3], { value: ethers.utils.parseEther("16")});
-      const rEthShare = await rocketController.getREthBalance(owner.address );  
-      await expect(ethers.utils.formatUnits(rEthShare, 18)).to.equal("17.9999999999999998");
+      expect(await aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("33"));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("35.0");
+      expect(await aggregator.connect(otherAccount).stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("33"));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("35.0");
+
+      expect(await aggregator.stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("16"));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("51.0");
+      expect(await aggregator.connect(otherAccount).stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("16"));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("51.0");
+
+
+      //multidata
+      expect(await aggregator.callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") })).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") })).to.be.equal(true);
+
+      expect(await aggregator.stake([data1, data3], { value: ethers.utils.parseEther("18") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("69.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data3], { value: ethers.utils.parseEther("18") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("69.0");
+
+      expect(await aggregator.stake([data1, data2], { value: ethers.utils.parseEther("35") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("104.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data2], { value: ethers.utils.parseEther("35") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("104.0");
+
+      expect(await aggregator.stake([data2, data3], { value: ethers.utils.parseEther("49") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("153.0");
+      expect(await aggregator.connect(otherAccount).stake([data2, data3], { value: ethers.utils.parseEther("49") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("153.0");
+
+      expect(await aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("204.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data2, data3], { value: ethers.utils.parseEther("51") }));
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("204.0");
+
     });
 
     it("Wrong Behavior for RocketPool Stake", async function () {
-      const { aggregator, rocketController, owner  } = await deployBaseFixture();
-      await rocketController.addAllowList(aggregator.address ) ;
-      const data = "0x040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038D7EA4C68000";
-      // Test  Rocket Stake Router
-      await expect(aggregator.stake([data])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
-      await expect(aggregator.stake([data], { value: ethers.utils.parseEther("0.001")})).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+      const { aggregator, rocketController, owner } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
+      const data0x = "0x040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038D7EA4C68000";
+      const data0y = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+
+      // Test Rocket Stake Router Minumum Deposit
+      await expect(aggregator.stake([data0x])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+      await expect(aggregator.stake([data0x], { value: ethers.utils.parseEther("0.001") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+      await expect(aggregator.stake([data0y])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+      await expect(aggregator.stake([data0x, data0y], { value: ethers.utils.parseEther("0.001") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+
+      const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"; //0 ether
+      const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether, correct data length
+      const data3 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether, correct data length
+      const data4 = "0x040000004563918244F40000"; // 5 ether, too short data length
+      const data5 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008AC7230489E80000"; // 10 ether, too long data length
+
+      //  Test Rocket Stake Router Stake Amount
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2])).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2, data3, data1], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+
+      // malformed data-> too short or too long
+      await expect(aggregator.stake([data4])).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
+      await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
+      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
+      await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
+      await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
+
+      // // case whereby there is more ether than expected
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("34") })).to.be.revertedWith("Incorrect Ether amount provided");
+      await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("60") })).to.be.revertedWith("Incorrect Ether amount provided");
+      await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("100") })).to.be.revertedWith("Incorrect Ether amount provided");
+
+      // test case where aggreggtor try to stake without allowList
+      await rocketController.removeAllowList(aggregator.address);
+      await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add RETH Balance");
+      await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add RETH Balance");
+      await expect(aggregator.connect(owner).stake([data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add RETH Balance");
+      await expect(aggregator.connect(owner).stake([data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add RETH Balance");
+
     });
   });
 
   describe("Trading mutliple nfts", function () {
     it("Should fail as price incorrect", async function () {
       const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
-      
+
       const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8ab861166d0d50f8af2c2ec1108030cbb594caa0536af22a7cc11e9b46a720f36278404d1cede8dd2606128d2160813b17b25ff88ff98b8763fad2e4c6980ed07000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000001c9f78d2893e400000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000000000000000000000000000000000000000000000000001ae361fc1451c00000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480e50cc96833c07ae5307a4a705de326ce181d5df14ecb54f6c2e91a17a4d488dd3ab5de5099ea3a12c96ae450b162ba67b6de466353bcae6a546c80d4f209d00af39Fd6e51aad88F6F4ce6aB8827279cffFb922661c0000000000000000000000";
       await expect(
         aggregator.connect(otherAccount).stake([data])
@@ -555,7 +669,7 @@ describe("Aggregator", function () {
 
     it("Should fail as not owner", async function () {
       const { aggregator, otherAccount } = await loadFixture(deployExistingValidatorsFixture);
-      
+
       const data = "0x061b0000000000000000000070997970C51812dc3A010C7d01b50e0d17dc79C8d2e5242f6f3cf5a7fb16faa09a443c59675ebe88fbb9ad595776c713866a99743bae03150409784d67e2cbcec826ae2dce018950c767a7e698ec05f5707e9c3e000000000000000000000000000000000000000000000000000000000003f4800000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000001c9f78d2893e400000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480a109b51003d93d2ad6359e79c96cf109d42dbeb4fe095bca9f81dcfc68abf6b14c974cc5d7831ce8c561672838479957297e4e0d08e44200638b48e55368f0fff39Fd6e51aad88F6F4ce6aB8827279cffFb922661b0000000000000000000000000000000000000000000000000000000000000000000001ae361fc1451c00000000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000000000000000000000000000000000000003f480b1f5b3c909271280acdad95a9249f2ecfc3f7ad8d6a52b0e933c12c1ef141e203b36bed71b9189daf32f32bba23394e620cf56f628c6f1d1f38b5fbefe6e5ff570997970C51812dc3A010C7d01b50e0d17dc79C81c0000000000000000000000";
       await expect(
         aggregator.connect(otherAccount).stake([data], { value: ethers.utils.parseEther("64") })

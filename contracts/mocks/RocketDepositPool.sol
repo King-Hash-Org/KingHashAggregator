@@ -24,7 +24,7 @@ contract RocketDepositPool is IRocketDepositPool {
         require(msg.value % 1 gwei == 0, "DepositContract: deposit value not multiple of gwei");
 
         //  Calculate deposit fee
-        uint256 depositFee = 100 wei;
+        uint256 depositFee = 0 wei;
         uint256 depositNet = msg.value - depositFee;
 
         // // Mint rETH to user account
