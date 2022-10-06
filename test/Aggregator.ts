@@ -503,33 +503,45 @@ describe("Aggregator", function () {
       await lidoController.addAllowList(aggregator.address);
 
       const data1 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"; //0 ether
-      // // Test Lido Stake Router
-      await expect(aggregator.stake([data1] )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
-      await expect(aggregator.stake([data1]  , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
-      await expect(aggregator.stake([data1]  , { value: ethers.utils.parseEther("33") } )).to.be.revertedWith("Deposit must not be zero or must be minumum 1 wei");
-    
-      const data2 = "0x0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
+      const data2 = "0x0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether, correct data length
+      const data3 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether, correct data length
+      const data4 = "0x020000004563918244F40000"; // 5 ether, too short data length
+      const data5 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008AC7230489E80000"; // 10 ether, too long data length
+   
+      //  Test Lido Stake Router
+      await expect(aggregator.stake([data1] )).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("33") } )).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1, data3], { value: ethers.utils.parseEther("5") } )).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1, data2], { value: ethers.utils.parseEther("33") } )).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+      await expect(aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("38") } )).to.be.revertedWith("Deposit must not be zero and must be minumum 1 wei");
+
+      //  Test Lido Stake Router
       await expect(aggregator.stake([data2] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
       await expect(aggregator.stake([data2]  )).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
+      await expect(aggregator.stake([data2, data3, data1], { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
 
-      const data3 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether
+      // // malformed data-> too short or too long
       await expect(aggregator.stake([data3] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("Stake amount is not enough!");
-      const data4 = "0x020000004563918244F40000"; // too short data length
       await expect(aggregator.stake([data4] )).to.be.revertedWith("LidoContract: invalid data.length");
-      const data5 = "0x02000000000000000000000000000000000000000000000001C9F78D2893E4000012441312"; // too long data length
-      await expect(aggregator.stake([data5] )).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data5] , { value: ethers.utils.parseEther("1") } )).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") } )).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data3, data5] , { value: ethers.utils.parseEther("15") })).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data3, data4, data5] , { value: ethers.utils.parseEther("20") })).to.be.revertedWith("LidoContract: invalid data.length");
 
-      // case whereby there is more ether than expected
+      // // case whereby there is more ether than expected
+      await expect( aggregator.stake([data2], { value: ethers.utils.parseEther("34") } )).to.be.revertedWith("Incorrect Ether amount provided");
+      await expect( aggregator.stake([data3], { value: ethers.utils.parseEther("60") } )).to.be.revertedWith("Incorrect Ether amount provided");
+      await expect(aggregator.stake([data2, data3 ] , { value: ethers.utils.parseEther("100") })).to.be.revertedWith("Incorrect Ether amount provided");
       
 
-      // multidata
-
-      // malformed data-> too short or too long
-      
-      // try different sizes of ether, try 1 wei, try 10000 eth
       await lidoController.removeAllowList(aggregator.address ) ;
-      await expect(lidoController.removeAllowList("0x0000000000000000000000000000000000000000" )).to.be.revertedWith("User should not be zero address"); 
-      await  expect(lidoController.addStEthShares( owner.address , ethers.utils.parseEther("2") ) ).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.stake([data2] , { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.stake([data3] , { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.connect(owner).stake([data2] , { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+      await expect(aggregator.connect(owner).stake([data3] , { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add SETH Shares Balance");
+
     });
 
   });
