@@ -448,23 +448,53 @@ describe("Aggregator", function () {
 
       // Test Lido Stake Router
       expect(await aggregator.callStatic.stake([data1], { value: ethers.utils.parseEther("2")})).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data1], { value: ethers.utils.parseEther("2")})).to.be.equal(true);
       expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33")})).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data2], { value: ethers.utils.parseEther("33")})).to.be.equal(true);
       expect(await aggregator.callStatic.stake([data3], { value: ethers.utils.parseEther("16")})).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data3], { value: ethers.utils.parseEther("16")})).to.be.equal(true);
 
-      // Test LidoDeposit event emit
+      // // Test LidoDeposit event emit
       expect(await aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("2") );
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("2.0");
+      expect(await aggregator.connect(otherAccount).stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("2") );   
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("2.0");
+      
       expect(await aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("33") );
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("35.0");
+      expect(await aggregator.connect(otherAccount).stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("33") );
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("35.0");
+
       expect(await aggregator.stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("16") );
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("51.0");
+      expect(await aggregator.connect(otherAccount).stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "LidoDeposit").withArgs( owner.address , ethers.utils.parseEther("16") );
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("51.0");
+
 
       //multidata
       expect(await aggregator.callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51")})).to.be.equal(true);
+      expect(await aggregator.connect(otherAccount).callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51")})).to.be.equal(true);
+
       expect(await aggregator.stake([data1, data3], { value: ethers.utils.parseEther("18")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("69.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data3], { value: ethers.utils.parseEther("18")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("69.0");
+
+      expect(await aggregator.stake([data1, data2], { value: ethers.utils.parseEther("35")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("104.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data2], { value: ethers.utils.parseEther("35")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("104.0");
+
       
-      // test AllowList and get/addStEthShares
-      await aggregator.stake([data1], { value: ethers.utils.parseEther("2")});
-      const stEthShare1 = await lidoController.getStEthShares( owner.address );  
-      const stEthShare2 = ethers.utils.formatUnits(stEthShare1, 18) ;
-      await expect(stEthShare2).to.equal("71.0");
+      expect(await aggregator.stake([data2, data3], { value: ethers.utils.parseEther("49")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("153.0");
+      expect(await aggregator.connect(otherAccount).stake([data2, data3], { value: ethers.utils.parseEther("49")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("153.0");
+
+      expect(await aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("51")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( owner.address ), 18)).to.equal("204.0");
+      expect(await aggregator.connect(otherAccount).stake([data1, data2, data3], { value: ethers.utils.parseEther("51")})) ;
+      expect( ethers.utils.formatUnits(await lidoController.getStEthShares( otherAccount.address ), 18)).to.equal("204.0");
 
     });
 
