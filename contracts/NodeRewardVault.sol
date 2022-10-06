@@ -5,6 +5,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import "./interfaces/INodeRewardVault.sol";
 import "./interfaces/IValidatorNft.sol";
 
@@ -16,6 +17,9 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     address private _dao;
     address private _authority;
     address private _aggregatorProxyAddress;
+
+    bytes32 private _root;
+    mapping(uint256 => uint256) claimed;
 
     event ComissionChanged(uint256 _before, uint256 _after);
     event TaxChanged(uint256 _before, uint256 _after);
@@ -43,34 +47,31 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _authority = address(0xF5ade6B61BA60B8B82566Af0dfca982169a470Dc);
         _comission = 1000;
         _tax = 0;
+        _root = bytes32(0);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
-    function _rewards(uint256 tokenId) private view returns (uint256) {
-        uint256 total = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
-        require(total > 0, "No rewards to claim");
+    function _rewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) private view returns (uint256) {
+        if (_root == bytes32(0)) {
+            return 0;
+        }
+        bytes32 leaf = keccak256(abi.encodePacked(tokenId, amount));
+        require(MerkleProof.verify(merkleProof, _root, leaf), "Incorrect proof");
 
-        uint256 totalReward = address(this).balance;
+        if (claimed[tokenId] >= amount) {
+            return 0;
+        }
 
-        return totalReward * (block.number - _nftContract.gasHeightOf(tokenId)) / total;
+        return amount - claimed[tokenId];
     }
 
     function nftContract() external view override returns (address) {
         return address(_nftContract);
     }
 
-    function blockRewards() external view override returns (uint256) {
-        uint256 total = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
-        require(total > 0, "No rewards to claim");
-
-        uint256 totalReward = address(this).balance;
-
-        return totalReward / total;
-    }
-
-    function rewards(uint256 tokenId) external view override returns (uint256) {
-        return _rewards(tokenId);
+    function rewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) external view override returns (uint256) {
+        return _rewards(tokenId, merkleProof, amount);
     }
 
     function comission() external view override returns (uint256) {
@@ -127,6 +128,15 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
+    }
+
+    function setRoot(bytes32 root) external onlyOwner {
+        require(root != bytes32(0), "Empty root");
+        _root = root;
+    }
+
+    function addClaimed(uint256 tokenId, uint256 amount) external override nonReentrant onlyAggregator {
+        claimed[tokenId] += amount;
     }
 
     receive() external payable{}

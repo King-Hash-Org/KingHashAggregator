@@ -16,7 +16,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   
   mapping(bytes => bool) private validatorRecords;
   bytes[] public _validators;
-  uint256[] public _gasHeights;
   uint256[] public _nodeCapital;
 
   bool private _isOpenSeaProxyActive = false;
@@ -103,12 +102,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return MAX_SUPPLY;
   }
 
-  function gasHeightOf(uint256 tokenId) external view returns (uint256) {
-    require(_exists(tokenId), "Token does not exist");
-
-    return _gasHeights[tokenId];
-  }
-
   function whiteListMint(bytes calldata pubkey, address _to) external onlyAggregator {
     require(
       totalSupply() + 1 <= MAX_SUPPLY,
@@ -118,8 +111,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
     validatorRecords[pubkey] = true;
     _validators.push(pubkey);
-    _gasHeights.push(block.number);
-    _totalHeight += block.number;
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
   }
@@ -169,39 +160,19 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   }
 
   //slither-disable-next-line reentrancy-benign
-  function _claimRewards(uint256 tokenId) private {
+  function _claimRewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) private {
     require(_exists(tokenId), "Token does not exist");
 
-    aggregator.disperseRewards(tokenId);
-
-    _totalHeight = _totalHeight - _gasHeights[tokenId] + block.number;
-    _gasHeights[tokenId] = block.number;
+    aggregator.disperseRewards(tokenId, merkleProof, amount);
   }
 
-  function claimRewards(uint256 tokenId) external nonReentrant {
-    _claimRewards(tokenId);
+  function claimRewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) external nonReentrant {
+    _claimRewards(tokenId, merkleProof, amount);
   }
 
-  function batchClaimRewards(uint256[] calldata tokenIds) external nonReentrant {
+  function batchClaimRewards(uint256[] calldata tokenIds, bytes32[][] calldata merkleProofs, uint256[] calldata amounts) external nonReentrant {
     for (uint256 i = 0; i < tokenIds.length; i++) {
-      _claimRewards(tokenIds[i]);
-    }
-  }
-
-  function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override 
-  {
-    // no need to claim reward if user is minting nft
-    if (from == address(0) || from == to) {
-      return;
-    }
-
-    for (uint256 i = 0; i < quantity; i++) {
-      _claimRewards(startTokenId + i);
+      _claimRewards(tokenIds[i], merkleProofs[i], amounts[i]);
     }
   }
 

@@ -58,6 +58,8 @@ describe("NodeRewardVault", function () {
       value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
     });
 
+    await nodeRewardVault.setRoot("0xd6508985dd62f2f85a3c073df1c704c64b8ca7f2f44c1c400003bbdd3421bfc9");
+
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
   }
 
@@ -216,12 +218,22 @@ describe("NodeRewardVault", function () {
       );
     });
 
-    it("Should not have rewards", async function () {
+    it("Should have rewards", async function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
 
-      await expect(nodeRewardVault.rewards(0)).to.be.revertedWith(
-        "No rewards to claim"
-      );
+      expect(await nodeRewardVault.rewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100)).to.equals(100);
+    });
+
+    it("Should fail with incorrect merkle proof", async function () {
+      const { nodeRewardVault } = await loadFixture(deployRewardFixture);
+
+      await expect(nodeRewardVault.rewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c80"], 100)).to.be.revertedWith("Incorrect proof");
+    });
+
+    it("Should fail with incorrect amount", async function () {
+      const { nodeRewardVault } = await loadFixture(deployRewardFixture);
+
+      await expect(nodeRewardVault.rewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 60)).to.be.revertedWith("Incorrect proof");
     });
   });
 });

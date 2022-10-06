@@ -9,9 +9,7 @@ pragma solidity ^0.8.7;
 interface INodeRewardVault {
     function nftContract() external view returns (address);
 
-    function blockRewards() external view returns (uint256);
-
-    function rewards(uint256 tokenId) external view returns (uint256);
+    function rewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) external view returns (uint256);
 
     function comission() external view returns (uint256);
 
@@ -24,4 +22,6 @@ interface INodeRewardVault {
     function aggregator() external view returns (address);
 
     function transfer(uint256 amount, address to) external;
+
+    function addClaimed(uint256 tokenId, uint256 amount) external;
 }
