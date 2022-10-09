@@ -1,9 +1,12 @@
 const { ethers, upgrades, run } = require("hardhat");
-//goerli: 0x07b39F4fDE4A38bACe212b546dAc87C58DfE3fDC
+
+//goerli: 0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b
 //ropsten: 0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D
-const depositContract = "0x07b39F4fDE4A38bACe212b546dAc87C58DfE3fDC";
-const vaultContract = "0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C";
-const nftAddress = "0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD"; // nft contract address
+
+const depositContract = "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b";
+const vaultContract = "0x2192e5c6C600F2f0970a246D1Dd465232F23e851";
+const nftAddress = "0xf401FFB7C17E307D31A376A04cD69E8e5b68D9Ef"; // nft contract address
+
 
 export async function deployAggregator(
   depositContract: String,

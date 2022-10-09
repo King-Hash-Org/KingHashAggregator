@@ -91,15 +91,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     function unstake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         return data.length == 0;
     }
-
-    /**
-    * @dev See {IAggregator-disperseRewards}.
-    */
-    function disperseRewards(uint256 tokenId) external override {
-        require(msg.sender == nftAddress, "Message sender is not the Nft contract");
-        rewardRoute(tokenId);
-    }
-
+    
     function pause() external onlyOwner {
         _pause();
     }

@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./ERC721AQueryable.sol";
-import "../interfaces/IAggregator.sol";
+import "../interfaces/INodeRewardVault.sol";
 
 contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   address constant public OPENSEA_PROXY_ADDRESS = 0x1E0049783F008A0085193E00003D00cd54003c71;
   uint256 constant public MAX_SUPPLY = 6942069420;
 
-  IAggregator private aggregator;
+  INodeRewardVault private nodeRewardVault;
   
   mapping(bytes => bool) private validatorRecords;
   bytes[] public _validators;
@@ -22,10 +22,12 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   bool private _isOpenSeaProxyActive = false;
   uint256 private _totalHeight = 0;
   address private _aggregatorProxyAddress;
+  address private _nodeRewardVaultProxyAddress;
 
   event BaseURIChanged(string _before, string _after);
   event Transferred(address _to, uint256 _amount);
   event AggregatorChanged(address _before, address _after);
+  event NodeRewardVaultChanged(address _before, address _after);
   event OpenSeaState(bool _isActive);
 
   modifier onlyAggregator() {
@@ -33,10 +35,19 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _;
   }
 
-  constructor() ERC721A("Validator Nft", "vNFT") {}
+  modifier onlyNodeRewardVault() {
+    require(_nodeRewardVaultProxyAddress == msg.sender, "Not allowed to update rewards data");
+    _;
+  }
+
+  constructor() ERC721A("Validator NFT", "vNFT") {}
 
   function aggregatorProxyAddress() external view returns (address) {
     return _aggregatorProxyAddress;
+  }
+
+  function nodeRewardVaultProxyAddress() external view returns (address) {
+    return _nodeRewardVaultProxyAddress;
   }
 
   function totalHeight() external view returns (uint256) {
@@ -122,6 +133,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _totalHeight += block.number;
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
+    nodeRewardVault.initNftReward(1);
   }
 
   function whiteListBurn(uint256 tokenId) external onlyAggregator {
@@ -152,39 +164,41 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _baseTokenURI = baseURI;
   }
 
-  function withdrawMoney() external nonReentrant onlyOwner {
-    emit Transferred(owner(), address(this).balance);
-    payable(owner()).transfer(address(this).balance);
+  function withdrawMoney(address to) external nonReentrant onlyOwner {
+    emit Transferred(to, address(this).balance);
+    payable(to).transfer(address(this).balance);
   }
 
   function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
     require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
     emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
     _aggregatorProxyAddress = aggregatorProxyAddress_;
-    aggregator = IAggregator(_aggregatorProxyAddress);
+  }
+
+  function setNodeRewardVault(address nodeRewardVaultProxyAddress_) external onlyOwner {
+    require(nodeRewardVaultProxyAddress_ != address(0), "NodeRewardVault address provided invalid");
+    emit NodeRewardVaultChanged(_nodeRewardVaultProxyAddress, nodeRewardVaultProxyAddress_);
+    _nodeRewardVaultProxyAddress = nodeRewardVaultProxyAddress_;
+    nodeRewardVault = INodeRewardVault(nodeRewardVaultProxyAddress_);
   }
 
   function numberMinted(address owner) external view returns (uint256) {
     return _numberMinted(owner);
   }
 
-  //slither-disable-next-line reentrancy-benign
-  function _claimRewards(uint256 tokenId) private {
+  function _updateHeight(uint256 tokenId, uint256 blockNumber) private {
     require(_exists(tokenId), "Token does not exist");
-
-    aggregator.disperseRewards(tokenId);
-
-    _totalHeight = _totalHeight - _gasHeights[tokenId] + block.number;
-    _gasHeights[tokenId] = block.number;
+    _totalHeight = _totalHeight - _gasHeights[tokenId] + blockNumber;
+    _gasHeights[tokenId] = blockNumber;
   }
 
-  function claimRewards(uint256 tokenId) external nonReentrant {
-    _claimRewards(tokenId);
+  function updateHeight(uint256 tokenId, uint256 blockNumber) external onlyNodeRewardVault  {
+    _updateHeight(tokenId, blockNumber);
   }
 
-  function batchClaimRewards(uint256[] calldata tokenIds) external nonReentrant {
+  function batchUpdateRewards(uint256[] calldata tokenIds, uint256 blockNumber) external onlyNodeRewardVault {
     for (uint256 i = 0; i < tokenIds.length; i++) {
-      _claimRewards(tokenIds[i]);
+      _updateHeight(tokenIds[i], blockNumber);
     }
   }
 
@@ -201,7 +215,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     }
 
     for (uint256 i = 0; i < quantity; i++) {
-      _claimRewards(startTokenId + i);
+      nodeRewardVault.withdrawReward(startTokenId + i);
     }
   }
 

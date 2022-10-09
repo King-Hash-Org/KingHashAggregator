@@ -24,6 +24,13 @@ module.exports = {
       url: process.env.ROPSTEN_URL,
       accounts: [process.env.ROPSTEN_PRIVATE_KEY],
       network_id: 3,
+      gasPrice: 10000000000,
+    },
+    goerli: {
+      url: process.env.GORELI_URL,
+      accounts: [process.env.GORELI_PRIVATE_KEY],
+      network_id: 5,
+      gasPrice: 10000000000,
     },
   },
   etherscan: {

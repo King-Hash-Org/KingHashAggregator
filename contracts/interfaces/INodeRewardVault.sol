@@ -13,6 +13,10 @@ interface INodeRewardVault {
 
     function rewards(uint256 tokenId) external view returns (uint256);
 
+    function withdrawReward(uint256 tokenId) external; 
+
+    function initNftReward(uint256 quantity)external;
+
     function comission() external view returns (uint256);
 
     function tax() external view returns (uint256);
@@ -20,8 +24,4 @@ interface INodeRewardVault {
     function dao() external view returns (address);
     
     function authority() external view returns (address);
-
-    function aggregator() external view returns (address);
-
-    function transfer(uint256 amount, address to) external;
 }
