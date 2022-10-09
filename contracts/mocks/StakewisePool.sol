@@ -22,22 +22,12 @@ contract StakewisePool  {
         require(value > 0, "Pool: invalid deposit amount");
 
         // mint tokens for small deposits immediately
-        if (value <= minActivatingDeposit) {
+        // if (value <= minActivatingDeposit) {
+        //     stakedEthToken.mint(recipient, value);
+        //     return;
+        // }
             stakedEthToken.mint(recipient, value);
             return;
-        }
-
-        // mint tokens if current pending validators limit is not exceed
-        // uint256 _pendingValidators = pendingValidators.add((address(this).balance).div(VALIDATOR_TOTAL_DEPOSIT));
-        // uint256 _activatedValidators = activatedValidators; // gas savings
-        // uint256 validatorIndex = _activatedValidators.add(_pendingValidators);
-        // if (validatorIndex.mul(1e4) <= _activatedValidators.mul(pendingValidatorsLimit.add(1e4))) {
-        //     stakedEthToken.mint(recipient, value);
-        // } else {
-        //     // lock deposit amount until validator activated
-        //     activations[recipient][validatorIndex] = activations[recipient][validatorIndex].add(value);
-        //     emit ActivationScheduled(recipient, validatorIndex, value);
-        // }
     }
 
 }
