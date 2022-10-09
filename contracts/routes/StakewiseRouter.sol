@@ -30,6 +30,13 @@ contract StakewiseRouter is Initializable {
         return _stakewise_deposit(uint256(bytes32(data[32:64])));
     }
 
+    /**
+     * @notice Routes incoming data(Stakewise Strategy) to outbound contracts, Stakewise Pool Contract
+     * and calls internal controller functions and also transferring of stETH to the RocketPoolController Contract
+     * @dev `stake_amount` must be minumum 0.01 ether (minimum deposit)
+     * if the deposit to RocketPool is successful, `afterREthBalance` must be more than `beforeREthBalance`
+     * @return stake_amount - successfully staked ether to rocketpool deposit contract
+     */
     function _stakewise_deposit(uint256 stake_amount) internal returns (uint256) {
       require(msg.value >= stake_amount, "Stake amount is not enough!");
       require(stake_amount >= 1 wei, "Deposit must not be zero and must be minumum 1 wei");
