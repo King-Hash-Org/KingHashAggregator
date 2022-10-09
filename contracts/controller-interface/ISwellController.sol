@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 
 interface ISwellController { 
         /**
-     * @notice Adds `sETH2Balance` shares to `swETHBalanceMap` that keep tracks of swETH Tokens owned by each address.
+     * @notice Adds `swETHBalance` shares to `swETHBalanceMap` that keep tracks of swETH Tokens owned by each address.
      * @param userAddress : the user's unique address.
      * @param swETHBalance : swETH Tokens owned.
      * @dev `userAddress` cannot be the zero address, `msg.sender` must be inside list of allowed addresses.

@@ -34,7 +34,7 @@ import "../controller-interface/ISwellController.sol";
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     /**
-    * @dev See {ISwellController-addSETH2Balance}.
+    * @dev See {ISwellController-addSWETHBalance}.
     */
     function addSWETHBalance(address userAddress, uint256 swETHBalance) external override onlyAllowed nonReentrant {
         require( userAddress != address(0), "User should not be zero address");
@@ -42,7 +42,7 @@ import "../controller-interface/ISwellController.sol";
     }
   
     /**
-    * @dev See {ISwellController-getSETH2Balance}.
+    * @dev See {ISwellController-getSWETHBalance}.
     */
     function getSWETHBalance(address userAddress ) external view override returns (uint256) {
         return  swETHBalanceMap[userAddress] ;
