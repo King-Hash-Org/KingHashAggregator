@@ -69,12 +69,10 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
      * @dev See {ILidoController-removeAllowList}.
      */
     function removeAllowList(address userAddress) external override onlyOwner  {
-        require(userAddress != address(0), "User should not be zero address");
         allowList[userAddress] = false;
     }
 
     function getAllowList(address userAddress) external view returns (bool) {
-        require(userAddress != address(0), "User should not be zero address");
         return allowList[userAddress] ;
     }
 

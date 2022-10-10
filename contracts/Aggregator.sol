@@ -24,7 +24,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     bytes1 private constant STAKEWISE_STRATEGY = 0x05;
     bytes1 private constant NODE_TRADE_STRATEGY = 0x06;
     bytes1 private constant SSV_STRATEGY = 0x07; 
-        bytes1 private constant ONEINCH_STRATEGY = 0x08;  
+    bytes1 private constant ONEINCH_STRATEGY = 0x08;  
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}

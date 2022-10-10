@@ -1,33 +1,10 @@
-import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
-import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
-import { ethers, network } from "hardhat";
-import { Address, zeroAddress } from "ethereumjs-util";
-import { AddressZero } from "@ethersproject/constants";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { ethers } from "hardhat";
 
 describe("RocketTest", function () {
   async function deployBaseFixture() {
-
     // Contracts are deployed using the first signer/account by default
     const [owner, otherAccount, authority, anotherAccount] = await ethers.getSigners();
-
-    const NftContract = await ethers.getContractFactory("ValidatorNft");
-    const nftContract = await NftContract.deploy();
-
-    const NodeRewardVault = await ethers.getContractFactory("NodeRewardVault");
-    const nodeRewardVault = await NodeRewardVault.deploy();
-    await nodeRewardVault.initialize(nftContract.address);
-
-    const DepositContract = await ethers.getContractFactory("DepositContract");
-    const depositContract = await DepositContract.deploy();
-
-    const LidoContract = await ethers.getContractFactory("Lido");
-    const lidoContract = await LidoContract.deploy();
-
-    const LidoControllerContract = await ethers.getContractFactory("LidoController");
-    const lidoController = await LidoControllerContract.deploy();
-    await lidoController.initialize();
 
     const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
     const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
@@ -41,22 +18,11 @@ describe("RocketTest", function () {
     rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address);
 
     await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address);
-
     const RocketControllerContract = await ethers.getContractFactory("RocketController");
     const rocketController = await RocketControllerContract.deploy();
     await rocketController.initialize();
 
-
-    const Aggregator = await ethers.getContractFactory("Aggregator");
-    const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
-
-    await lidoController.addAllowList(aggregator.address);
-    await nodeRewardVault.setAggregator(aggregator.address);
-    await nftContract.setAggregator(aggregator.address);
-
-
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, anotherAccount, authority, lidoController, rocketController };
+    return { owner, otherAccount, anotherAccount, authority, rocketController };
   }
 
   describe("Testing for Rocket Controller", function () {
@@ -68,30 +34,55 @@ describe("RocketTest", function () {
       //Test Add/Get RETH Balance
       await rocketController.addREthBalance(otherAccount.address, ethers.utils.parseEther("5"))
       const rEthBalance = await rocketController.getREthBalance(otherAccount.address);
-      await expect(ethers.utils.formatUnits(rEthBalance, 18)).to.equal("5.0");
+      expect(await ethers.utils.formatUnits(rEthBalance, 18)).to.equal("5.0");
+    });
+
+    it("Test Behavior- Not Allowed to add to AllowedList if not Owner ", async function () {
+      const { rocketController, otherAccount } = await deployBaseFixture();
+      await expect(rocketController.connect(otherAccount).addAllowList("0x0000000000000000000000000000000000000000")).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Test Behavior- Not Allowed to remove from AllowedList if not Owner ", async function () {
+      const { rocketController, otherAccount, anotherAccount } = await deployBaseFixture();
+      await rocketController.addAllowList(otherAccount.address);
+      await expect(rocketController.connect(anotherAccount).removeAllowList(otherAccount.address)).to.be.revertedWith("Ownable: caller is not the owner");
+      await expect(rocketController.connect(otherAccount).removeAllowList(otherAccount.address)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Test Behavior- Not Allowed to add ZeroList to AddList ", async function () {
+      const { rocketController, otherAccount } = await deployBaseFixture();
+      await expect(rocketController.addAllowList("0x0000000000000000000000000000000000000000")).to.be.revertedWith("User should not be zero address");
+      await expect(rocketController.connect(otherAccount).addAllowList("0x0000000000000000000000000000000000000000")).to.be.revertedWith("Ownable: caller is not the owner");
 
     });
 
-    it("AllowList Behavior", async function () {
+
+    it("Test Behavior- Not Allowed to add RETH Balance Without address approved in allowList ", async function () {
       const { rocketController, owner } = await deployBaseFixture();
-      await rocketController.addAllowList(owner.address);
-      await rocketController.removeAllowList(owner.address);
-      await expect(rocketController.addREthBalance(owner.address, ethers.utils.parseEther("2"))).to.be.rejectedWith("Not allowed to add RETH Balance");
-
+      await expect(rocketController.addREthBalance(owner.address, ethers.utils.parseEther("2"))).to.be.revertedWith("Not allowed to add RETH Balance");
+      await expect(rocketController.addREthBalance(owner.address, ethers.utils.parseEther("100"))).to.be.revertedWith("Not allowed to add RETH Balance");
     });
 
-    it("Allowlist Behavior 2", async function () {
+    it("Test Behavior- Not Allowed to add RETH Balance After Removing Address from allowList", async function () {
       const { rocketController, owner, otherAccount } = await deployBaseFixture();
       await rocketController.addAllowList(otherAccount.address);
-      await expect(await rocketController.getAllowList(otherAccount.address)).to.equal(true);
+      await rocketController.connect(otherAccount).addREthBalance(otherAccount.address, ethers.utils.parseEther("10"));
+      await rocketController.removeAllowList(otherAccount.address);
+      await expect(rocketController.connect(otherAccount).addREthBalance(otherAccount.address, ethers.utils.parseEther("10"))).to.be.revertedWith("Not allowed to add RETH Balance");
+      await expect(rocketController.connect(otherAccount).addREthBalance(otherAccount.address, ethers.utils.parseEther("100"))).to.be.revertedWith("Not allowed to add RETH Balance");
+    });
+
+    it("Test Behavior- getAllowList", async function () {
+      const { rocketController, owner, otherAccount } = await deployBaseFixture();
+      await rocketController.addAllowList(owner.address);
+      expect(await rocketController.getAllowList(owner.address)).to.eq(true);
+      expect(await rocketController.getAllowList(otherAccount.address)).to.eq(false);
     });
 
     it("Zero address behaviour", async function () {
-      const { rocketController, owner, otherAccount } = await deployBaseFixture();
-      //Zero address behaviour
+      const { rocketController, owner } = await deployBaseFixture();
       await rocketController.addAllowList(owner.address);
-      await expect(rocketController.addREthBalance("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("3"))).to.be.rejectedWith("User should not be zero address");
-
+      await expect(rocketController.addREthBalance("0x0000000000000000000000000000000000000000", ethers.utils.parseEther("3"))).to.be.revertedWith("User should not be zero address");
     });
 
     it.skip("UUPSUpgradeable Behavior", async function () {
@@ -100,9 +91,14 @@ describe("RocketTest", function () {
     });
 
     it("OwnableUpgradeable Behavior", async function () {
-      const { owner, otherAccount, aggregator, rocketController, anotherAccount } = await deployBaseFixture();
+      const { owner, otherAccount, rocketController, anotherAccount } = await deployBaseFixture();
       await expect(rocketController.transferOwnership(otherAccount.address)).to.emit(rocketController, "OwnershipTransferred").withArgs(owner.address, otherAccount.address);
-      expect(await rocketController.owner()).to.be.equal(otherAccount.address);
+      expect(await rocketController.owner()).to.equal(otherAccount.address);
+    });
+
+    it.skip("ReentrancyGuardUpgradeable Behavior", async function () {
+      const { owner, otherAccount, rocketController } = await deployBaseFixture();
+
     });
 
   });

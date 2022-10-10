@@ -1,23 +1,4 @@
-const { ethers, run } = require("hardhat");
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-export async function deployNft(): Promise<any> {
-  const ValidatorNft = await ethers.getContractFactory("ValidatorNft");
-  const validatorNft = await ValidatorNft.deploy();
-
-  await validatorNft.deployed();
-
-  await delay(20000);
-
-  console.log("Nft deployed: ", validatorNft.address);
-  await run("verify:verify", {
-    address: validatorNft.address,
-    constructorArguments: [],
-  });
-}
+const { deployNft } = require("./helper.ts");
 
 async function main() {
   await deployNft();

@@ -61,6 +61,7 @@ contract RocketPoolRouter is Initializable {
      */
     function _rocket_deposit(uint256 stake_amount) internal returns (uint256) {
         require(stake_amount >= 0.01 ether, "The deposited amount is less than the minimum deposit size");
+        require(msg.value >= stake_amount, "Stake amount is not enough!");
 
         uint256 beforeREthBalance = rocketTokenRETH.balanceOf(address(this));
         rocketDepositPool.deposit{value: stake_amount}();

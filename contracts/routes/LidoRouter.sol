@@ -43,7 +43,7 @@ contract LidoRouter is Initializable {
      */
     function _lido_stake(uint256 stake_amount) internal returns (uint256) {
         require(msg.value >= stake_amount, "Stake amount is not enough!");
-        require(stake_amount >= 1 wei, "Deposit must not be zero or must be minumum 1 wei");
+        require(stake_amount >= 1 wei, "Deposit must not be zero and must be minumum 1 wei");
        
         uint256 shareAmount = lidoContract.submit{value: stake_amount}(lidoController.getReferral());
         iLidoERC20.transfer(lidoContractControllerAddress, shareAmount);
