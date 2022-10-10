@@ -64,7 +64,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         uint256 _settleRewards = address(this).balance - _totalSettleRewards;
         require(_settleRewards > 0, "no settle amount");
         uint256 _settleBlockNumber = block.number;
-        uint256 _totalValidatorNumber = _nftContract.activeValidators().length;
+        uint256 _totalValidatorNumber = _nftContract.totalSupply();
         uint256 _totalGasHeight = _nftContract.totalHeight();
 
         SettleMetadata memory newSettle = SettleMetadata({
