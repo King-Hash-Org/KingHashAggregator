@@ -133,7 +133,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     _totalHeight += block.number;
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
-    nodeRewardVault.initNftReward(1);
   }
 
   function whiteListBurn(uint256 tokenId) external onlyAggregator {

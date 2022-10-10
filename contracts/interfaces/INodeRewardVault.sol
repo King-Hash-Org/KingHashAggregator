@@ -15,8 +15,6 @@ interface INodeRewardVault {
 
     function withdrawReward(uint256 tokenId) external; 
 
-    function initNftReward(uint256 quantity)external;
-
     function comission() external view returns (uint256);
 
     function tax() external view returns (uint256);
