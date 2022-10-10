@@ -1,7 +1,7 @@
-const { deployNodeCapitalVault } = require("./helper.ts");
+const { deployRocketController } = require("./helper.ts");
 
 async function main() {
-  await deployNodeCapitalVault();
+  await deployRocketController();
 }
 
 main()
