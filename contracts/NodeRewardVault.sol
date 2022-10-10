@@ -84,6 +84,8 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
             _isSettleStart = true;
             _settleRewards = address(this).balance - _totalSettleRewards;
             _settleBlockNumber = block.number;
+            uint256 total = _nftContract.totalSupply() * _settleBlockNumber - _nftContract.totalHeight();
+            _blockRewards.push(_settleRewards/total);
         }
        
          _settle(start, end);
@@ -104,7 +106,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
         for (uint256 i= start; i < end; i++) {
             uint256 nftReward = (totalRewards * (blockNumber - _nftContract.gasHeightOf(i))) / total;
-            _nftRewards[i]= (nftReward);
+            _nftRewards[i] = _nftRewards[i] + (nftReward);
             _nftContract.updateHeight(i, blockNumber);
         }
     }
