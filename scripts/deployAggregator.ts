@@ -1,32 +1,23 @@
-const { ethers, upgrades, run } = require("hardhat");
-//goerli: 0x07b39F4fDE4A38bACe212b546dAc87C58DfE3fDC
-//ropsten: 0x6f22fFbC56eFF051aECF839396DD1eD9aD6BBA9D
-const depositContract = "0x07b39F4fDE4A38bACe212b546dAc87C58DfE3fDC";
-const vaultContract = "0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C";
-const nftAddress = "0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD"; // nft contract address
+const { deployAggregator } = require("./helper.ts");
 
-export async function deployAggregator(
-  depositContract: String,
-  vaultContract: String,
-  nftAddress: String
-): Promise<any> {
-  const Aggregator = await ethers.getContractFactory("Aggregator");
-  const aggregatorProxy = await upgrades.deployProxy(Aggregator, [depositContract, vaultContract, nftAddress]);
-  await aggregatorProxy.deployed();
-
-  console.log("Aggregator deployed: ", aggregatorProxy.address);
-
-  const implementation = await upgrades.erc1967.getImplementationAddress(aggregatorProxy.address);
-  await run("verify:verify", {
-    address: implementation,
-    constructorArguments: [],
-  });
-
-  return await aggregatorProxy;
-}
+const depositContract = "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b";
+const vaultContract = "0x8F7845df4d9A490202Ecc2b6b4a2a32f1850Cd1a";
+const nftAddress = "0x4dfc2940482274f287562DeD4083e52E22A1532A"; // nft contract address
+const lidoContractAddress = "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F";
+const lidoControllerContractAddress= "0x27dDD94bc480a393cF1C7270618e64B9051A3E7e";
+const rocketStorageAddressContractAddress = "0xd8Cd47263414aFEca62d6e2a3917d6600abDceB3";
+const rocketPoolControllerContractAddress = "0xcd95DBEC9f99073fa1bf38E5b8fBd2a96AdCe98C";
 
 async function main() {
-  await deployAggregator(depositContract, vaultContract, nftAddress);
+  await deployAggregator(
+    depositContract, 
+    vaultContract, 
+    nftAddress, 
+    lidoContractAddress, 
+    lidoControllerContractAddress, 
+    rocketStorageAddressContractAddress, 
+    rocketPoolControllerContractAddress
+  );
 }
 
 main()

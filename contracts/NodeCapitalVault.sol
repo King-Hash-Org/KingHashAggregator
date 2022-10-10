@@ -9,6 +9,10 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "./interfaces/INodeRewardVault.sol";
 import "./interfaces/IValidatorNft.sol";
 
+  /**
+  * @title NodeCapitalVault
+  * NodeCapitalVault will manage rewards, commissions, tax
+  */
 contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     address private _aggregatorProxyAddress;
 
@@ -23,6 +27,11 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}
 
+    /**
+    * @notice Initializes the NodeCapitalVault contract by setting the required external contracts ,
+    * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable and `_aggregatorProxyAddress`.   
+    * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once. 
+    **/
     function initialize() external initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
@@ -42,7 +51,12 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
         payable(to).transfer(amount);
         emit Transferred(to, amount);
     }
-
+    
+    /**
+    * @notice Set proxy address of aggregator
+    * @param aggregatorProxyAddress_ proxy address of aggregator
+    * @dev will only allow call of function by the address registered as the owner
+    **/
     function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);

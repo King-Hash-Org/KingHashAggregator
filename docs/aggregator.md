@@ -207,7 +207,7 @@ TokenId is a 32 bytes number representing the tokenId of the vNFT.
 
 **Rebate**
 
-Rebate is a 32 bytes number representing the rebate of the vNFT. As the vNFT value is always increasing, the user should state the minimum amount they are expecting to sell their vNFT. Internally, we convert this amount to rebate so as to allow the sell order to accrue a value automatically whilst storing a constant. 
+Rebate is a strictly positive 32 bytes number representing the rebate of the vNFT. As the vNFT value is always increasing, the user should state the minimum amount they are expecting to sell their vNFT. Internally, we convert this amount to rebate so as to allow the sell order to accrue a value automatically whilst storing a constant. 
 
 TLDR: `rebate + price > value_of_node`
 

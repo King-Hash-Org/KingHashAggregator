@@ -64,11 +64,15 @@ ETHERSCAN_KEY=<YOUR_ETHERSCAN_API_KEY>
 
 1. The deploy order is NFTContract > Vault > Aggregator.
 2. Run `npx hardhat run scripts/deployNft.ts --network goerli` to deploy the NFT Contract on Goerli.
-3. Note down the `nftContract` address and update it in `./scripts/deployNodeRewardVault.ts`
+3. Note down the `ValidatorNft.sol` address and update it in both `./scripts/deployNodeRewardVault.ts` and `./scripts/deployAggregator.ts`.
 4. Run `npx hardhat run scripts/deployNodeRewardVault.ts --network goerli` to deploy the Node Reward Vault Contract on Goerli.
-5. Note down the `NodeRewardVaultContract` proxy's address and update both the `nftContract` and `NodeRewardVaultContract` proxy's into the `./scripts/deployAggregator.ts`.
-6. Run `npx hardhat run scripts/deployAggregator.ts --network goerli` to deploy the Aggregator Contract on Goerli.
-7. Note down the `aggregatorContract` proxy's address and interact with the `nftContract` and `NodeRewardVaultContract` to update them.
+5. Note down the `NodeRewardVault.sol` proxy's address and update it into the `./scripts/deployAggregator.ts`.
+6. Run `npx hardhat run scripts/deployLidoController.ts --network goerli` to deploy the Lido Controller Contract on Goerli.
+7. Note down the `LidoController.sol` proxy's address and update it into the `./scripts/deployAggregator.ts`.
+8. Run `npx hardhat run scripts/deployRocketController.ts --network goerli` to deploy the Rocket Controller Contract on Goerli.
+9. Note down the `RocketController.sol` proxy's address and update it into the `./scripts/deployAggregator.ts`.
+10. Run `npx hardhat run scripts/deployAggregator.ts --network goerli` to deploy the Aggregator Contract on Goerli.
+11. Note down the `Aggregator.sol` proxy's address and interact with the `ValidatorNft.sol`, `NodeRewardVault.sol`, `LidoController.sol` and `RocketController.sol` to update them.
 
 # Other Tools
 
