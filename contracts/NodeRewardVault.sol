@@ -29,15 +29,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     uint256 public _totalSettleRewards = 0;
     uint256[] public _blockRewards;
 
-    // bool private _isSettleStart = false;
-    // uint256 private _settleRewards = 0;
-    // uint256 private _settleBlockNumber = 0;
-    // uint256 private _settleIndex = 0;
-
     event ComissionChanged(uint256 _before, uint256 _after);
     event TaxChanged(uint256 _before, uint256 _after);
     event DaoChanged(address _before, address _after);
     event AuthorityChanged(address _before, address _after);
+    event SettleBlockLimitChanged(uint256 _before, uint256 _after);
     event AggregatorChanged(address _before, address _after);
     event RewardClaimed(address _owner, uint256 _amount, uint256 _total);
     event Transferred(address _to, uint256 _amount);
@@ -69,7 +65,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     function settle() external {
         if (_settleMetadata.length != 0) {
             SettleMetadata memory lastSettle = _settleMetadata[_settleMetadata.length-1];
-            require(lastSettle.blockNumber+_settleBlockLimit > block.number, "settle interval is too short");
+            require(lastSettle.blockNumber + _settleBlockLimit > block.number, "settle interval is too short");
         }
 
         uint256 _settleBlockNumber = block.number;
@@ -146,7 +142,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
 
-    function _calcRewards(uint256 start_, uint256 end_, SettleMetadata memory settleMetadata_) private view returns (uint256) {
+    function _calcRewards(uint256 start_, uint256 end_, SettleMetadata memory settleMetadata_) private pure returns (uint256) {
         uint256 total = settleMetadata_.totalValidatorNumber * settleMetadata_.blockNumber - settleMetadata_.totalGasHeight;
         return settleMetadata_.settleRewards * (end_ - start_) / total;
     }
@@ -208,6 +204,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(authority_ != address(0), "Authority address provided invalid");
         emit AuthorityChanged(_authority, authority_);
         _authority = authority_;
+    }
+
+    function setSettleBlockLimit(uint256 settleBlockLimit_) external onlyOwner {
+        emit SettleBlockLimitChanged(_settleBlockLimit, settleBlockLimit_);
+        _settleBlockLimit = settleBlockLimit_;
     }
 
     receive() external payable {}
