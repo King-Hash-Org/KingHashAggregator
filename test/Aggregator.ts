@@ -54,7 +54,6 @@ describe("Aggregator", function () {
     const aggregator = await Aggregator.deploy();
     await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
 
-    await lidoController.addAllowList(aggregator.address);
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
 
@@ -766,7 +765,7 @@ describe("Aggregator", function () {
 
   describe("Multi Staking", function () {
     it("Correct data behaviour for Multi-Stake - Lido, Rocket", async function () {
-      const { aggregator, lidoController, rocketController, owner  } = await deployBaseFixture();
+      const { aggregator, lidoController, rocketController  } = await deployBaseFixture();
       await lidoController.addAllowList(aggregator.address);
       await rocketController.addAllowList(aggregator.address);
       const lidodata1 = "0x02000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether 
