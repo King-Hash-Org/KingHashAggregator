@@ -15,7 +15,6 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     uint256 private _tax;
     address private _dao;
     address private _authority;
-    address private _nftContractAddress;
 
     struct SettleMetadata {
         uint256 blockNumber; 
@@ -39,11 +38,6 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     event Transferred(address _to, uint256 _amount);
     event Settle(uint256 _blockNumber, uint256 _settleRewards);
 
-    modifier onlyNftContract() {
-        require(_nftContractAddress == msg.sender, "Not allowed to touch funds");
-        _;
-    }
-
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}
 
@@ -53,7 +47,6 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         __ReentrancyGuard_init();
 
         _nftContract = IValidatorNft(nftContract_);
-        _nftContractAddress = address(nftContract_);
         _dao = address(0xd17a3B462170c53592a165Dfd007c7ED2b84F956);
         _authority = address(0xF5ade6B61BA60B8B82566Af0dfca982169a470Dc);
         _comission = 1000;
@@ -65,11 +58,12 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     function settle() external {
         if (_settleMetadata.length != 0) {
             SettleMetadata memory lastSettle = _settleMetadata[_settleMetadata.length-1];
-            require(lastSettle.blockNumber + _settleBlockLimit > block.number, "settle interval is too short");
+            require(lastSettle.blockNumber + _settleBlockLimit <= block.number, "settle interval is too short");
         }
-
-        uint256 _settleBlockNumber = block.number;
+        
         uint256 _settleRewards = address(this).balance - _totalSettleRewards;
+        require(_settleRewards > 0, "no settle amount");
+        uint256 _settleBlockNumber = block.number;
         uint256 _totalValidatorNumber = _nftContract.activeValidators().length;
         uint256 _totalGasHeight = _nftContract.totalHeight();
 
@@ -80,15 +74,25 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
             totalGasHeight: _totalGasHeight
         });
        
-       _settleMetadata.push(newSettle);
-
+        _settleMetadata.push(newSettle);
+        _totalSettleRewards = _totalSettleRewards + _settleRewards;
         uint256 total = _totalValidatorNumber * _settleBlockNumber - _totalGasHeight;
         _blockRewards.push(_settleRewards/total);
 
         emit Settle(_settleBlockNumber, _settleRewards);
     }
 
-    function withdrawReward(uint256 tokenId) external override {
+    function withdrawReward(uint256 tokenId) external override nonReentrant {
+        _withdrawReward(tokenId);
+    }
+
+    function batchWithdrawReward(uint256[] calldata tokenIds) external nonReentrant {
+        for (uint256 i = 0; i < tokenIds.length; i++) {
+            _withdrawReward(tokenIds[i]);
+        }
+    }
+
+    function _withdrawReward(uint256 tokenId) private {
         address owner = _nftContract.ownerOf(tokenId);
         (uint256 nftRewards, uint256 settleBlockNumber_) = _rewards(tokenId);
         if (nftRewards == 0) {
@@ -123,24 +127,20 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
             if (gasHeight_ > settleMetadata_.blockNumber) {
                 continue;
             }
-            if (i+1 >= _settleMetadata.length) {
-                break;
-            }
-
-            SettleMetadata memory nextSettleMetadata_ = _settleMetadata[i];
+           
             if (start_ == 0 ) {
                 start_ = gasHeight_;
             } else {
-                start_ = settleMetadata_.blockNumber;
+                SettleMetadata memory beforeSettleMetadata_ = _settleMetadata[i-1];
+                start_ = beforeSettleMetadata_.blockNumber;
             }
-            uint256 end_ = nextSettleMetadata_.blockNumber;
+            uint256 end_ = settleMetadata_.blockNumber;
             settleBlockNumber_ = end_;
-            totalReward_ = totalReward_ + _calcRewards(start_, end_, nextSettleMetadata_);
+            totalReward_ = totalReward_ + _calcRewards(start_, end_, settleMetadata_);
         }
 
         return (totalReward_, settleBlockNumber_);
     }
-
 
     function _calcRewards(uint256 start_, uint256 end_, SettleMetadata memory settleMetadata_) private pure returns (uint256) {
         uint256 total = settleMetadata_.totalValidatorNumber * settleMetadata_.blockNumber - settleMetadata_.totalGasHeight;
@@ -173,7 +173,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
     function nftContract() external view override returns (address) {
-        return _nftContractAddress;
+        return address(_nftContract);
     }
 
     function transfer(uint256 amount, address to) private {
