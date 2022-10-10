@@ -283,6 +283,18 @@ describe("ValidatorNft", function () {
         .to.emit(aggregator, "RewardClaimed")
         .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
     });
+
+    it("Claim again with no rewards", async function () {
+      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
+
+      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
+        .to.emit(aggregator, "RewardClaimed")
+        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
+
+      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
+        .to.emit(aggregator, "RewardClaimed")
+        .withArgs(owner.address, ethers.utils.parseUnits("0", 0), ethers.utils.parseUnits("0", 0));
+    });
   });
 
   describe("Bulk claim rewards of Nft", function () {
