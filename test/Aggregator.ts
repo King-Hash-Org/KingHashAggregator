@@ -55,7 +55,6 @@ describe("Aggregator", function () {
     await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
 
     await lidoController.addAllowList(aggregator.address);
-    await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
 
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, anotherAccount, authority, lidoController, rocketController };

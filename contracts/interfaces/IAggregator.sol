@@ -17,10 +17,4 @@ interface IAggregator {
     function stake(bytes[] calldata data) payable external returns (bool);
 
     function unstake(bytes[] calldata data) payable external returns (bool);
-
-    /**
-    * @notice Transfer earned rewards to user
-    * @param tokenId - representation of user's nft
-    **/
-    function disperseRewards(uint256 tokenId) external;
 }

@@ -204,20 +204,4 @@ contract ValidatorNftRouter is Initializable {
 
         return _tradeRoute(trade, data);
     }
-
-    /**
-    * @dev See {IAggregator-disperseRewards}.
-    */
-    //slither-disable-next-line reentrancy-events
-    function rewardRoute(uint256 tokenId) internal {
-        address owner = nftContract.ownerOf(tokenId);
-        require(msg.sender == nftAddress, "Message sender is not the Nft contract");
-
-        uint256 rewards = vault.rewards(tokenId);
-        uint256 userReward = (10000 - vault.comission()) * rewards / 10000;
-
-        vault.transfer(userReward, owner);
-        vault.transfer(rewards - userReward, vault.dao());
-        emit RewardClaimed(owner, userReward, rewards);
-    }
 }
