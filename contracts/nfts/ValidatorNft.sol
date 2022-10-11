@@ -103,6 +103,14 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return MAX_SUPPLY;
   }
 
+  function updateGasHeight(uint256 tokenId, uint256 blockNumber) external onlyAggregator {
+    require(_exists(tokenId), "Token does not exist");
+    if (blockNumber > _gasHeights[tokenId]) {
+      _totalHeight = _totalHeight - _gasHeights[tokenId] + blockNumber;
+      _gasHeights[tokenId] = blockNumber;
+    }
+  }
+
   function gasHeightOf(uint256 tokenId) external view returns (uint256) {
     require(_exists(tokenId), "Token does not exist");
 
@@ -137,7 +145,8 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   function nodeCapitalOf(uint256 tokenId)  external view returns (uint256) {
     require(_exists(tokenId), "Token does not exist");
-     return _nodeCapital[tokenId];
+
+    return _nodeCapital[tokenId];
   }
 
   // // metadata URI
@@ -168,26 +177,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return _numberMinted(owner);
   }
 
-  //slither-disable-next-line reentrancy-benign
-  function _claimRewards(uint256 tokenId) private {
-    require(_exists(tokenId), "Token does not exist");
-
-    aggregator.disperseRewards(tokenId);
-
-    _totalHeight = _totalHeight - _gasHeights[tokenId] + block.number;
-    _gasHeights[tokenId] = block.number;
-  }
-
-  function claimRewards(uint256 tokenId) external nonReentrant {
-    _claimRewards(tokenId);
-  }
-
-  function batchClaimRewards(uint256[] calldata tokenIds) external nonReentrant {
-    for (uint256 i = 0; i < tokenIds.length; i++) {
-      _claimRewards(tokenIds[i]);
-    }
-  }
-
   function _beforeTokenTransfers(
         address from,
         address to,
@@ -201,7 +190,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     }
 
     for (uint256 i = 0; i < quantity; i++) {
-      _claimRewards(startTokenId + i);
+      aggregator.disperseRewards(startTokenId + i);
     }
   }
 

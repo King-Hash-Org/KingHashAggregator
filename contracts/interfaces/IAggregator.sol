@@ -23,4 +23,8 @@ interface IAggregator {
     * @param tokenId - representation of user's nft
     **/
     function disperseRewards(uint256 tokenId) external;
+
+    function claimRewards(uint256 tokenId) external;
+
+    function batchClaimRewards(uint256[] calldata tokenIds) external;
 }

@@ -53,6 +53,10 @@ describe("NodeRewardVault", function () {
   async function deployRewardFixture() {
     const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployBaseFixture();
 
+    const data =
+      "0x011c00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00ab726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c74d6236b57a7c5d40c93f00c6d16a790b88bd29496b0cdd1809befd5464c2cd35655745adc507246b9f9db13d38c3d988fab56b6b752dfc2a2ecbe43dbb0eef3";
+    await aggregator.stake([data], { value: ethers.utils.parseEther("32") });
+
     await owner.sendTransaction({
       to: nodeRewardVault.address,
       value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
@@ -208,20 +212,10 @@ describe("NodeRewardVault", function () {
       expect(await ethers.provider.getBalance(nodeRewardVault.address)).to.equal(ethers.utils.parseEther("100"));
     });
 
-    it("Should not be able to transfer", async function () {
-      const { nodeRewardVault, owner } = await loadFixture(deployRewardFixture);
-
-      await expect(nodeRewardVault.transfer(ethers.utils.parseEther("100"), owner.address)).to.be.revertedWith(
-        "Not allowed to touch funds"
-      );
-    });
-
     it("Should not have rewards", async function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
 
-      await expect(nodeRewardVault.rewards(0)).to.be.revertedWith(
-        "No rewards to claim"
-      );
+      expect(await nodeRewardVault.rewards(0)).to.equal(0);
     });
   });
 });
