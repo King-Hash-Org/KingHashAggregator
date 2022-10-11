@@ -47,9 +47,8 @@ describe("ValidatorNft", function () {
     const aggregator = await Aggregator.deploy();
     await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketStorage.address , rocketController.address );
 
-    await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
-
+    await nftContract.setNodeRewardVault(nodeRewardVault.address);
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
   }
 
@@ -111,8 +110,8 @@ describe("ValidatorNft", function () {
     it("Should be only owner allowed to withdraw", async function () {
       const { nftContract, otherAccount } = await loadFixture(deployBaseFixture);
 
-      await nftContract.withdrawMoney();
-      await expect(nftContract.connect(otherAccount).withdrawMoney()).to.be.revertedWith(
+      await nftContract.withdrawMoney(otherAccount.address);
+      await expect(nftContract.connect(otherAccount).withdrawMoney(otherAccount.address)).to.be.revertedWith(
         "Ownable: caller is not the owner"
       );
     });
@@ -230,131 +229,6 @@ describe("ValidatorNft", function () {
         nftContract,
         "OwnerQueryForNonexistentToken"
       );
-    });
-  });
-
-  describe("Claim rewards", function () {
-    it("Gas height change after reward claim through transfer", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithAggregatorFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract["safeTransferFrom(address,address,uint256)"](owner.address, otherAccount.address, 0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("Gas height change after regular reward claim", async function () {
-      const { nftContract, owner, aggregator } = await loadFixture(deployMintedWithAggregatorFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract.claimRewards(0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("Other ppl helping to claim", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithAggregatorFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract.connect(otherAccount).claimRewards(0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("Real rewards claim", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract["safeTransferFrom(address,address,uint256)"](owner.address, otherAccount.address, 0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("Gas height change after regular reward claim", async function () {
-      const { nftContract, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract.claimRewards(0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("Other ppl helping to claim", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract.connect(otherAccount).claimRewards(0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-  });
-
-  describe("Bulk claim rewards of Nft", function () {
-    it("With rewards behaviour", async function () {
-      const { aggregator, owner, nftContract } = await loadFixture(deployMintedWithRewardsFixture);
-
-      const prevGasHeight = await nftContract.gasHeightOf(0);
-      const prevTotalHeight = await nftContract.totalHeight();
-      await expect(nftContract.batchClaimRewards([0]))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("90"), ethers.utils.parseEther("100"));
-
-      const currGasHeight = await nftContract.gasHeightOf(0);
-      const currTotalHeight = await nftContract.totalHeight();
-
-      expect(currGasHeight).to.greaterThan(prevGasHeight);
-      expect(currTotalHeight).to.greaterThan(prevTotalHeight);
-      expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
-    });
-
-    it("No rewards behaviour", async function () {
-      const { aggregator, owner, nftContract } = await loadFixture(deployMintedWithAggregatorFixture);
-
-      await expect(nftContract.batchClaimRewards([0]))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
     });
   });
 
