@@ -7,7 +7,6 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "./interfaces/INodeRewardVault.sol";
 import "./interfaces/IValidatorNft.sol";
-import "hardhat/console.sol";
 
 contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     IValidatorNft private _nftContract;
@@ -82,7 +81,6 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
                 }
                 end_ = r.blockHeight;
                 totalReward_ += (end_ - start_) * r.rewardPerGasHeight;
-                console.log(end_, start_,  r.rewardPerGasHeight, (end_ - start_) * r.rewardPerGasHeight);
             }
         }
 
@@ -136,9 +134,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         settledRewards += totalReward;
         
         uint256 rewardPerGasHeight = totalReward / (_nftContract.totalSupply() * block.number - _nftContract.totalHeight() - prevTotalHeight + offset);
-        console.log(prevTotalHeight);
         prevTotalHeight = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
-        console.log(prevTotalHeight);
 
         RewardMetadata memory r = RewardMetadata({
             rewardPerGasHeight: rewardPerGasHeight,
