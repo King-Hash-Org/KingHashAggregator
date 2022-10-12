@@ -11,29 +11,6 @@ import "../interfaces/INodeRewardVault.sol";
 @dev Routes incoming data(ValidatorNftRouter strategy) to outbound contracts 
 **/
 contract ValidatorNftRouter is Initializable {
-    struct Signature {
-        address signer;
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-    }
-
-    struct UserListing {
-        uint256 tokenId; 
-        uint256 rebate;
-        uint256 expiredHeight; // listing expiry block height
-        Signature signature;
-        uint64 nonce;
-    }
-
-    struct Trade {
-        uint256[] prices;
-        uint256 expiredHeight; // trade expiry block height
-        address receiver;
-        UserListing[] userListings;
-        Signature signature;
-    }
-
     event NodeTrade(uint256 _tokenId, address _from, address _to, uint256 _amount);
     event Eth32Deposit(bytes _pubkey, bytes _withdrawal, address _owner);
 
@@ -95,43 +72,50 @@ contract ValidatorNftRouter is Initializable {
     * @return uint256 sum of the trades
     */
     //slither-disable-next-line calls-loop
-    function _tradeRoute(Trade memory trade, bytes calldata data) private returns (uint256) {
-        require(trade.expiredHeight > block.number, "Trade has expired");
-        require(trade.receiver == msg.sender, "Not allowed to make this trade");
+    function _tradeRoute(bytes calldata data) private returns (uint256) {
+        address tradeReceiver = address(bytes20(data[12:32]));
+        require(tradeReceiver == msg.sender, "Not allowed to make this trade");
+        require(uint256(bytes32(data[96:128])) > block.number, "Trade has expired");
 
         // change this in the future
         uint256 sum = 0;
         uint256 i = 0;
 
-        for (i = 0; i < trade.userListings.length; i++) {
-            UserListing memory userListing = trade.userListings[i];
-            uint256 price = trade.prices[i];
-            sum += price;
-                        
-            require(userListing.expiredHeight > block.number, "Listing has expired");
-            require(nftContract.ownerOf(userListing.tokenId) == userListing.signature.signer, "Not owner");
-            require(userListing.nonce == nonces[userListing.tokenId], "Incorrect nonce");
-            nonces[userListing.tokenId]++;
+        for (i = 0; i < uint256(bytes32(data[128:160])); i++) {
+            uint256 price = uint256(bytes32(data[160 + i * 224:192 + i * 224]));
+            uint256 tokenId = uint256(bytes32(data[192 + i * 224:224 + i * 224]));
+            uint256 rebate = uint256(bytes32(data[224 + i * 224:256 + i * 224]));
+            uint256 expiredHeight = uint256(bytes32(data[256 + i * 224:288 + i * 224]));
+            address signer = address(bytes20(data[352 + i * 224:372 + i * 224]));
+            uint64 nonce = uint64(bytes8(data[376 + i * 224:384 + i * 224]));
 
-            bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight, userListing.nonce));
-            signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
+            require(expiredHeight > block.number, "Listing has expired");
+            require(nftContract.ownerOf(tokenId) == signer, "Not owner");
+            require(nonce == nonces[tokenId], "Incorrect nonce");
             
-            uint256 nodeCapital = nftContract.nodeCapitalOf(userListing.tokenId);
+            nonces[tokenId]++;
+            sum += price;
+
+            bytes32 hash = keccak256(abi.encodePacked(tokenId, rebate, expiredHeight, nonce));
+            signercheck(bytes32(data[320 + i * 224:352 + i * 224]), bytes32(data[288 + i * 224:320 + i * 224]), uint8(bytes1(data[372 + i * 224])), hash, signer);
+            
+            uint256 nodeCapital = nftContract.nodeCapitalOf(tokenId);
             uint256 userPrice = price;
             if (price > nodeCapital) {
                 userPrice = price - (price - nodeCapital) * vault.comission() / 10000;
                 payable(vault.dao()).transfer(price - userPrice);
             }
-            payable(userListing.signature.signer).transfer(userPrice);
-            nftContract.safeTransferFrom(userListing.signature.signer, trade.receiver, userListing.tokenId);
-            nftContract.updateNodeCapital(userListing.tokenId, price);
-
             require(userPrice > 30 ether, "Node too cheap");
-            emit NodeTrade(userListing.tokenId, userListing.signature.signer, trade.receiver, price);
+
+            payable(signer).transfer(userPrice);
+            nftContract.safeTransferFrom(signer, tradeReceiver, tokenId);
+            nftContract.updateNodeCapital(tokenId, price);
+            
+            emit NodeTrade(tokenId, signer, tradeReceiver, price);
         }
 
-        bytes32 authHash = keccak256(abi.encodePacked(data[160:], trade.expiredHeight, trade.receiver));
-        signercheck(trade.signature.s, trade.signature.r, trade.signature.v, authHash, vault.authority());
+        bytes32 authHash = keccak256(abi.encodePacked(data[160:], uint256(bytes32(data[96:128])), tradeReceiver));
+        signercheck(bytes32(data[64:96]), bytes32(data[32:64]), uint8(bytes1(data[1])), authHash, vault.authority());
 
         return sum;
     }
@@ -174,35 +158,7 @@ contract ValidatorNftRouter is Initializable {
     * @return uint256 sum of the trades
     */
     function tradeRoute(bytes calldata data) internal returns (uint256) {
-        //slither-disable-next-line uninitialized-local
-        Trade memory trade;
-
-        uint256 i = 0;
-        trade.signature.signer = address(0);
-        trade.signature.v = uint8(bytes1(data[1]));
-        trade.receiver = address(bytes20(data[12:32]));
-        trade.signature.r = bytes32(data[32:64]);
-        trade.signature.s = bytes32(data[64:96]);
-        trade.expiredHeight = uint256(bytes32(data[96:128]));
-
-        uint256 len = uint256(bytes32(data[128:160]));
-        uint256[] memory prices = new uint256[](len);
-        UserListing[] memory userListings = new UserListing[](len);
-        for (i = 0; i < len; i++) {
-            prices[i] = uint256(bytes32(data[160 + i * 224:192 + i * 224]));
-            userListings[i].tokenId = uint256(bytes32(data[192 + i * 224:224 + i * 224]));
-            userListings[i].rebate = uint256(bytes32(data[224 + i * 224:256 + i * 224]));
-            userListings[i].expiredHeight = uint256(bytes32(data[256 + i * 224:288 + i * 224]));
-            userListings[i].signature.r = bytes32(data[288 + i * 224:320 + i * 224]);
-            userListings[i].signature.s = bytes32(data[320 + i * 224:352 + i * 224]);
-            userListings[i].signature.signer = address(bytes20(data[352 + i * 224:372 + i * 224]));
-            userListings[i].signature.v = uint8(bytes1(data[372 + i * 224]));
-            userListings[i].nonce = uint64(bytes8(data[376 + i * 224:384 + i * 224]));
-        }
-        trade.prices = prices;
-        trade.userListings = userListings;
-
-        return _tradeRoute(trade, data);
+        return _tradeRoute(data);
     }
 
     /**

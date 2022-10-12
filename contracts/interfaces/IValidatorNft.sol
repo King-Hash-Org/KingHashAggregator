@@ -18,6 +18,8 @@ interface IValidatorNft is IERC721AQueryable {
 
     function gasHeightOf(uint256 tokenId) external view returns (uint256);
 
+    function lastOwnerOf(uint256 tokenId) external view returns (address);
+
     function whiteListMint(bytes calldata data, address _to) external payable;
 
     function whiteListBurn(uint256 tokenId) external;

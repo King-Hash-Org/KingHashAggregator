@@ -96,7 +96,7 @@ describe("ValidatorNft", function () {
       value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
     });
 
-    await nodeRewardVault.settle();
+    await nodeRewardVault.publicSettle();
 
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
   }
@@ -318,7 +318,9 @@ describe("ValidatorNft", function () {
         to: nodeRewardVault.address,
         value: ethers.utils.parseEther("60"), // Sends exactly 60 ether
       });
+      await nodeRewardVault.setAggregator(owner.address);
       await nodeRewardVault.settle();
+      await nodeRewardVault.setAggregator(aggregator.address);
       
       const prevGasHeight1 = await nftContract.gasHeightOf(0);
       await expect(aggregator.connect(otherAccount).claimRewards(0))
@@ -332,7 +334,9 @@ describe("ValidatorNft", function () {
         to: nodeRewardVault.address,
         value: ethers.utils.parseEther("80"), // Sends exactly 80 ether
       });
+      await nodeRewardVault.setAggregator(owner.address);
       await nodeRewardVault.settle();
+      await nodeRewardVault.setAggregator(aggregator.address);
       
       const prevGasHeight2 = await nftContract.gasHeightOf(0);
       await expect(aggregator.connect(otherAccount).claimRewards(0))
@@ -356,8 +360,10 @@ describe("ValidatorNft", function () {
         to: nodeRewardVault.address,
         value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
       });
+      await nodeRewardVault.setAggregator(owner.address);
       await expect(nodeRewardVault.settle())
         .to.emit(nodeRewardVault, "Settle");
+      await nodeRewardVault.setAggregator(aggregator.address);
       await expect(aggregator.connect(otherAccount).claimRewards(0))
         .to.emit(nodeRewardVault, "RewardClaimed")
         .withArgs(owner.address, ethers.utils.parseEther("135"));
@@ -403,12 +409,16 @@ describe("ValidatorNft", function () {
         to: nodeRewardVault.address,
         value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
       });
+      await nodeRewardVault.setAggregator(owner.address);
       await nodeRewardVault.settle();
+      await nodeRewardVault.setAggregator(aggregator.address);
       await owner.sendTransaction({
         to: nodeRewardVault.address,
         value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
       });
+      await nodeRewardVault.setAggregator(owner.address);
       await nodeRewardVault.settle();
+      await nodeRewardVault.setAggregator(aggregator.address);
       
       const prevGasHeight1 = await nftContract.gasHeightOf(0);
       await expect(aggregator.connect(otherAccount).claimRewards(0))

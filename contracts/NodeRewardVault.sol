@@ -11,13 +11,10 @@ import "./interfaces/IValidatorNft.sol";
 contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     IValidatorNft private _nftContract;
 
-    struct RewardMetadata {
-        uint256 value;
-        uint256 height;
-    }
-
     RewardMetadata[] public cumArr;
     uint256 public unclaimedRewards;
+    uint256 public daoRewards;
+    uint256 public lastPublicSettle;
 
     uint256 private _comission;
     uint256 private _tax;
@@ -61,6 +58,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
         cumArr.push(r);
         unclaimedRewards = 0;
+        lastPublicSettle = 0;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -84,6 +82,27 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         return cumArr[cumArr.length - 1].value - cumArr[low - 1].value;
     }
 
+    function _settle() private {
+        uint256 outstandingRewards = address(this).balance - unclaimedRewards - daoRewards;
+        if (outstandingRewards == 0 || cumArr[cumArr.length - 1].height == block.number) {
+            return;
+        }
+
+        uint256 daoReward = (outstandingRewards * _comission) / 10000;
+        daoRewards += daoReward;
+        outstandingRewards -= daoReward;
+        unclaimedRewards += outstandingRewards;
+
+        uint256 currentValue = cumArr[cumArr.length - 1].value + outstandingRewards / _nftContract.totalSupply();
+        RewardMetadata memory r = RewardMetadata({
+            value: currentValue,
+            height: block.number
+        });
+        cumArr.push(r);
+
+        emit Settle(block.number, currentValue);
+    }
+
     function nftContract() external view override returns (address) {
         return address(_nftContract);
     }
@@ -94,6 +113,16 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
     function rewardsHeight() external view override returns (uint256) {
         return cumArr[cumArr.length - 1].height + 1;
+    }
+
+    function rewardsAndHeights(uint256 amt) external view override returns (RewardMetadata[] memory) {
+        RewardMetadata[] memory r = new RewardMetadata[](amt);
+
+        for (uint256 i = 0; i < amt; i++) {
+            r[0] = cumArr[cumArr.length - 1 - i];
+        }
+
+        return r;
     }
 
     function comission() external view override returns (uint256) {
@@ -116,25 +145,15 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         return _aggregatorProxyAddress;
     }
 
-    function settle() external override {
-        uint256 outstandingRewards = address(this).balance - unclaimedRewards;
-        if (outstandingRewards == 0) {
-            return;
-        }
-        
-        uint256 daoReward = (outstandingRewards * _comission) / 10000;
-        transfer(daoReward, _dao);
-        outstandingRewards -= daoReward;
-        unclaimedRewards += outstandingRewards;
+    function settle() external override onlyAggregator {
+        _settle();
+    }
 
-        uint256 currentValue = cumArr[cumArr.length - 1].value + outstandingRewards / _nftContract.totalSupply();
-        RewardMetadata memory r = RewardMetadata({
-            value: currentValue,
-            height: block.number
-        });
-        cumArr.push(r);
+    function publicSettle() external override {
+        require(lastPublicSettle + 216000 > block.number, "Settle too early");
 
-        emit Settle(block.number, currentValue);
+        _settle();
+        lastPublicSettle = block.number;
     }
 
     function claimRewards(uint256 tokenId) external override nonReentrant onlyAggregator {
@@ -151,6 +170,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(to != address(0), "Recipient address provided invalid");
         payable(to).transfer(amount);
         emit Transferred(to, amount);
+    }
+
+    function claimDao() external nonReentrant {
+        transfer(daoRewards, _dao);
+        daoRewards = 0;
     }
 
     function setComission(uint256 comission_) external onlyOwner {

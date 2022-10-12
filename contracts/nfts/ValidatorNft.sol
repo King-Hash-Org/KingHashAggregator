@@ -15,6 +15,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   IAggregator private aggregator;
   
   mapping(bytes => bool) private validatorRecords;
+  mapping(uint256 => address) private lastOwners;
   bytes[] public _validators;
   uint256[] public _gasHeights;
   uint256[] public _nodeCapital;
@@ -104,6 +105,12 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return _gasHeights[tokenId];
   }
 
+  function lastOwnerOf(uint256 tokenId) external view returns (address) {
+    require(_ownershipAt(tokenId).burned, "Token not burned yet");
+    
+    return lastOwners[tokenId];
+  }
+
   function whiteListMint(bytes calldata pubkey, address _to) external onlyAggregator {
     require(
       totalSupply() + 1 <= MAX_SUPPLY,
@@ -119,6 +126,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   }
 
   function whiteListBurn(uint256 tokenId) external onlyAggregator {
+    lastOwners[tokenId] = ownerOf(tokenId);
     _nodeCapital[tokenId] = 0;
     _burn(tokenId);
   }
