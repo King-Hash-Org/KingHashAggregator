@@ -162,6 +162,7 @@ contract ValidatorNftRouter is Initializable {
         deposit(data);
 
         nftContract.whiteListMint(data[16:64], msg.sender);
+        vault.settle();
 
         return true;
     }
