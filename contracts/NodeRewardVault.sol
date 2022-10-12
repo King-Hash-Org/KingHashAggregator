@@ -118,6 +118,10 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
     function settle() external override {
         uint256 outstandingRewards = address(this).balance - unclaimedRewards;
+        if (outstandingRewards == 0) {
+            return;
+        }
+        
         uint256 daoReward = (outstandingRewards * _comission) / 10000;
         transfer(daoReward, _dao);
         outstandingRewards -= daoReward;

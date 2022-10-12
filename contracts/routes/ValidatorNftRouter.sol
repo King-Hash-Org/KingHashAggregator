@@ -161,8 +161,8 @@ contract ValidatorNftRouter is Initializable {
         signercheck(bytes32(data[256:288]), bytes32(data[288:320]), uint8(bytes1(data[1])), hash, vault.authority());
         deposit(data);
 
-        nftContract.whiteListMint(data[16:64], msg.sender);
         vault.settle();
+        nftContract.whiteListMint(data[16:64], msg.sender);
 
         return true;
     }
