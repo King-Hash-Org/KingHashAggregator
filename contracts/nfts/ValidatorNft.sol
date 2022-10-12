@@ -20,7 +20,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   uint256[] public _nodeCapital;
 
   bool private _isOpenSeaProxyActive = false;
-  uint256 private _totalHeight = 0;
   address private _aggregatorProxyAddress;
 
   event BaseURIChanged(string _before, string _after);
@@ -37,10 +36,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   function aggregatorProxyAddress() external view returns (address) {
     return _aggregatorProxyAddress;
-  }
-
-  function totalHeight() external view returns (uint256) {
-    return _totalHeight;
   }
 
   function activeValidators() external view returns (bytes[] memory) {
@@ -103,14 +98,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return MAX_SUPPLY;
   }
 
-  function updateGasHeight(uint256 tokenId, uint256 blockNumber) external onlyAggregator {
-    require(_exists(tokenId), "Token does not exist");
-    if (blockNumber > _gasHeights[tokenId]) {
-      _totalHeight = _totalHeight - _gasHeights[tokenId] + blockNumber;
-      _gasHeights[tokenId] = blockNumber;
-    }
-  }
-
   function gasHeightOf(uint256 tokenId) external view returns (uint256) {
     require(_exists(tokenId), "Token does not exist");
 
@@ -127,14 +114,12 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     validatorRecords[pubkey] = true;
     _validators.push(pubkey);
     _gasHeights.push(block.number);
-    _totalHeight += block.number;
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
   }
 
   function whiteListBurn(uint256 tokenId) external onlyAggregator {
     _nodeCapital[tokenId] = 0;
-    _totalHeight -= _gasHeights[tokenId];
     _burn(tokenId);
   }
 
@@ -172,6 +157,12 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
     _aggregatorProxyAddress = aggregatorProxyAddress_;
     aggregator = IAggregator(_aggregatorProxyAddress);
+  }
+
+  function setGasHeight(uint256 tokenId, uint256 value) external onlyAggregator {
+    if (value > _gasHeights[tokenId]) {
+      _gasHeights[tokenId] = value;
+    }
   }
 
   function numberMinted(address owner) external view returns (uint256) {
