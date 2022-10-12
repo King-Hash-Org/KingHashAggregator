@@ -210,6 +210,6 @@ contract ValidatorNftRouter is Initializable {
     //slither-disable-next-line reentrancy-events
     function rewardRoute(uint256 tokenId) internal {
         vault.claimRewards(tokenId);
-        nftContract.updateGasHeight(tokenId, vault.recentBlockHeight());
+        nftContract.setGasHeight(tokenId, vault.rewardsHeight());
     }
 }
