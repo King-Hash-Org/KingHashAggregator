@@ -15,6 +15,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     uint256 public unclaimedRewards;
     uint256 public daoRewards;
     uint256 public lastPublicSettle;
+    uint256 public publicSettleLimit;
 
     uint256 private _comission;
     uint256 private _tax;
@@ -27,6 +28,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     event DaoChanged(address _before, address _after);
     event AuthorityChanged(address _before, address _after);
     event AggregatorChanged(address _before, address _after);
+    event PublicSettleLimitChanged(uint256 _before, uint256 _after);
     event RewardClaimed(address _owner, uint256 _amount);
     event Transferred(address _to, uint256 _amount);
     event Settle(uint256 _blockNumber, uint256 _settleRewards);
@@ -59,6 +61,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         cumArr.push(r);
         unclaimedRewards = 0;
         lastPublicSettle = 0;
+        publicSettleLimit = 216000;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -116,10 +119,14 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
     function rewardsAndHeights(uint256 amt) external view override returns (RewardMetadata[] memory) {
-        RewardMetadata[] memory r = new RewardMetadata[](amt);
+        RewardMetadata[] memory r = new RewardMetadata[](amt > cumArr.length ? cumArr.length : amt);
 
         for (uint256 i = 0; i < amt; i++) {
-            r[0] = cumArr[cumArr.length - 1 - i];
+            if (cumArr.length - 1 - i <= 0) {
+                break;
+            }
+
+            r[i] = cumArr[cumArr.length - 1 - i];
         }
 
         return r;
@@ -150,7 +157,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
     function publicSettle() external override {
-        require(lastPublicSettle + 216000 > block.number, "Settle too early");
+        require(lastPublicSettle + publicSettleLimit <= block.number, "Settle too early");
 
         _settle();
         lastPublicSettle = block.number;
@@ -205,6 +212,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
+    }
+
+    function setSettleBlockLimit(uint256 publicSettleLimit_) external onlyOwner {
+        emit PublicSettleLimitChanged(publicSettleLimit, publicSettleLimit_);
+        publicSettleLimit = publicSettleLimit_;
     }
 
     receive() external payable{}
