@@ -119,13 +119,13 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
     function rewardsAndHeights(uint256 amt) external view override returns (RewardMetadata[] memory) {
-        RewardMetadata[] memory r = new RewardMetadata[](amt > cumArr.length ? cumArr.length : amt);
+        if (amt >= cumArr.length) {
+            return cumArr;
+        }
+
+        RewardMetadata[] memory r = new RewardMetadata[](amt);
 
         for (uint256 i = 0; i < amt; i++) {
-            if (cumArr.length - 1 - i <= 0) {
-                break;
-            }
-
             r[i] = cumArr[cumArr.length - 1 - i];
         }
 
