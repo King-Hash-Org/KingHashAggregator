@@ -214,7 +214,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _aggregatorProxyAddress = aggregatorProxyAddress_;
     }
 
-    function setSettleBlockLimit(uint256 publicSettleLimit_) external onlyOwner {
+    function setPublicSettleLimit(uint256 publicSettleLimit_) external onlyOwner {
         emit PublicSettleLimitChanged(publicSettleLimit, publicSettleLimit_);
         publicSettleLimit = publicSettleLimit_;
     }
