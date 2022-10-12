@@ -19,8 +19,8 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     RewardMetadata[] public rewardsMeta;
     uint256 public _settleBlockLimit = 1;
     uint256 public settledRewards = 0;
-    uint256 public prevTotalHeight = 0;
-    uint256 public offset = 0;
+    uint256 private prevTotalHeight = 0;
+    uint256 private claimOffset = 0;
 
     uint256 private _comission;
     uint256 private _tax;
@@ -133,7 +133,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         totalReward -= daoReward;
         settledRewards += totalReward;
         
-        uint256 rewardPerGasHeight = totalReward / (_nftContract.totalSupply() * block.number - _nftContract.totalHeight() + offset - prevTotalHeight);
+        uint256 rewardPerGasHeight = totalReward / (_nftContract.totalSupply() * block.number - _nftContract.totalHeight() + claimOffset - prevTotalHeight);
         prevTotalHeight = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
 
         RewardMetadata memory r = RewardMetadata({
@@ -141,9 +141,18 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
             blockHeight: block.number
         });
         rewardsMeta.push(r);
-        offset = 0;
+        claimOffset = 0;
 
         emit Settle(block.number, rewardPerGasHeight);
+    }
+
+    function rewardPreBlock()external view override returns (uint256) {
+        uint256 totalRewardPerGasHeight = 0;
+        for (uint256 i = 0; i < rewardsMeta.length; i++) {
+            totalRewardPerGasHeight = totalRewardPerGasHeight + rewardsMeta[i].rewardPerGasHeight;
+        }
+
+        return totalRewardPerGasHeight / rewardsMeta.length;
     }
 
     function claimRewards(uint256 tokenId) external override nonReentrant onlyAggregator {
@@ -151,7 +160,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         uint256 nftRewards = _rewards(tokenId);
 
         if (_recentBlockHeight() > _nftContract.gasHeightOf(tokenId)) {
-            offset += _recentBlockHeight() - _nftContract.gasHeightOf(tokenId);
+            claimOffset += _recentBlockHeight() - _nftContract.gasHeightOf(tokenId);
         }
         settledRewards -= nftRewards;
         transfer(nftRewards, owner);

@@ -26,4 +26,6 @@ interface INodeRewardVault {
     function settle() external;
 
     function claimRewards(uint256 tokenId) external;
+
+    function rewardPreBlock() external view returns (uint256);
 }
