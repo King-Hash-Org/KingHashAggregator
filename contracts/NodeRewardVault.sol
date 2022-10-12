@@ -11,8 +11,12 @@ import "./interfaces/IValidatorNft.sol";
 contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     IValidatorNft private _nftContract;
 
-    uint256[] public cumValues;
-    uint256[] public cumHeights;
+    struct RewardMetadata {
+        uint256 value;
+        uint256 height;
+    }
+
+    RewardMetadata[] public cumArr;
     uint256 public unclaimedRewards;
 
     uint256 private _comission;
@@ -50,8 +54,12 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _comission = 1000;
         _tax = 0;
 
-        cumValues.push(0);
-        cumHeights.push(0);
+        RewardMetadata memory r = RewardMetadata({
+            value: 0,
+            height: 0
+        });
+
+        cumArr.push(r);
         unclaimedRewards = 0;
     }
 
@@ -60,12 +68,12 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     function _rewards(uint256 tokenId) private view returns (uint256) {
         uint256 gasHeight = _nftContract.gasHeightOf(tokenId);
         uint256 low = 0;
-        uint256 high = cumValues.length;
+        uint256 high = cumArr.length;
 
         while (low < high) {
             uint256 mid = (low + high) >> 1;
 
-            if (cumHeights[mid] > gasHeight) {
+            if (cumArr[mid].height > gasHeight) {
                 high = mid;
             } else {
                 low = mid + 1;
@@ -73,7 +81,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         }
 
         // At this point `low` is the exclusive upper bound. We will use it.
-        return cumValues[cumValues.length - 1] - cumValues[low - 1];
+        return cumArr[cumArr.length - 1].value - cumArr[low - 1].value;
     }
 
     function nftContract() external view override returns (address) {
@@ -85,7 +93,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
     function rewardsHeight() external view override returns (uint256) {
-        return cumHeights[cumHeights.length - 1] + 1;
+        return cumArr[cumArr.length - 1].height + 1;
     }
 
     function comission() external view override returns (uint256) {
@@ -115,9 +123,12 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         outstandingRewards -= daoReward;
         unclaimedRewards += outstandingRewards;
 
-        uint256 currentValue = cumValues[cumValues.length - 1] + outstandingRewards / _nftContract.totalSupply();
-        cumValues.push(currentValue);
-        cumHeights.push(block.number);
+        uint256 currentValue = cumArr[cumArr.length - 1].value + outstandingRewards / _nftContract.totalSupply();
+        RewardMetadata memory r = RewardMetadata({
+            value: currentValue,
+            height: block.number
+        });
+        cumArr.push(r);
 
         emit Settle(block.number, currentValue);
     }

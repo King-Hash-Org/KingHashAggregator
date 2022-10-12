@@ -339,12 +339,14 @@ describe("ValidatorNft", function () {
         .to.emit(nodeRewardVault, "RewardClaimed")
         .withArgs(owner.address, ethers.utils.parseEther("72"));
       const currGasHeight2 = await nftContract.gasHeightOf(0);
+      const gasHeight = await nodeRewardVault.rewardsHeight();
 
       expect(currGasHeight2).to.greaterThan(prevGasHeight2);
+      expect(currGasHeight2).to.equal(gasHeight);
     });
 
     it("Multi nfts reward", async function () {
-      const { otherAccount, owner, nodeRewardVault, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
+      const { otherAccount, owner, nodeRewardVault, aggregator, nftContract } = await loadFixture(deployMintedWithRewardsFixture);
 
       const data1 =
       "0x011c000000000000000000000000000093d9f1e58ab7cf478d35f1661c59a841eb3a1c627e55b3ecdaf8aa7d2999e8d5c5aae5af3834d8244f2501d16f7a40ad010000000000000000000000bb5b420f1d3967756d4e46f830e1ca142e1e0545a6eb199e52568df716ebb2d4a4a7638c86737b4f39f9a1776f39d6488f8c0b73946e66575cb50e49e58d1867890b48b311ff2784dc18b2a7087cf199ed980c137c8e8f6b4ac4a07b182533a3d462385d14ea8cc560e32e0bc005c0eb71bc634e67ff826e8d32f2967db660f6361036e6d9f129693741ecbf03ebd8084961ebb10000000000000000000000000000000000000000000000000000000006e1752c2a13a5bd053923eb63463474deeef9aff43294971c6d10a262eb0421f71717d9dee9b45d60bb7d8a97113dc6d094cbc0bd03ad2a50fa7aab3d3b40fb80e249e9";
@@ -363,6 +365,10 @@ describe("ValidatorNft", function () {
       await expect(aggregator.connect(otherAccount).claimRewards(1))
         .to.emit(nodeRewardVault, "RewardClaimed")
         .withArgs(owner.address, ethers.utils.parseEther("45"));
+
+      const gasHeight = await nodeRewardVault.rewardsHeight();
+      expect(await nftContract.gasHeightOf(0)).to.equal(gasHeight);
+      expect(await nftContract.gasHeightOf(1)).to.equal(gasHeight);
 
     });
 
@@ -387,9 +393,9 @@ describe("ValidatorNft", function () {
       const currGasHeight1 = await nftContract.gasHeightOf(0);
 
       expect(currGasHeight1).to.greaterThan(prevGasHeight1);
-      const gasHeight = await nodeRewardVault.cumHeights(4);
+      const gasHeight = await nodeRewardVault.rewardsHeight();
 
-      expect(currGasHeight1).to.equal(gasHeight.add(1));
+      expect(currGasHeight1).to.equal(gasHeight);
     });
   });
 
@@ -404,9 +410,9 @@ describe("ValidatorNft", function () {
       const currGasHeight = await nftContract.gasHeightOf(0);
 
       expect(currGasHeight).to.greaterThan(prevGasHeight);
-      const gasHeight = await nodeRewardVault.cumHeights(2);
+      const gasHeight = await nodeRewardVault.rewardsHeight();
 
-      expect(currGasHeight).to.equal(gasHeight.add(1));
+      expect(currGasHeight).to.equal(gasHeight);
     });
 
     it("No rewards behaviour", async function () {
