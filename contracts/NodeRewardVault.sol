@@ -133,7 +133,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         totalReward -= daoReward;
         settledRewards += totalReward;
         
-        uint256 rewardPerGasHeight = totalReward / (_nftContract.totalSupply() * block.number - _nftContract.totalHeight() - prevTotalHeight + offset);
+        uint256 rewardPerGasHeight = totalReward / (_nftContract.totalSupply() * block.number - _nftContract.totalHeight() + offset - prevTotalHeight);
         prevTotalHeight = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
 
         RewardMetadata memory r = RewardMetadata({
@@ -141,6 +141,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
             blockHeight: block.number
         });
         rewardsMeta.push(r);
+        offset = 0;
 
         emit Settle(block.number, rewardPerGasHeight);
     }
