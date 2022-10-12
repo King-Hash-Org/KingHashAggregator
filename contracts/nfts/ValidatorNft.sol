@@ -134,6 +134,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   function whiteListBurn(uint256 tokenId) external onlyAggregator {
     _nodeCapital[tokenId] = 0;
+    _totalHeight -= _gasHeights[tokenId];
     _burn(tokenId);
   }
 
