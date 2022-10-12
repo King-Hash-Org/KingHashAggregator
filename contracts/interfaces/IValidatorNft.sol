@@ -4,6 +4,8 @@ pragma solidity ^0.8.7;
 import './IERC721AQueryable.sol';
 
 interface IValidatorNft is IERC721AQueryable {
+    function totalHeight() external view returns (uint256);
+
     function activeValidators() external view returns (bytes[] memory);
 
     function validatorExists(bytes calldata pubkey) external view returns (bool);
@@ -14,7 +16,7 @@ interface IValidatorNft is IERC721AQueryable {
 
     function tokenOfValidator(bytes calldata pubkey) external view returns (uint256);
 
-    function setGasHeight(uint256 tokenId, uint256 value) external;
+    function updateGasHeight(uint256 tokenId, uint256 blockNumber) external;
 
     function gasHeightOf(uint256 tokenId) external view returns (uint256);
 

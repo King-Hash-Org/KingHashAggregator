@@ -11,7 +11,7 @@ interface INodeRewardVault {
 
     function rewards(uint256 tokenId) external view returns (uint256);
 
-    function rewardsHeight() external view returns (uint256);
+    function recentBlockHeight() external view returns (uint256);
 
     function comission() external view returns (uint256);
 
