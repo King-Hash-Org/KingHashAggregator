@@ -97,6 +97,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     */
     function disperseRewards(uint256 tokenId) external override whenNotPaused {
         require(msg.sender == nftAddress, "Message sender is not the Nft contract");
+        vault.publicSettle();
         rewardRoute(tokenId);
     }
 

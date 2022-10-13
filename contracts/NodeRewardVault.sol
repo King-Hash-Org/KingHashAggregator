@@ -158,7 +158,9 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     }
 
     function publicSettle() external override {
-        require(lastPublicSettle + publicSettleLimit <= block.number, "Settle too early");
+        if (lastPublicSettle + publicSettleLimit > block.number) {
+            return;
+        }
 
         _settle();
         lastPublicSettle = block.number;
