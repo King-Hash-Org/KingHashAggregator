@@ -11,16 +11,11 @@ import "./interfaces/IValidatorNft.sol";
 contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     IValidatorNft private _nftContract;
 
-    struct RewardMetadata {
-        uint256 rewardPerGasHeight;
-        uint256 blockHeight;
-    }
-
-    RewardMetadata[] public rewardsMeta;
-    uint256 public _settleBlockLimit = 1;
-    uint256 public settledRewards = 0;
-    uint256 public prevTotalHeight = 0;
-    uint256 public offset = 0;
+    RewardMetadata[] public cumArr;
+    uint256 public unclaimedRewards;
+    uint256 public daoRewards;
+    uint256 public lastPublicSettle;
+    uint256 public publicSettleLimit;
 
     uint256 private _comission;
     uint256 private _tax;
@@ -33,6 +28,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
     event DaoChanged(address _before, address _after);
     event AuthorityChanged(address _before, address _after);
     event AggregatorChanged(address _before, address _after);
+    event PublicSettleLimitChanged(uint256 _before, uint256 _after);
     event RewardClaimed(address _owner, uint256 _amount);
     event Transferred(address _to, uint256 _amount);
     event Settle(uint256 _blockNumber, uint256 _settleRewards);
@@ -58,37 +54,57 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         _tax = 0;
 
         RewardMetadata memory r = RewardMetadata({
-            rewardPerGasHeight: 0,
-            blockHeight: block.number
+            value: 0,
+            height: 0
         });
-        rewardsMeta.push(r);
+
+        cumArr.push(r);
+        unclaimedRewards = 0;
+        lastPublicSettle = 0;
+        publicSettleLimit = 216000;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     function _rewards(uint256 tokenId) private view returns (uint256) {
-        uint256 gasHeight_ = _nftContract.gasHeightOf(tokenId);
-        uint256 totalReward_ = 0;
-        uint256 start_ = 0;
-        uint256 end_ = 0;
-        for (uint256 i = 0; i < rewardsMeta.length; i++) {
-            RewardMetadata memory r = rewardsMeta[i];
-            if (gasHeight_ <= r.blockHeight) {
-                if (start_ == 0) {
-                    start_ = gasHeight_;
-                } else {
-                    start_ = rewardsMeta[i - 1].blockHeight;
-                }
-                end_ = r.blockHeight;
-                totalReward_ += (end_ - start_) * r.rewardPerGasHeight;
+        uint256 gasHeight = _nftContract.gasHeightOf(tokenId);
+        uint256 low = 0;
+        uint256 high = cumArr.length;
+
+        while (low < high) {
+            uint256 mid = (low + high) >> 1;
+
+            if (cumArr[mid].height > gasHeight) {
+                high = mid;
+            } else {
+                low = mid + 1;
             }
         }
 
-        return totalReward_;
+        // At this point `low` is the exclusive upper bound. We will use it.
+        return cumArr[cumArr.length - 1].value - cumArr[low - 1].value;
     }
 
-    function _recentBlockHeight() private view returns (uint256) {
-        return rewardsMeta[rewardsMeta.length - 1].blockHeight;
+    function _settle() private {
+        uint256 outstandingRewards = address(this).balance - unclaimedRewards - daoRewards;
+        if (outstandingRewards == 0 || cumArr[cumArr.length - 1].height == block.number) {
+            return;
+        }
+
+        uint256 daoReward = (outstandingRewards * _comission) / 10000;
+        daoRewards += daoReward;
+        outstandingRewards -= daoReward;
+        unclaimedRewards += outstandingRewards;
+
+        uint256 averageRewards = outstandingRewards / _nftContract.totalSupply();
+        uint256 currentValue = cumArr[cumArr.length - 1].value + averageRewards;
+        RewardMetadata memory r = RewardMetadata({
+            value: currentValue,
+            height: block.number
+        });
+        cumArr.push(r);
+
+        emit Settle(block.number, averageRewards);
     }
 
     function nftContract() external view override returns (address) {
@@ -99,8 +115,22 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         return _rewards(tokenId);
     }
 
-    function recentBlockHeight() external view override returns (uint256) {
-        return _recentBlockHeight();
+    function rewardsHeight() external view override returns (uint256) {
+        return cumArr[cumArr.length - 1].height + 1;
+    }
+
+    function rewardsAndHeights(uint256 amt) external view override returns (RewardMetadata[] memory) {
+        if (amt >= cumArr.length) {
+            return cumArr;
+        }
+
+        RewardMetadata[] memory r = new RewardMetadata[](amt);
+
+        for (uint256 i = 0; i < amt; i++) {
+            r[i] = cumArr[cumArr.length - 1 - i];
+        }
+
+        return r;
     }
 
     function comission() external view override returns (uint256) {
@@ -123,37 +153,22 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         return _aggregatorProxyAddress;
     }
 
-    function settle() external override {
-        require(_recentBlockHeight() + _settleBlockLimit <= block.number, "Settle too early");
-        require(_nftContract.totalSupply() * block.number - _nftContract.totalHeight() > 0, "No rewards to settle");
+    function settle() external override onlyAggregator {
+        _settle();
+    }
 
-        uint256 totalReward = address(this).balance - settledRewards;
-        uint256 daoReward = (totalReward * _comission) / 10000;
-        transfer(daoReward, _dao);
-        totalReward -= daoReward;
-        settledRewards += totalReward;
-        
-        uint256 rewardPerGasHeight = totalReward / (_nftContract.totalSupply() * block.number - _nftContract.totalHeight() + offset - prevTotalHeight);
-        prevTotalHeight = _nftContract.totalSupply() * block.number - _nftContract.totalHeight();
+    function publicSettle() external override {
+        require(lastPublicSettle + publicSettleLimit <= block.number, "Settle too early");
 
-        RewardMetadata memory r = RewardMetadata({
-            rewardPerGasHeight: rewardPerGasHeight,
-            blockHeight: block.number
-        });
-        rewardsMeta.push(r);
-        offset = 0;
-
-        emit Settle(block.number, rewardPerGasHeight);
+        _settle();
+        lastPublicSettle = block.number;
     }
 
     function claimRewards(uint256 tokenId) external override nonReentrant onlyAggregator {
         address owner = _nftContract.ownerOf(tokenId);
         uint256 nftRewards = _rewards(tokenId);
 
-        if (_recentBlockHeight() > _nftContract.gasHeightOf(tokenId)) {
-            offset += _recentBlockHeight() - _nftContract.gasHeightOf(tokenId);
-        }
-        settledRewards -= nftRewards;
+        unclaimedRewards -= nftRewards;
         transfer(nftRewards, owner);
 
         emit RewardClaimed(owner, nftRewards);
@@ -163,6 +178,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(to != address(0), "Recipient address provided invalid");
         payable(to).transfer(amount);
         emit Transferred(to, amount);
+    }
+
+    function claimDao() external nonReentrant {
+        transfer(daoRewards, _dao);
+        daoRewards = 0;
     }
 
     function setComission(uint256 comission_) external onlyOwner {
@@ -193,6 +213,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
+    }
+
+    function setPublicSettleLimit(uint256 publicSettleLimit_) external onlyOwner {
+        emit PublicSettleLimitChanged(publicSettleLimit, publicSettleLimit_);
+        publicSettleLimit = publicSettleLimit_;
     }
 
     receive() external payable{}
