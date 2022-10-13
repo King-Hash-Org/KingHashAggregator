@@ -19,6 +19,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   bytes[] public _validators;
   uint256[] public _gasHeights;
   uint256[] public _nodeCapital;
+  uint256 public _activationDelay = 3600;
 
   bool private _isOpenSeaProxyActive = false;
   address private _aggregatorProxyAddress;
@@ -120,7 +121,7 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
     validatorRecords[pubkey] = true;
     _validators.push(pubkey);
-    _gasHeights.push(block.number);
+    _gasHeights.push(block.number + _activationDelay);
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
   }
@@ -171,6 +172,10 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     if (value > _gasHeights[tokenId]) {
       _gasHeights[tokenId] = value;
     }
+  }
+
+  function setActivationDelay(uint256 delay) external onlyOwner {
+    _activationDelay = delay;
   }
 
   function numberMinted(address owner) external view returns (uint256) {
