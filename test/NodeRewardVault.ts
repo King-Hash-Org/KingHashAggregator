@@ -113,6 +113,32 @@ describe("NodeRewardVault", function () {
       );
     });
   });
+  describe("Aggregator settings", function () {
+    it("Should have the right aggregator", async function () {
+      const { nodeRewardVault, aggregator } = await loadFixture(deployBaseFixture);
+
+      expect(await nodeRewardVault.aggregator()).to.equal(aggregator.address);
+    });
+
+    it("Should set the right aggregator", async function () {
+      const { nodeRewardVault, otherAccount } = await loadFixture(deployBaseFixture);
+      await nodeRewardVault.setAggregator(otherAccount.address);
+
+      expect(await nodeRewardVault.aggregator()).to.equal(otherAccount.address);
+    });
+
+    it("Should revert & not set the aggregator", async function () {
+      const { nodeRewardVault, otherAccount } = await loadFixture(deployBaseFixture);
+
+      await expect(nodeRewardVault.connect(otherAccount).setAggregator(otherAccount.address)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+
+      await expect(nodeRewardVault.setAggregator(AddressZero)).to.be.revertedWith(
+        "Aggregator address provided invalid"
+      );
+    });
+  });
 
   describe("DAO settings", function () {
     it("Should have the right DAO address", async function () {
