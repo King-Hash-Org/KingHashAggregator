@@ -12,10 +12,10 @@ import "./routes/LidoRouter.sol";
 import "./routes/RocketPoolRouter.sol";
 
 
-/** @title Staking Aggregator for Eth
-  * @author ChainUp Dev
-  * @dev Accepts incoming data and and route to different startegies. 
- **/
+/** 
+ * @title Staking Aggregator for Ethereum Network
+ * @notice Accepts incoming data and route the Ether to different strategies
+ */
 contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter, RocketPoolRouter {
     bytes1 private constant ETH32_STRATEGY = 0x01;  
     bytes1 private constant LIDO_STRATEGY = 0x02; 
@@ -30,11 +30,11 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     constructor() {}
 
     /**
-    * @notice Initializes the contract by setting the required external
-    *  contracts for different strategies (Eth32,Lido,Rocket, Stakewise)
-    * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable .  
-    * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once. 
-    **/
+     * @notice Initializes the contract by setting the required external
+     *         contracts for different strategies (Eth32, Lido, Rocket, Stakewise & more)
+     *         ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable
+     * @dev initializer - A modifier that defines a protected initializer function that can be invoked at most once
+     */
     function initialize(
         address depositContractAddress,
         address vaultAddress,
@@ -51,15 +51,14 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
         __LidoRouter__init(lidoContractAddress, lidoControllerContractAddress);
-        __RocketPoolRouter__init( rocketStorageAddressContractAddress, rocketPoolControllerContractAddress );
-
+        __RocketPoolRouter__init( rocketStorageAddressContractAddress, rocketPoolControllerContractAddress);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
     /**
-    * @dev See {IAggregator-stake}.
-    */
+     * @dev See {IAggregator-stake}.
+     */
     function stake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         uint256 total_ether = 0;
 
@@ -85,15 +84,15 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     }
 
     /**
-    * @dev See {IAggregator-unstake}.
-    */
+     * @dev See {IAggregator-unstake}.
+     */
     function unstake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         return data.length == 0;
     }
 
     /**
-    * @dev See {IAggregator-disperseRewards}.
-    */
+     * @dev See {IAggregator-disperseRewards}.
+     */
     function disperseRewards(uint256 tokenId) external override whenNotPaused {
         require(msg.sender == nftAddress, "Message sender is not the Nft contract");
         vault.publicSettle();

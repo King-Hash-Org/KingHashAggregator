@@ -3,9 +3,9 @@
 pragma solidity ^0.8.7;
 
   /**
-  * @title Interface for NodeRewardVault
-  * Vault will manage methods for rewards, commissions, tax
-  */
+   * @title Interface for NodeRewardVault
+   * @notice Vault will manage methods for rewards, commissions, tax
+   */
 interface INodeRewardVault {
     struct RewardMetadata {
         uint256 value;

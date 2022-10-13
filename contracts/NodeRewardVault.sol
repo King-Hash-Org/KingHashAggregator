@@ -85,6 +85,11 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         return cumArr[cumArr.length - 1].value - cumArr[low - 1].value;
     }
 
+    /**
+     * @notice Settles outstanding rewards
+     * @dev Current active validator nft will equally recieve 
+     *      all rewards earned in this era
+     */
     function _settle() private {
         uint256 outstandingRewards = address(this).balance - unclaimedRewards - daoRewards;
         if (outstandingRewards == 0 || cumArr[cumArr.length - 1].height == block.number) {

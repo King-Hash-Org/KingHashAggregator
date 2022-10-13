@@ -6,10 +6,10 @@ import "../interfaces/IDepositContract.sol";
 import "../interfaces/IValidatorNft.sol";
 import "../interfaces/INodeRewardVault.sol";
 
-/** @title Router for RocketPool Strategy
-@author ChainUp Dev
-@dev Routes incoming data(ValidatorNftRouter strategy) to outbound contracts 
-**/
+/** 
+ * @title Router for Validator NFT Strategy
+ * @notice Routes incoming data to various Validator NFT Strategies such as trading, minting & more.
+ */
 contract ValidatorNftRouter is Initializable {
     event NodeTrade(uint256 _tokenId, address _from, address _to, uint256 _amount);
     event Eth32Deposit(bytes _pubkey, bytes _withdrawal, address _owner);
@@ -29,10 +29,10 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-    * @notice Pre-processing before performing the signer verification.  
-    * @return bytes32 hashed value of the pubkey, withdrawalCredentials, signature,
-    *  depositDataRoot, bytes32(blockNumber)
-    **/
+     * @notice Pre-processing before performing the signer verification.  
+     * @return bytes32 hashed value of the pubkey, withdrawalCredentials, signature,
+     *         depositDataRoot, bytes32(blockNumber)
+     */
     //slither-disable-next-line calls-loop
     function precheck(bytes calldata data) private view returns (bytes32) {
         bytes calldata pubkey = data[16:64];
@@ -48,11 +48,11 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-    * @notice Performs signer verification, prevents unauthorized usage .  
-    * @param v, r, and s parts of a signature
-    * @param hash_ - hashed value from precheck
-    * @param signer_ - authentic signer to check against
-    **/
+     * @notice Performs signer verification to prevent unauthorized usage
+     * @param v, r, and s parts of a signature
+     * @param hash_ - hashed value from precheck
+     * @param signer_ - authentic signer to check against
+     */
     function signercheck(bytes32 s, bytes32 r, uint8 v, bytes32 hash_, address signer_) private pure {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, hash_));
@@ -63,11 +63,11 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-    * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
-    * and calls internal functions for pre-processing and signer verfication
-    * check for expired transaction through block height
-    * @return uint256 sum of the trades
-    */
+     * @notice Routes incoming data (Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+     *         and calls internal functions for pre-processing and signer verfication
+     *         check for expired transaction through block height
+     * @return uint256 sum of the trades
+     */
     //slither-disable-next-line calls-loop
     function _tradeRoute(bytes calldata data) private returns (uint256) {
         address tradeReceiver = address(bytes20(data[12:32]));
@@ -118,7 +118,7 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-     * @notice Allows transfer funds of 32 ETH to the Official Ethereum 2.0 deposit contract
+     * @notice Allows transfer funds of 32 ETH to the ETH2 Official Deposit Contract
      */
     //slither-disable-next-line reentrancy-events
     function deposit(bytes calldata data) private {
@@ -133,9 +133,9 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-    * @notice Routes incoming data(ETH32 Strategy) to outbound contracts, ETH2 Official Deposit Contract 
-    * and calls internal functions for pre-processing and signer verfication, minting of nft to user.
-    */
+     * @notice Routes incoming data(ETH32 Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+     *         and calls internal functions for pre-processing and signer verfication, minting of nft to user.
+     */
     //slither-disable-next-line calls-loop
     function eth32Route(bytes calldata data) internal returns (bool) {
         bytes32 hash = precheck(data);
@@ -149,18 +149,18 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-    * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
-    * and calls internal functions for pre-processing and signer verfication
-    * check for expired transaction through block height
-    * @return uint256 sum of the trades
-    */
+     * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+     *         and calls internal functions for pre-processing and signer verfication
+     *         check for expired transaction through block height
+     * @return uint256 sum of the trades
+     */
     function tradeRoute(bytes calldata data) internal returns (uint256) {
         return _tradeRoute(data);
     }
 
     /**
-    * @dev See {IAggregator-disperseRewards}.
-    */
+     * @dev See {IAggregator-disperseRewards}.
+     */
     //slither-disable-next-line reentrancy-events
     function rewardRoute(uint256 tokenId) internal {
         vault.claimRewards(tokenId);

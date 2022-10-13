@@ -6,10 +6,10 @@ import "../controller-interface/ILidoController.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../controller-interface/ILidoERC20.sol";
 
-/** @title Router for Lido Strategy
-@author ChainUp Dev
-@dev Routes incoming data(Lido pre-fix) to outbound contracts 
-**/
+/** 
+ * @title Router for Lido Strategy
+ * @notice Routes incoming data(Lido pre-fix) to outbound contracts 
+ */
 contract LidoRouter is Initializable {
     ILido public lidoContract;
     ILidoController public lidoController;
@@ -19,11 +19,10 @@ contract LidoRouter is Initializable {
     event LidoDeposit(address _owner, uint256 _stake_amount);
 
     /**
-     * @notice Initializes the contract by setting the required external contracts ,
+     * @notice Initializes the contract by setting the required external contracts
      * @param lidoContract_ official Lido Contract for Staking 
-     * @param lidoControllerContract_ lidoController Contract 
-     * @dev onlyInitializing  .
-     **/
+     * @param lidoControllerContract_ lidoController Contract
+     */
     function __LidoRouter__init(address lidoContract_, address lidoControllerContract_) internal onlyInitializing {
         lidoContract = ILido(lidoContract_);
         lidoController = ILidoController(lidoControllerContract_);
@@ -37,7 +36,7 @@ contract LidoRouter is Initializable {
 
     /**
      * @notice Routes incoming data (Lido Strategy) to outbound contracts, Lido Staking Contract for the staking function
-     * and calls the controller function like adding to stETH shares and also transferring of stETH to the controller address
+     *         and calls the controller function like adding to stETH shares and also transferring of stETH to the controller address
      * @dev `msg.value` has to be more than `stake_amount` 
      * @param stake_amount must be minumum 1 wei (minimum deposit) 
      */
