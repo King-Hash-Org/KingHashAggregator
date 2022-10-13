@@ -96,14 +96,15 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         outstandingRewards -= daoReward;
         unclaimedRewards += outstandingRewards;
 
-        uint256 currentValue = cumArr[cumArr.length - 1].value + outstandingRewards / _nftContract.totalSupply();
+        uint256 averageRewards = outstandingRewards / _nftContract.totalSupply();
+        uint256 currentValue = cumArr[cumArr.length - 1].value + averageRewards;
         RewardMetadata memory r = RewardMetadata({
             value: currentValue,
             height: block.number
         });
         cumArr.push(r);
 
-        emit Settle(block.number, currentValue);
+        emit Settle(block.number, averageRewards);
     }
 
     function nftContract() external view override returns (address) {
