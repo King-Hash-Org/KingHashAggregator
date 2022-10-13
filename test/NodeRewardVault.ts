@@ -355,7 +355,7 @@ describe("NodeRewardVault", function () {
         to: nodeRewardVault.address,
         value: ethers.utils.parseEther("110"), // Sends exactly 100 ether
       });
-      await expect(nodeRewardVault.publicSettle()).to.emit(nodeRewardVault, "Settle").revertedWith("Settle too early");
+      await expect(nodeRewardVault.publicSettle()).to.not.emit(nodeRewardVault, "Settle");
       await network.provider.send("hardhat_mine", ["0x34bc1"]);
 
       const latestBlock5 = await ethers.provider.getBlock("latest")
