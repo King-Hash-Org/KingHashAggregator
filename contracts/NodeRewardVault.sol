@@ -166,6 +166,13 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         lastPublicSettle = block.number;
     }
 
+    //slither-disable-next-line arbitrary-send
+    function transfer(uint256 amount, address to) private {
+        require(to != address(0), "Recipient address provided invalid");
+        payable(to).transfer(amount);
+        emit Transferred(to, amount);
+    }
+
     function claimRewards(uint256 tokenId) external override nonReentrant onlyAggregator {
         address owner = _nftContract.ownerOf(tokenId);
         uint256 nftRewards = _rewards(tokenId);
@@ -174,12 +181,6 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         transfer(nftRewards, owner);
 
         emit RewardClaimed(owner, nftRewards);
-    }
-
-    function transfer(uint256 amount, address to) private {
-        require(to != address(0), "Recipient address provided invalid");
-        payable(to).transfer(amount);
-        emit Transferred(to, amount);
     }
 
     function claimDao() external nonReentrant {

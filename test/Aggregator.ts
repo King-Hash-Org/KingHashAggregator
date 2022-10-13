@@ -523,11 +523,11 @@ describe("Aggregator", function () {
 
       // // malformed data-> too short or too long
       await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
-      await expect(aggregator.stake([data4])).to.be.revertedWith("LidoContract: invalid data.length");
-      await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("LidoContract: invalid data.length");
-      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("LidoContract: invalid data.length");
-      await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("LidoContract: invalid data.length");
-      await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("LidoContract: invalid data.length");
+      await expect(aggregator.stake([data4])).to.be.revertedWith("Lido Contract: Invalid Data Length");
+      await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Lido Contract: Invalid Data Length");
+      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Lido Contract: Invalid Data Length");
+      await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Lido Contract: Invalid Data Length");
+      await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("Lido Contract: Invalid Data Length");
 
       //  case whereby there is more ether than expected
       await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("34") })).to.be.revertedWith("Incorrect Ether amount provided");
@@ -612,7 +612,7 @@ describe("Aggregator", function () {
       const data0y = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
       // Test Rocket Stake Router Minumum Deposit
-      await expect(aggregator.stake([data0x])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+      await expect(aggregator.stake([data0x], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
       await expect(aggregator.stake([data0x], { value: ethers.utils.parseEther("0.001") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
       await expect(aggregator.stake([data0y])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
       await expect(aggregator.stake([data0x, data0y], { value: ethers.utils.parseEther("0.001") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
@@ -630,11 +630,11 @@ describe("Aggregator", function () {
       await expect(aggregator.stake([data2, data3, data1], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
 
       // malformed data-> too short or too long
-      await expect(aggregator.stake([data4])).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
-      await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
-      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
-      await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
-      await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("Rocket Pool Contract: invalid data.length");
+      await expect(aggregator.stake([data4])).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
+      await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
+      await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
+      await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
+      await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
 
       // // case whereby there is more ether than expected
       await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("34") })).to.be.revertedWith("Incorrect Ether amount provided");

@@ -28,13 +28,12 @@ contract ValidatorNftRouter is Initializable {
         nftAddress = nftContract_;
     }
 
-    //slither-disable-next-line calls-loop
-
     /**
     * @notice Pre-processing before performing the signer verification.  
     * @return bytes32 hashed value of the pubkey, withdrawalCredentials, signature,
-    *  depositDataRoot, bytes32(blockNumber
+    *  depositDataRoot, bytes32(blockNumber)
     **/
+    //slither-disable-next-line calls-loop
     function precheck(bytes calldata data) private view returns (bytes32) {
         bytes calldata pubkey = data[16:64];
         bytes calldata withdrawalCredentials = data[64:96];
@@ -43,8 +42,7 @@ contract ValidatorNftRouter is Initializable {
         uint256 blockNumber = uint256(bytes32(data[224:256]));
 
         require(!nftContract.validatorExists(pubkey), "Pub key already in used");
-        uint256 currentBlock = block.number ;
-        require(blockNumber > currentBlock , "Block height too old, please generate a new transaction");
+        require(blockNumber > block.number, "Block height too old, please generate a new transaction");
 
         return keccak256(abi.encodePacked(pubkey, withdrawalCredentials, signature, depositDataRoot, bytes32(blockNumber)));
     }
@@ -64,7 +62,6 @@ contract ValidatorNftRouter is Initializable {
         require(signer != address(0), "ECDSA: invalid signature");
     }
 
-    //slither-disable-next-line calls-loop
     /**
     * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
     * and calls internal functions for pre-processing and signer verfication
@@ -121,8 +118,8 @@ contract ValidatorNftRouter is Initializable {
     }
 
     /**
-    * @notice Allows transfer funds of 32 ETH to the Official Ethereum 2.0 deposit contract
-    */
+     * @notice Allows transfer funds of 32 ETH to the Official Ethereum 2.0 deposit contract
+     */
     //slither-disable-next-line reentrancy-events
     function deposit(bytes calldata data) private {
         bytes calldata pubkey = data[16:64];

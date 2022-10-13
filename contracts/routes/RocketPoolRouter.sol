@@ -59,9 +59,10 @@ contract RocketPoolRouter is Initializable {
      * if the deposit to RocketPool is successful, `afterREthBalance` must be more than `beforeREthBalance`
      * @return stake_amount - successfully staked ether to rocketpool deposit contract
      */
+    //slither-disable-next-line msg-value-loop
     function _rocket_deposit(uint256 stake_amount) internal returns (uint256) {
-        require(stake_amount >= 0.01 ether, "The deposited amount is less than the minimum deposit size");
         require(msg.value >= stake_amount, "Stake amount is not enough!");
+        require(stake_amount >= 0.01 ether, "The deposited amount is less than the minimum deposit size");
 
         uint256 beforeREthBalance = rocketTokenRETH.balanceOf(address(this));
         rocketDepositPool.deposit{value: stake_amount}();

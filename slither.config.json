@@ -4,6 +4,6 @@
   "exclude_medium": false,
   "exclude_high": false,
   "disable_color": false,
-  "filter_paths": "(mocks/|test/|openzeppelin|nfts/ERC721A.sol|nfts/ERC721AQueryable.sol|interfaces/IDepositContract.sol)",
+  "filter_paths": "(mocks/|test/|openzeppelin|nfts/ERC721A.sol|nfts/ERC721AQueryable.sol|interfaces/IDepositContract.sol|TimelockController.sol)",
   "legacy_ast": false
 }
