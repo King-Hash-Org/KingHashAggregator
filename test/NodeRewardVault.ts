@@ -217,6 +217,69 @@ describe("NodeRewardVault", function () {
     });
   });
 
+  describe("Read rewards metadata", function () {
+    it("Should have no rewards", async function () {
+      const { nodeRewardVault } = await loadFixture(deployBaseFixture);
+
+      const [rewardsMetdata] = await nodeRewardVault.rewardsAndHeights(1);
+      expect(rewardsMetdata.value).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewardsMetdata.height).equal(ethers.utils.parseUnits("0", 0));
+
+      expect(await nodeRewardVault.rewardsAndHeights(0)).to.have.members([]);
+
+      const rewards = await nodeRewardVault.rewardsAndHeights(10);
+      expect(rewards.length).equal(1);
+      expect(rewards[0].value).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewards[0].height).equal(ethers.utils.parseUnits("0", 0));
+    });
+
+    it("Should have no rewards without settlement", async function () {
+      const { nodeRewardVault } = await loadFixture(deployRewardFixture);
+
+      const [rewardsMetdata] = await nodeRewardVault.rewardsAndHeights(1);
+      expect(rewardsMetdata.value).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewardsMetdata.height).equal(ethers.utils.parseUnits("0", 0));
+
+      expect(await nodeRewardVault.rewardsAndHeights(0)).to.have.members([]);
+
+      const rewards = await nodeRewardVault.rewardsAndHeights(10);
+      expect(rewards.length).equal(1);
+      expect(rewards[0].value).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewards[0].height).equal(ethers.utils.parseUnits("0", 0));
+    });
+
+    it("Should have rewards with settlement", async function () {
+      const { nodeRewardVault, owner } = await loadFixture(deployRewardFixture);
+
+      await expect(nodeRewardVault.setPublicSettleLimit(20000)).to.emit(nodeRewardVault, "PublicSettleLimitChanged").withArgs(216000, 20000);
+
+      await network.provider.send("hardhat_mine", ["0x34bc1"]);
+      let latestBlock = await ethers.provider.getBlock("latest")
+      await expect(nodeRewardVault.publicSettle()).to.emit(nodeRewardVault, "Settle").withArgs(latestBlock.number+1, ethers.utils.parseEther("90"));
+      let rewards = await nodeRewardVault.rewardsAndHeights(10);
+
+      expect(rewards.length).equal(2);
+      expect(rewards[0].value).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewards[0].height).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewards[1].value).equal(ethers.utils.parseEther("90"));
+      expect(rewards[1].height).equal(latestBlock.number+1);
+
+      await network.provider.send("hardhat_mine", ["0x34bc1"]);
+      await owner.sendTransaction({
+        to: nodeRewardVault.address,
+        value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
+      });
+      latestBlock = await ethers.provider.getBlock("latest")
+      await expect(nodeRewardVault.publicSettle()).to.emit(nodeRewardVault, "Settle").withArgs(latestBlock.number+1, ethers.utils.parseEther("90"));
+      rewards = await nodeRewardVault.rewardsAndHeights(10);
+      expect(rewards.length).equal(3);
+      expect(rewards[0].value).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewards[0].height).equal(ethers.utils.parseUnits("0", 0));
+      expect(rewards[2].value).equal(ethers.utils.parseEther("180"));
+      expect(rewards[2].height).equal(latestBlock.number+1);
+    });
+  });
+
   describe("settle and claimRewards", function () {
     it("Should have the right balance", async function () {
       const { nodeRewardVault } = await loadFixture(deployRewardFixture);
