@@ -16,7 +16,7 @@ import "./routes/RocketPoolRouter.sol";
  * @title Staking Aggregator for Ethereum Network
  * @notice Accepts incoming data and route the Ether to different strategies
  */
-contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter, RocketPoolRouter {
+contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable {
     bytes1 private constant ETH32_STRATEGY = 0x01;  
     bytes1 private constant LIDO_STRATEGY = 0x02; 
     bytes1 private constant SWELL_STRATEGY = 0x03;
@@ -38,11 +38,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
     function initialize(
         address depositContractAddress,
         address vaultAddress,
-        address nftContractAddress,
-        address lidoContractAddress,
-        address lidoControllerContractAddress,
-        address rocketStorageAddressContractAddress,
-        address rocketPoolControllerContractAddress
+        address nftContractAddress
     ) 
     external initializer {
         __Ownable_init();
@@ -50,8 +46,6 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         __ReentrancyGuard_init();
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
-        __LidoRouter__init(lidoContractAddress, lidoControllerContractAddress);
-        __RocketPoolRouter__init( rocketStorageAddressContractAddress, rocketPoolControllerContractAddress);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
@@ -70,11 +64,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
                 super.eth32Route(data[i]);
                 total_ether += 32 ether;
             } else if (prefix == LIDO_STRATEGY) {
-                require(data[i].length == 64, "Lido Contract: Invalid Data Length");
-                total_ether += super.lidoRoute(data[i]);
             } else if (prefix == ROCKETPOOL_STRATEGY) {
-                require(data[i].length == 64, "Rocket Pool Contract: Invalid Data Length");
-                total_ether += super.rocketPoolRoute(data[i]);
             } else if (prefix == NODE_TRADE_STRATEGY) {
                 total_ether += super.tradeRoute(data[i]);
             }

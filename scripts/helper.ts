@@ -141,8 +141,6 @@ export async function deployAggregator(
 
 export async function deployAll(
         depositContract: String,
-        lidoContractAddress: String,
-        rocketStorageAddressContractAddress: String,
         delayTime: Number, 
         proposersArray: String[], 
         executorsArray: String[]
@@ -156,16 +154,6 @@ export async function deployAll(
     const validatorNft = await ValidatorNft.deploy();
     await validatorNft.deployed();
     console.log("Nft deployed: ", validatorNft.address);
-
-    const LidoController = await ethers.getContractFactory("LidoController");
-    const lidoControllerProxy = await upgrades.deployProxy(LidoController, []);
-    await lidoControllerProxy.deployed();
-    console.log("LidoController Proxy deployed: ", lidoControllerProxy.address);
-
-    const RocketController = await ethers.getContractFactory("RocketController");
-    const rocketControllerProxy = await upgrades.deployProxy(RocketController, []);
-    await rocketControllerProxy.deployed();
-    console.log("RocketController Proxy deployed: ", rocketControllerProxy.address);
 
     const NodeRewardVault = await ethers.getContractFactory("NodeRewardVault");
     const nodeRewardVaultProxy = await upgrades.deployProxy(NodeRewardVault, [validatorNft.address]);
@@ -182,18 +170,12 @@ export async function deployAll(
       depositContract, 
       nodeRewardVaultProxy.address, 
       validatorNft.address,
-      lidoContractAddress,
-      lidoControllerProxy.address,
-      rocketStorageAddressContractAddress,
-      rocketControllerProxy.address
     ]);
     await aggregatorProxy.deployed();
     console.log("Aggregator Proxy deployed: ", aggregatorProxy.address);
 
     await validatorNft.setAggregator(aggregatorProxy.address);
     await nodeRewardVaultProxy.setAggregator(aggregatorProxy.address);
-    await lidoControllerProxy.addAllowList(aggregatorProxy.address);
-    await rocketControllerProxy.addAllowList(aggregatorProxy.address);
 
     await aggregatorProxy.transferOwnership(timelock.address);
     console.log("Transferred ownership of Aggregator Proxy to Timelock Contract:", timelock.address);
