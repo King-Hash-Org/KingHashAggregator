@@ -49,6 +49,7 @@ describe("ValidatorNft", function () {
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
+    await nftContract.setActivationDelay(0);
 
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
   }
