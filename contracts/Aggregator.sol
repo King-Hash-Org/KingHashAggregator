@@ -99,20 +99,32 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         rewardRoute(tokenId);
     }
 
+    /**
+     * @dev See {IAggregator-claimRewards}.
+     */
     function claimRewards(uint256 tokenId) external override nonReentrant whenNotPaused {
         rewardRoute(tokenId);
     }
 
+    /**
+     * @dev See {IAggregator-batchClaimRewards}.
+     */
     function batchClaimRewards(uint256[] calldata tokenIds) external override nonReentrant whenNotPaused {
         for (uint256 i = 0; i < tokenIds.length; i++) {
             rewardRoute(tokenIds[i]);
         }
     }
 
+    /**
+     * @notice Allows the contract to be paused during emergencies.
+     */
     function pause() external onlyOwner {
         _pause();
     }
 
+    /**
+     * @notice Allows the contract to resume operations after being paused.
+     */
     function unpause() external onlyOwner {
         _unpause();
     }

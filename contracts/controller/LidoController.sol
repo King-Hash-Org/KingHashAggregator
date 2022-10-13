@@ -7,20 +7,20 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "../controller-interface/ILidoController.sol";
 
-/** @title Controller for Lido Strategy
- *   @author ChainUp Dev
- *   @dev Interacts with the LidoRouter and read and writes data
- **/
+/** 
+ * @title Controller for Lido Strategy
+ * @dev Interacts with the LidoRouter and read and writes data
+ */
 contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable {
     mapping(address => bool) private allowList;
     address private referral;
     mapping(address => uint256) private stEthSharesMap;
 
     /**
-     * @notice Initializes the contract  by setting the required external contracts ,
-     * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable and `referral`.
-     * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once.
-     **/
+     * @notice Initializes the contract  by setting the required external contracts,
+     *         ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable and `referral`.
+     * @dev initializer - A modifier that defines a protected initializer function that can be invoked at most once.
+     */
     function initialize() external initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
@@ -73,7 +73,6 @@ contract LidoController is ILidoController, ReentrancyGuardUpgradeable, OwnableU
     }
 
     function getAllowList(address userAddress) external view returns (bool) {
-        return allowList[userAddress] ;
+        return allowList[userAddress];
     }
-
 }
