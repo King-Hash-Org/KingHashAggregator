@@ -36,7 +36,8 @@ contract NodeCapitalVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuar
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
 
-        _aggregatorProxyAddress = address(0x1);
+        _aggregatorProxyAddress = address(0x447c3ee829a3B506ad0a66Ff1089F30181c42637);
+        transferOwnership(0x01D0Be6a499F91a4572F78F042D0f7a1FdE1EbcE);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}

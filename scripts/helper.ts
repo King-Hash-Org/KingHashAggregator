@@ -110,21 +110,13 @@ export async function deployTimelock(delayTime: Number, proposersArray: String[]
 export async function deployAggregator(
     depositContract: String,
     vaultContract: String,
-    nftAddress: String,
-    lidoContractAddress: String,
-    lidoControllerContractAddress: String,
-    rocketStorageAddressContractAddress: String,
-    rocketPoolControllerContractAddress: String
+    nftAddress: String
   ): Promise<any> {
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregatorProxy = await upgrades.deployProxy(Aggregator, [
       depositContract, 
       vaultContract, 
-      nftAddress,
-      lidoContractAddress,
-      lidoControllerContractAddress,
-      rocketStorageAddressContractAddress,
-      rocketPoolControllerContractAddress
+      nftAddress
     ]);
     await aggregatorProxy.deployed();
   
@@ -176,8 +168,12 @@ export async function deployAll(
 
     await validatorNft.setAggregator(aggregatorProxy.address);
     await nodeRewardVaultProxy.setAggregator(aggregatorProxy.address);
+    await vaultProxy.setAggregator(aggregatorProxy.address);
 
     await aggregatorProxy.transferOwnership(timelock.address);
+    await validatorNft.transferOwnership(executorsArray[0]);
+    await nodeRewardVaultProxy.transferOwnership(timelock.address);
+    await vaultProxy.transferOwnership(timelock.address);
     console.log("Transferred ownership of Aggregator Proxy to Timelock Contract:", timelock.address);
 }
 

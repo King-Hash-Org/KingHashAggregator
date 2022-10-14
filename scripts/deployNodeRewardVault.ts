@@ -1,5 +1,5 @@
 const { deployNodeRewardVault } = require("./helper.ts");
-const nftAddress = "0x4dfc2940482274f287562DeD4083e52E22A1532A"; // nft contract address
+const nftAddress = "0x40Cd77D9aa9e0b2D485259415eA05486B201c514"; // nft contract address
 
 async function main() {
   await deployNodeRewardVault(nftAddress);
