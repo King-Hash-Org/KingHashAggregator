@@ -162,8 +162,8 @@ The amount of Eth that is to be staked. It is represented as `uint256` or `bytes
 | 0x06                        | 
 
 ```
-Bytes: | OP_CODE | auth.V | auth.Address | auth.R  | auth.S  |  Auth.Block  |   Length   | Listing Info x Length |
-       |   [0]   |  [1]   |    [12:32]   | [32:64] | [64:96] |   [96:128]   |  [128:160] |   [160:length * 224]  |
+Bytes: | OP_CODE | auth.V | buyer.Address | auth.R  | auth.S  |  Auth.Block  |   Length   | Listing Info x Length |
+       |   [0]   |  [1]   |    [12:32]    | [32:64] | [64:96] |   [96:128]   |  [128:160] |   [160:length * 224]  |
 ```
 
 The layout of each Listing Info is as follows:
