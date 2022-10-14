@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.7;
 
-interface IMockRocketERC20 {
+interface IMockERC20 {
         /**
      * @dev Emitted when `value` tokens are moved from one account (`from`) to
      * another (`to`).

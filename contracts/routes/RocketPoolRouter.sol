@@ -5,8 +5,9 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../controller-interface/IRocketController.sol";
 import "../interfaces/RocketDepositPoolInterface.sol";
-import "../controller-interface/RocketTokenRETHInterface.sol";
+// import "../controller-interface/RocketTokenRETHInterface.sol";
 import "../controller-interface/RocketStorageInterface.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /** 
  * @title Router for RocketPool Strategy
@@ -15,7 +16,7 @@ import "../controller-interface/RocketStorageInterface.sol";
 contract RocketPoolRouter is Initializable {
     IRocketController public rocketController;
     RocketDepositPoolInterface public rocketDepositPool;
-    RocketTokenRETHInterface public rocketTokenRETH;
+    IERC20 public rocketTokenRETH;
     RocketStorageInterface public rocketStorage;
 
     address public rocketPoolContractControllerAddress;
@@ -44,7 +45,7 @@ contract RocketPoolRouter is Initializable {
             keccak256(abi.encodePacked("contract.address", "rocketTokenRETH"))
         );
 
-        rocketTokenRETH = RocketTokenRETHInterface(rocketTokenRETHAddress);
+        rocketTokenRETH = IERC20(rocketTokenRETHAddress);
         rocketDepositPool = RocketDepositPoolInterface(rocketDepositPoolAddress);
     }
 

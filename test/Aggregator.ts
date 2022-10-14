@@ -26,8 +26,12 @@ describe("Aggregator", function () {
     const DepositContract = await ethers.getContractFactory("DepositContract");
     const depositContract = await DepositContract.deploy();
 
+    const StETHTokenContract = await ethers.getContractFactory("STETH");
+    const stETHToken = await StETHTokenContract.deploy();
+
     const LidoContract = await ethers.getContractFactory("Lido");
     const lidoContract = await LidoContract.deploy();
+    await lidoContract.setSTETHAddress(stETHToken.address);
 
     const LidoControllerContract = await ethers.getContractFactory("LidoController");
     const lidoController = await LidoControllerContract.deploy();
@@ -52,7 +56,7 @@ describe("Aggregator", function () {
 
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
+    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, stETHToken.address , rocketStorage.address, rocketController.address);
 
     await lidoController.addAllowList(aggregator.address);
     await nodeRewardVault.setAggregator(aggregator.address);

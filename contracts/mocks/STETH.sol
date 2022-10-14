@@ -4,7 +4,7 @@ pragma solidity ^0.8.7;
 import "./IMockERC20.sol";
 
 
-contract RocketTokenRETH is IMockERC20{
+contract STETH is IMockERC20 {
 
     mapping (address => uint256) public _balances;
 

@@ -4,16 +4,17 @@ pragma solidity ^0.8.7;
 import "../interfaces/ILido.sol";
 import "../controller-interface/ILidoController.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-import "../controller-interface/ILidoERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /** 
  * @title Router for Lido Strategy
  * @notice Routes incoming data(Lido pre-fix) to outbound contracts 
  */
 contract LidoRouter is Initializable {
+    
     ILido public lidoContract;
     ILidoController public lidoController;
-    ILidoERC20 public iLidoERC20;
+    IERC20 public iStETH;
     address public lidoContractControllerAddress;
 
     event LidoDeposit(address _owner, uint256 _stake_amount);
@@ -23,10 +24,10 @@ contract LidoRouter is Initializable {
      * @param lidoContract_ official Lido Contract for Staking 
      * @param lidoControllerContract_ lidoController Contract
      */
-    function __LidoRouter__init(address lidoContract_, address lidoControllerContract_) internal onlyInitializing {
+    function __LidoRouter__init(address lidoContract_, address lidoControllerContract_, address stETHTokenAddress_) internal onlyInitializing {
         lidoContract = ILido(lidoContract_);
         lidoController = ILidoController(lidoControllerContract_);
-        iLidoERC20 = ILidoERC20(lidoContract_);
+        iStETH = IERC20(stETHTokenAddress_);
         lidoContractControllerAddress = lidoControllerContract_;
     }
 
@@ -44,9 +45,15 @@ contract LidoRouter is Initializable {
     function _lido_stake(uint256 stake_amount) internal returns (uint256) {
         require(msg.value >= stake_amount, "Stake amount is not enough!");
         require(stake_amount >= 1 wei, "Deposit must not be zero and must be minumum 1 wei");
-       
+
+        uint256 beforeSTEthBalance = iStETH.balanceOf(address(this) ) ;
         uint256 shareAmount = lidoContract.submit{value: stake_amount}(lidoController.getReferral());
-        iLidoERC20.transfer(lidoContractControllerAddress, shareAmount);
+        uint256 afterSTEthBalance = iStETH.balanceOf(address(this) ) ;
+        uint256 stEthBalance =  afterSTEthBalance - beforeSTEthBalance ;
+
+        // bool transferSuccess =  iStETH.transfer(lidoContractControllerAddress, stEthBalance);
+        // require( transferSuccess , "Transfer was not successful");
+
         lidoController.addStEthShares(msg.sender, shareAmount);
         emit LidoDeposit(msg.sender, stake_amount);
 

@@ -41,6 +41,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         address nftContractAddress,
         address lidoContractAddress,
         address lidoControllerContractAddress,
+        address stETHTokenAddress,
         address rocketStorageAddressContractAddress,
         address rocketPoolControllerContractAddress
     ) 
@@ -50,7 +51,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         __ReentrancyGuard_init();
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
-        __LidoRouter__init(lidoContractAddress, lidoControllerContractAddress);
+        __LidoRouter__init(lidoContractAddress, lidoControllerContractAddress, stETHTokenAddress );
         __RocketPoolRouter__init( rocketStorageAddressContractAddress, rocketPoolControllerContractAddress);
     }
 
