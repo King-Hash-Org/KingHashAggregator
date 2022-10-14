@@ -439,7 +439,7 @@ describe("Aggregator", function () {
   });
 
   describe("Lido Staking", function () {
-    it("Correct data behaviour for Lido Stake", async function () {
+    it.skip("Correct data behaviour for Lido Stake", async function () {
       const { aggregator, owner, lidoController, otherAccount } = await deployBaseFixture();
       await lidoController.addAllowList(aggregator.address);
 
@@ -497,7 +497,7 @@ describe("Aggregator", function () {
 
     });
 
-    it("Wrong data behaviour for Lido Stake", async function () {
+    it.skip("Wrong data behaviour for Lido Stake", async function () {
       const { aggregator, owner, lidoController } = await deployBaseFixture();
       await lidoController.addAllowList(aggregator.address);
 
@@ -546,7 +546,7 @@ describe("Aggregator", function () {
   });
 
   describe("Rocket Staking", function () {
-    it("Correct data behaviour for Rocket Stake", async function () {
+    it.skip("Correct data behaviour for Rocket Stake", async function () {
       const { aggregator, rocketController, owner, otherAccount } = await deployBaseFixture();
       await rocketController.addAllowList(aggregator.address);
 
@@ -605,7 +605,7 @@ describe("Aggregator", function () {
 
     });
 
-    it("Wrong Behavior for RocketPool Stake", async function () {
+    it.skip("Wrong Behavior for RocketPool Stake", async function () {
       const { aggregator, rocketController, owner } = await deployBaseFixture();
       await rocketController.addAllowList(aggregator.address);
       const data0x = "0x040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038D7EA4C68000";
@@ -765,7 +765,7 @@ describe("Aggregator", function () {
   });
 
   describe("Multi Staking", function () {
-    it("Correct data behaviour for Multi-Stake - Lido, Rocket", async function () {
+    it.skip("Correct data behaviour for Multi-Stake - Lido, Rocket", async function () {
       const { aggregator, lidoController, rocketController, owner  } = await deployBaseFixture();
       await lidoController.addAllowList(aggregator.address);
       await rocketController.addAllowList(aggregator.address);

@@ -51,8 +51,8 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
         _nftContract = IValidatorNft(nftContract_);
         _aggregatorProxyAddress = address(0x1);
-        _dao = address(0xd17a3B462170c53592a165Dfd007c7ED2b84F956);
-        _authority = address(0xF5ade6B61BA60B8B82566Af0dfca982169a470Dc);
+        _dao = address(0xee09C9a517ecE6Bedd2EbC766938e39367F37753);
+        _authority = address(0x2C21721627aad3F43606836FEC22142c5e1edEe2);
         _comission = 1000;
         _tax = 0;
 

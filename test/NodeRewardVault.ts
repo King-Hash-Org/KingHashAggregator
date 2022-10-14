@@ -144,7 +144,7 @@ describe("NodeRewardVault", function () {
     it("Should have the right DAO address", async function () {
       const { nodeRewardVault } = await loadFixture(deployBaseFixture);
 
-      expect(await nodeRewardVault.dao()).to.equal("0xd17a3B462170c53592a165Dfd007c7ED2b84F956");
+      expect(await nodeRewardVault.dao()).to.equal("0xee09C9a517ecE6Bedd2EbC766938e39367F37753");
     });
 
     it("Should set the right DAO address", async function () {

@@ -1,6 +1,6 @@
 const { deployAggregator } = require("./helper.ts");
 
-const depositContract = "0xff50ed3d0ec03aC01D4C79aAd74928BFF48a7b2b";
+const depositContract = "0x00000000219ab540356cBB839Cbe05303d7705Fa";
 const vaultContract = "0x8F7845df4d9A490202Ecc2b6b4a2a32f1850Cd1a";
 const nftAddress = "0x4dfc2940482274f287562DeD4083e52E22A1532A"; // nft contract address
 const lidoContractAddress = "0x1643E812aE58766192Cf7D2Cf9567dF2C37e9B7F";
