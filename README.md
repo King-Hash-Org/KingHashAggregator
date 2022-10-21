@@ -23,7 +23,7 @@ This repository contains the core smart contracts for the [KingHash Aggregator P
 * [Aggregator](./docs/aggregator.md)
 * [ValidatorNFT](./docs/validatorNFT.md)
 
-You can find more generic information about KingHash Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
+You can find more generic information about KingHash Aggregator over [here](https://docs.chainupcloud.com/introduction/products/kinghash-aggregator).
 
 ![image](./docs/images/kingHashSite.PNG)
 

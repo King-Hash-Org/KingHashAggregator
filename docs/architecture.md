@@ -4,7 +4,7 @@ title: Learn about KingHash Aggregator and Validator NFT
 
 This is a brief introduction to KingHash Aggregator and Validator NFT, KingHash Aggregator the first staking aggregator protocol and Validator NFT is a novel mechanism for Ethereum staking offered by KingHash. 
 
-Just like any other aggregator protocols, the goal of aggregator is to **aggregate over something**. Decentralized Exchange Aggregators like [1inch](https://app.1inch.io/) provide users with the best trade, and Yield Aggregators like [Yearn Finance](https://yearn.finance/) aims to maximize yield returns. For a Staking Aggregator like [KingHash Aggregator](https://staking.chainupcloud.com/), it does both! It finds the best way to stake your assets, and compound your yield! 💎
+Just like any other aggregator protocols, the goal of aggregator is to **aggregate over something**. Decentralized Exchange Aggregators like [1inch](https://app.1inch.io/) provide users with the best trade, and Yield Aggregators like [Yearn Finance](https://yearn.finance/) aims to maximize yield returns. For a Staking Aggregator like [KingHash Aggregator](https://www.kinghash.com/), it does both! It finds the best way to stake your assets, and compound your yield! 💎
 
 There are various staking protocols for staking Eth on the Ethereum network. KingHash Aggregator aggregates over various staking protocols on the Ethereum Network. From the user's persepctive, it is simply a one-click staking protocol that will help users to stake their Eth across existing protocols and compound the yields using various strategies based on the user's risk profile & preference. 🧸
 
