@@ -25,7 +25,7 @@ This repository contains the core smart contracts for the [KingHash Aggregator P
 
 You can find more generic information about KingHash Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
 
-![image](https://user-images.githubusercontent.com/103015469/191221110-792b96bc-9f60-43eb-a836-f018efe1b5ea.png)
+![image](./docs/images/kingHashSite.PNG)
 
 # Quick Commands
 
