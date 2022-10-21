@@ -2,7 +2,7 @@
 title: Specification on the Aggregator Contract
 ---
 
-The ChainUp Aggregator Contract exposes several APIs for user to call. While it is possible to bypass all of that with [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/) or through our [frontend](https://staking.chainupcloud.com/), the goal of this document is to allow creators to come up with their own Smart Engine to interface with ChainUp Aggregator Contract.
+The KingHash Aggregator Contract exposes several APIs for user to call. While it is possible to bypass all of that with [KingHash Aggregator API](https://chainupcloud.github.io/swagger/) or through our [frontend](https://www.kinghash.com/), the goal of this document is to allow creators to come up with their own Smart Engine to interface with KingHash Aggregator Contract.
 
 # Aggregator API
 

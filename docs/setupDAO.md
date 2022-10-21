@@ -1,8 +1,8 @@
 ---
-title: Setting up DAO with ChainUp Aggregator
+title: Setting up DAO with KingHash Aggregator
 ---
 
-The various contracts under ChainUp Aggregator should not be owned by a centralized identity. Hence, a DAO mechanism is used around the protocol. Users can follow the steps to transfer the ownership of the various contracts to a DAO and protecting it with a multisig.
+The various contracts under KingHash Aggregator should not be owned by a centralized identity. Hence, a DAO mechanism is used around the protocol. Users can follow the steps to transfer the ownership of the various contracts to a DAO and protecting it with a multisig.
 
 # Setting up
 1. We assumed that you have deployed the various contracts according to [this](../README.md).

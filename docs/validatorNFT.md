@@ -2,7 +2,7 @@
 title: Specification on the Validator NFT Contract
 ---
 
-The Validator NFT Contract exposes several APIs for both users and ChainUp Aggregator to call. It is possible for users/institutions to launch their own Validator NFT Contract and interfacet with ChainUp Aggregator. It is also possible to launch their own Staking Aggregator all together. The Validator NFT Contract uses [`ERC721A`](https://github.com/chiru-labs/ERC721A) as the base and inherits from it.
+The Validator NFT Contract exposes several APIs for both users and KingHash Aggregator to call. It is possible for users/institutions to launch their own Validator NFT Contract and interfacet with KingHash Aggregator. It is also possible to launch their own Staking Aggregator all together. The Validator NFT Contract uses [`ERC721A`](https://github.com/chiru-labs/ERC721A) as the base and inherits from it.
 
 # Validator NFT API
 
@@ -10,7 +10,7 @@ The Validator NFT Contract exposes several APIs for both users and ChainUp Aggre
 
 `function whiteListMint(bytes calldata pubkey, address _to) external`
 
-Mints vNFT. Do note that only Whitelisted users should be able to perform this operation, such as the ChainUp Aggregator Contract.
+Mints vNFT. Do note that only Whitelisted users should be able to perform this operation, such as the KingHash Aggregator Contract.
 
 | Name                  | Type                | Description                 | 
 | --------------------------- | ----------------------- | ------------------------- |
@@ -21,7 +21,7 @@ Mints vNFT. Do note that only Whitelisted users should be able to perform this o
 
 `function whiteListBurn(uint256 tokenId) external`
 
-Burns vNFT. Do note that only Whitelisted users should be able to perform this operation, such as the ChainUp Aggregator Contract.
+Burns vNFT. Do note that only Whitelisted users should be able to perform this operation, such as the KingHash Aggregator Contract.
 
 | Name                  | Type                | Description                 | 
 | --------------------------- | ----------------------- | ------------------------- |

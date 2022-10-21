@@ -1,4 +1,4 @@
-# ChainUp Aggregator
+# KingHash Aggregator
 
 ![CHAINUP new logo-2022 浅底横](https://user-images.githubusercontent.com/103015469/191217935-895ab918-3644-4c86-bfda-9599c8639c91.png)
 
@@ -15,7 +15,7 @@
 | ![Statements](https://img.shields.io/badge/statements-66.49%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-57.81%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-82.35%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-67.38%25-red.svg?style=flat) |
 -->
 
-This repository contains the core smart contracts for the [ChainUp Aggregator Protocol](https://staking.chainupcloud.com/). ChainUp Aggregator Protocol is a smart contract for various Eth staking strategies. ChainUp Aggregator Protocol is part of the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
+This repository contains the core smart contracts for the [KingHash Aggregator Protocol](https://www.kinghash.com/). KingHash Aggregator Protocol is a smart contract for various Eth staking strategies. KingHash Aggregator Protocol is currently already integrated to the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
 
 **Overview**
 
@@ -23,7 +23,7 @@ This repository contains the core smart contracts for the [ChainUp Aggregator Pr
 * [Aggregator](./docs/aggregator.md)
 * [ValidatorNFT](./docs/validatorNFT.md)
 
-You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
+You can find more generic information about KingHash Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
 
 ![image](https://user-images.githubusercontent.com/103015469/191221110-792b96bc-9f60-43eb-a836-f018efe1b5ea.png)
 
@@ -147,7 +147,7 @@ You can see further instructons for Surya [here](https://github.com/ConsenSys/su
 
 [TimelockController](https://etherscan.io/address/0x01D0Be6a499F91a4572F78F042D0f7a1FdE1EbcE#code)：`0x01D0Be6a499F91a4572F78F042D0f7a1FdE1EbcE`
 
-[ChainUp multisig](https://etherscan.io/address/0x6b8caCEc8A29A356589dBAacd51C67cc4c2766ce#code)： `0x6b8caCEc8A29A356589dBAacd51C67cc4c2766ce`
+[KingHash multisig](https://etherscan.io/address/0x6b8caCEc8A29A356589dBAacd51C67cc4c2766ce#code)： `0x6b8caCEc8A29A356589dBAacd51C67cc4c2766ce`
 
 # Audits
 The following auditors were engaged to review the project before launch:
