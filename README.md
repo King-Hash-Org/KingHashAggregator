@@ -1,13 +1,13 @@
 # KingHash Aggregator
 
-![CHAINUP new logo-2022 浅底横](https://user-images.githubusercontent.com/103015469/191217935-895ab918-3644-4c86-bfda-9599c8639c91.png)
+![kinghash](./docs/images/kingHashLogo.PNG)
 
 ![node](https://img.shields.io/badge/node-v16.14.2-green)
 ![npm](https://img.shields.io/badge/npm-v8.5.0-green)
 ![python](https://img.shields.io/badge/python-v3.8.10-green)
 ![solidity](https://img.shields.io/badge/solidity-0.8.7-brightgreen)
-![license](https://img.shields.io/github/license/ChainUp-Cloud/ChainUpAggregator)
-![contributors](https://img.shields.io/github/contributors/ChainUp-Cloud/ChainUpAggregator)
+![license](https://img.shields.io/github/license/King-Hash-Org/KingHashAggregator)
+![contributors](https://img.shields.io/github/contributors/King-Hash-Org/KingHashAggregator)
 
 <!--
 | Statements                  | Branches                | Functions                 | Lines             |
