@@ -69,8 +69,11 @@ contract RocketPoolRouter is Initializable {
         rocketDepositPool.deposit{value: stake_amount}();
         uint256 afterREthBalance = rocketTokenRETH.balanceOf(address(this));
         require(afterREthBalance > beforeREthBalance, "No rETH was minted");
+        
         uint256 actualRethMinted = afterREthBalance - beforeREthBalance;
-        rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
+        bool transferSuccess =  rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
+        require( transferSuccess , "Transfer was not successful");
+        
         rocketController.addREthBalance(msg.sender, actualRethMinted);
         emit RocketPoolDeposit(msg.sender, actualRethMinted);
 
