@@ -51,8 +51,8 @@ contract LidoRouter is Initializable {
         uint256 afterSTEthBalance = iStETH.balanceOf(address(this) ) ;
         uint256 stEthBalance =  afterSTEthBalance - beforeSTEthBalance ;
 
-        // bool transferSuccess =  iStETH.transfer(lidoContractControllerAddress, stEthBalance);
-        // require( transferSuccess , "Transfer was not successful");
+        bool transferSuccess =  iStETH.transfer(lidoContractControllerAddress, stEthBalance);
+        require( transferSuccess , "Transfer was not successful");
 
         lidoController.addStEthShares(msg.sender, shareAmount);
         emit LidoDeposit(msg.sender, stake_amount);
