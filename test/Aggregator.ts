@@ -590,110 +590,144 @@ describe("Aggregator", function () {
   });
 
 
-  describe("Rocket Staking", function () {
-    it("Correct data behaviour for Rocket Stake", async function () {
-      const { aggregator, rocketController, owner, otherAccount } = await deployBaseFixture();
+
+  
+  describe("Rocket Staking- Correct data behaviour", function () {
+
+    const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether 
+    const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
+    const data3 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
+
+    it("Test Rocket Stake Router ", async function () {
+      const { aggregator, rocketController, otherAccount } = await deployBaseFixture();
       await rocketController.addAllowList(aggregator.address);
-
-      const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether 
-      const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
-      const data3 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
-
-      // Test  Rocket Stake Router
       expect(await aggregator.callStatic.stake([data1], { value: ethers.utils.parseEther("2") })).to.be.equal(true);
       expect(await aggregator.connect(otherAccount).callStatic.stake([data1], { value: ethers.utils.parseEther("2") })).to.be.equal(true);
       expect(await aggregator.callStatic.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.equal(true);
       expect(await aggregator.connect(otherAccount).callStatic.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.equal(true);
       expect(await aggregator.callStatic.stake([data3], { value: ethers.utils.parseEther("16") })).to.be.equal(true);
       expect(await aggregator.connect(otherAccount).callStatic.stake([data3], { value: ethers.utils.parseEther("16") })).to.be.equal(true);
+    });
 
-      //   Test RocketPoolDeposit event emit , test rETHbalance
-      await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("2"));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("2.0");
-      expect(await aggregator.connect(otherAccount).stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("2"));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("2.0");
+    it("Test RocketPoolDeposit event emit , test rETHbalance ", async function () {
+      const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether 
+      const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
+      const data3 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
+      const { aggregator, rocketController, owner, otherAccount } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
 
-      expect(await aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("33"));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("35.0");
-      expect(await aggregator.connect(otherAccount).stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("33"));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("35.0");
+     //   Test RocketPoolDeposit event emit , test rETHbalance
+     await expect(aggregator.stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("2"));
+     expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("2.0");
+     expect(await aggregator.connect(otherAccount).stake([data1], { value: ethers.utils.parseEther("2") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("2"));
+     expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("2.0");
 
-      expect(await aggregator.stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("16"));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("51.0");
-      expect(await aggregator.connect(otherAccount).stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("16"));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("51.0");
+     expect(await aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("33"));
+     expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("35.0");
+     expect(await aggregator.connect(otherAccount).stake([data2], { value: ethers.utils.parseEther("33") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("33"));
+     expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("35.0");
 
+     expect(await aggregator.stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(owner.address, ethers.utils.parseEther("16"));
+     expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("51.0");
+     expect(await aggregator.connect(otherAccount).stake([data3], { value: ethers.utils.parseEther("16") })).to.emit(aggregator, "RocketPoolDeposit").withArgs(otherAccount.address, ethers.utils.parseEther("16"));
+     expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("51.0");
+    });
+
+    it("Test RocketPool Stake - Multidata ", async function () {
+      const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001BC16D674EC80000"; //2 ether 
+      const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether
+      const data3 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000DE0B6B3A76400000"; //16 ether
+      const { aggregator, rocketController, owner, otherAccount } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
 
       //multidata
       expect(await aggregator.callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") })).to.be.equal(true);
       expect(await aggregator.connect(otherAccount).callStatic.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") })).to.be.equal(true);
 
       expect(await aggregator.stake([data1, data3], { value: ethers.utils.parseEther("18") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("69.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("18.0");
       expect(await aggregator.connect(otherAccount).stake([data1, data3], { value: ethers.utils.parseEther("18") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("69.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("18.0");
 
       expect(await aggregator.stake([data1, data2], { value: ethers.utils.parseEther("35") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("104.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("53.0");
       expect(await aggregator.connect(otherAccount).stake([data1, data2], { value: ethers.utils.parseEther("35") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("104.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("53.0");
 
       expect(await aggregator.stake([data2, data3], { value: ethers.utils.parseEther("49") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("153.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("102.0");
       expect(await aggregator.connect(otherAccount).stake([data2, data3], { value: ethers.utils.parseEther("49") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("153.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("102.0");
 
       expect(await aggregator.stake([data1, data2, data3], { value: ethers.utils.parseEther("51") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("204.0");
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(owner.address), 18)).to.equal("153.0");
       expect(await aggregator.connect(otherAccount).stake([data1, data2, data3], { value: ethers.utils.parseEther("51") }));
-      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("204.0");
-
+      expect(ethers.utils.formatUnits(await rocketController.getREthBalance(otherAccount.address), 18)).to.equal("153.0");
     });
 
-    it("Wrong Behavior for RocketPool Stake", async function () {
-      const { aggregator, rocketController, owner } = await deployBaseFixture();
+  });
+
+  describe("Rocket Staking- Wrong Behavior", function () {
+
+    const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"; //0 ether
+    const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether, correct data length
+    const data3 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether, correct data length
+    const data4 = "0x040000004563918244F40000"; // 5 ether, too short data length
+    const data5 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008AC7230489E80000"; // 10 ether, too long data length
+
+    it("Test Rocket Stake- Minumum Deposit ", async function () {
+      const { aggregator, rocketController } = await deployBaseFixture();
       await rocketController.addAllowList(aggregator.address);
       const data0x = "0x040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000038D7EA4C68000";
       const data0y = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-
       // Test Rocket Stake Router Minumum Deposit
       await expect(aggregator.stake([data0x], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
       await expect(aggregator.stake([data0x], { value: ethers.utils.parseEther("0.001") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
       await expect(aggregator.stake([data0y])).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
       await expect(aggregator.stake([data0x, data0y], { value: ethers.utils.parseEther("0.001") })).to.be.revertedWith("The deposited amount is less than the minimum deposit size");
+    });
 
-      const data1 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"; //0 ether
-      const data2 = "0x0400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001C9F78D2893E40000"; //33 ether, correct data length
-      const data3 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004563918244F40000"; //5 ether, correct data length
-      const data4 = "0x040000004563918244F40000"; // 5 ether, too short data length
-      const data5 = "0x04000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000008AC7230489E80000"; // 10 ether, too long data length
-
+    it("Test Rocket Stake - Stake Amount ", async function () {
+      const { aggregator, rocketController } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
       //  Test Rocket Stake Router Stake Amount
       await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
       await expect(aggregator.stake([data2])).to.be.revertedWith("Stake amount is not enough!");
       await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
       await expect(aggregator.stake([data2, data3, data1], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Stake amount is not enough!");
+    });
 
+    it("Test Rocket Stake- Malformed data ", async function () {
+      const { aggregator, rocketController } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
       // malformed data-> too short or too long
       await expect(aggregator.stake([data4])).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
       await expect(aggregator.stake([data5], { value: ethers.utils.parseEther("1") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
       await expect(aggregator.stake([data4, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
       await expect(aggregator.stake([data3, data5], { value: ethers.utils.parseEther("15") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
       await expect(aggregator.stake([data3, data4, data5], { value: ethers.utils.parseEther("20") })).to.be.revertedWith("Rocket Pool Contract: Invalid Data Length");
+    });
 
-      // // case whereby there is more ether than expected
+    it("Test Rocket Stake- Case whereby there is more ether than expected ", async function () {
+      const { aggregator, rocketController } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
+      // case whereby there is more ether than expected
       await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("34") })).to.be.revertedWith("Incorrect Ether amount provided");
       await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("60") })).to.be.revertedWith("Incorrect Ether amount provided");
       await expect(aggregator.stake([data2, data3], { value: ethers.utils.parseEther("100") })).to.be.revertedWith("Incorrect Ether amount provided");
+    });
 
+    it("Test Rocket Stake- Case whereby there is more ether than expected ", async function () {
+      const { aggregator, rocketController, owner } = await deployBaseFixture();
+      await rocketController.addAllowList(aggregator.address);
       // test case where aggreggtor try to stake without allowList
       await rocketController.removeAllowList(aggregator.address);
       await expect(aggregator.stake([data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add RETH Balance");
       await expect(aggregator.stake([data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add RETH Balance");
       await expect(aggregator.connect(owner).stake([data2], { value: ethers.utils.parseEther("33") })).to.be.revertedWith("Not allowed to add RETH Balance");
       await expect(aggregator.connect(owner).stake([data3], { value: ethers.utils.parseEther("5") })).to.be.revertedWith("Not allowed to add RETH Balance");
-
     });
+
   });
 
   describe("Trading mutliple nfts", function () {
