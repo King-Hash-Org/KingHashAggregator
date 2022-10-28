@@ -9,9 +9,9 @@ import "../interfaces/RocketDepositPoolInterface.sol";
 import "../controller-interface/RocketStorageInterface.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/** 
+/**
  * @title Router for RocketPool Strategy
- * @notice Routes incoming data(RocketPool strategy) to outbound contracts 
+ * @notice Routes incoming data(RocketPool strategy) to outbound contracts
  */
 contract RocketPoolRouter is Initializable {
     IRocketController public rocketController;
@@ -30,9 +30,7 @@ contract RocketPoolRouter is Initializable {
      * @dev The RocketStorage contract also stores the addresses of all other network contracts,
      *      therefore the rocketpool-related contracts are queried before use to prevent outdated addresses.
      */
-    function __RocketPoolRouter__init(address rocketStorageAddress_, address rocketPoolControllerContract_)
-        internal
-        onlyInitializing
+    function __RocketPoolRouter__init(address rocketStorageAddress_, address rocketPoolControllerContract_) internal onlyInitializing
     {
         rocketPoolContractControllerAddress = rocketPoolControllerContract_;
         rocketController = IRocketController(rocketPoolControllerContract_);
@@ -69,11 +67,11 @@ contract RocketPoolRouter is Initializable {
         rocketDepositPool.deposit{value: stake_amount}();
         uint256 afterREthBalance = rocketTokenRETH.balanceOf(address(this));
         require(afterREthBalance > beforeREthBalance, "No rETH was minted");
-        
+
         uint256 actualRethMinted = afterREthBalance - beforeREthBalance;
-        bool transferSuccess =  rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
-        require( transferSuccess , "Transfer was not successful");
-        
+        bool transferSuccess = rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
+        require(transferSuccess, "Transfer was not successful");
+
         rocketController.addREthBalance(msg.sender, actualRethMinted);
         emit RocketPoolDeposit(msg.sender, actualRethMinted);
 
