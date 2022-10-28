@@ -70,11 +70,9 @@ contract ValidatorNftRouter is Initializable {
      */
     //slither-disable-next-line calls-loop
     function _tradeRoute(bytes calldata data) private returns (uint256) {
-        address tradeReceiver = address(bytes20(data[12:32]));
-        require(tradeReceiver == msg.sender, "Not allowed to make this trade");
+        require(address(bytes20(data[12:32])) == msg.sender, "Not allowed to make this trade");
         require(uint256(bytes32(data[96:128])) > block.number, "Trade has expired");
 
-        // change this in the future
         uint256 sum = 0;
         uint256 i = 0;
 
@@ -105,13 +103,13 @@ contract ValidatorNftRouter is Initializable {
             require(userPrice > 30 ether, "Node too cheap");
 
             payable(signer).transfer(userPrice);
-            nftContract.safeTransferFrom(signer, tradeReceiver, tokenId);
+            nftContract.safeTransferFrom(signer, msg.sender, tokenId);
             nftContract.updateNodeCapital(tokenId, price);
             
-            emit NodeTrade(tokenId, signer, tradeReceiver, price);
+            emit NodeTrade(tokenId, signer, msg.sender, price);
         }
 
-        bytes32 authHash = keccak256(abi.encodePacked(data[160:], uint256(bytes32(data[96:128])), tradeReceiver));
+        bytes32 authHash = keccak256(abi.encodePacked(data[160:], uint256(bytes32(data[96:128])), msg.sender));
         signercheck(bytes32(data[64:96]), bytes32(data[32:64]), uint8(bytes1(data[1])), authHash, vault.authority());
 
         return sum;

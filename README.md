@@ -1,13 +1,13 @@
-# ChainUp Aggregator
+# KingHash Aggregator
 
-![CHAINUP new logo-2022 浅底横](https://user-images.githubusercontent.com/103015469/191217935-895ab918-3644-4c86-bfda-9599c8639c91.png)
+![kinghash](./docs/images/kingHashLogo.PNG)
 
 ![node](https://img.shields.io/badge/node-v16.14.2-green)
 ![npm](https://img.shields.io/badge/npm-v8.5.0-green)
 ![python](https://img.shields.io/badge/python-v3.8.10-green)
 ![solidity](https://img.shields.io/badge/solidity-0.8.7-brightgreen)
-![license](https://img.shields.io/github/license/ChainUp-Cloud/ChainUpAggregator)
-![contributors](https://img.shields.io/github/contributors/ChainUp-Cloud/ChainUpAggregator)
+![license](https://img.shields.io/github/license/King-Hash-Org/KingHashAggregator)
+![contributors](https://img.shields.io/github/contributors/King-Hash-Org/KingHashAggregator)
 
 <!--
 | Statements                  | Branches                | Functions                 | Lines             |
@@ -15,7 +15,7 @@
 | ![Statements](https://img.shields.io/badge/statements-66.49%25-red.svg?style=flat) | ![Branches](https://img.shields.io/badge/branches-57.81%25-red.svg?style=flat) | ![Functions](https://img.shields.io/badge/functions-82.35%25-yellow.svg?style=flat) | ![Lines](https://img.shields.io/badge/lines-67.38%25-red.svg?style=flat) |
 -->
 
-This repository contains the core smart contracts for the [ChainUp Aggregator Protocol](https://staking.chainupcloud.com/). ChainUp Aggregator Protocol is a smart contract for various Eth staking strategies. ChainUp Aggregator Protocol is part of the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
+This repository contains the core smart contracts for the [KingHash Aggregator Protocol](https://www.kinghash.com/). KingHash Aggregator Protocol is a smart contract for various Eth staking strategies. KingHash Aggregator Protocol is currently already integrated to the suite of products [ChainUp Cloud](https://docs.chainupcloud.com/) offers.
 
 **Overview**
 
@@ -23,9 +23,9 @@ This repository contains the core smart contracts for the [ChainUp Aggregator Pr
 * [Aggregator](./docs/aggregator.md)
 * [ValidatorNFT](./docs/validatorNFT.md)
 
-You can find more generic information about ChainUp Aggregator over [here](https://docs.chainupcloud.com/introduction/products/chainup-aggregator).
+You can find more generic information about KingHash Aggregator over [here](https://docs.chainupcloud.com/introduction/products/kinghash-aggregator).
 
-![image](https://user-images.githubusercontent.com/103015469/191221110-792b96bc-9f60-43eb-a836-f018efe1b5ea.png)
+![image](./docs/images/kingHashSite.PNG)
 
 # Quick Commands
 
@@ -121,23 +121,34 @@ You can see further instructons for Surya [here](https://github.com/ConsenSys/su
 
 
 # Contracts 
-## Ropsten
-Aggregator Proxy: `0xcCC221621e002b9320Be67598224caDAb4D3b9ee`
-
-NodeRewardVault Proxy: `0x488AdC84Bfb7eC2158e799fA8fE1e74460A7C73C`
-
-NodeCapitalVault Proxy: `0xD9E2dc13b0d2F6f73cd21C32fBf7dE143C558e29`
-
-vNFT: `0x9fBd485E1B18Ca5829dA4576c42a34CBf82554eD`
-
 ## Goerli
-Aggregator Proxy: `SOON`
+[Aggregator Proxy](https://goerli.etherscan.io/address/0x789983D968074df2395608700C561D4AD959f189#code): `0x789983D968074df2395608700C561D4AD959f189`
 
-NodeRewardVault Proxy: `SOON`
+[NodeRewardVault Proxy](https://goerli.etherscan.io/address/0xD78736E9EE9895A0a35AB19163Bd1A94E72dea3e#code): `0xD78736E9EE9895A0a35AB19163Bd1A94E72dea3e`
 
-NodeCapitalVault Proxy: `SOON`
+[NodeCapitalVault Proxy](https://goerli.etherscan.io/address/0xb82fD8ecD2Ca4bb6701598B7D4f1a937bF41363A#code): `0xb82fD8ecD2Ca4bb6701598B7D4f1a937bF41363A`
 
-vNFT: `SOON`
+[vNFT](https://goerli.etherscan.io/address/0xdE6Ff11aD8CD771Ebb43509987E3013b1bEC027F#code): `0xdE6Ff11aD8CD771Ebb43509987E3013b1bEC027F`
+
+[LidoController Proxy](https://goerli.etherscan.io/address/0x20C823d65d56d8540a3b6a937fD309086a4110F5#code): `0x20C823d65d56d8540a3b6a937fD309086a4110F5`
+
+[RocketController Proxy](https://goerli.etherscan.io/address/0xc5a36c9D3ED8620fa1AaAad00D263FeAbda3f03d#code): `0xc5a36c9D3ED8620fa1AaAad00D263FeAbda3f03d`
+
+[TimelockController](https://goerli.etherscan.io/address/0xd0D6AD5117A27678Cb79fa848eE59192364D5fbA#code): `0xd0D6AD5117A27678Cb79fa848eE59192364D5fbA`
+
+## Ethereum
+[Aggregator Proxy](https://etherscan.io/address/0x447c3ee829a3B506ad0a66Ff1089F30181c42637#code): `0x447c3ee829a3B506ad0a66Ff1089F30181c42637`
+
+[vNFT](https://etherscan.io/address/0x40Cd77D9aa9e0b2D485259415eA05486B201c514#code)：`0x40Cd77D9aa9e0b2D485259415eA05486B201c514`
+
+[NodeRewardVault Proxy](https://etherscan.io/address/0xade4A1e54a0efA7c0557e8fdecC714F716eD0Be6#code): `0xade4A1e54a0efA7c0557e8fdecC714F716eD0Be6`
+
+[NodeCapitalVault Proxy](https://etherscan.io/address/0x23715A59BEd8A94AA4FFebE8B7f1125b84FE970a#code)：`0x23715A59BEd8A94AA4FFebE8B7f1125b84FE970a`
+
+[TimelockController](https://etherscan.io/address/0x01D0Be6a499F91a4572F78F042D0f7a1FdE1EbcE#code)：`0x01D0Be6a499F91a4572F78F042D0f7a1FdE1EbcE`
+
+[KingHash multisig](https://etherscan.io/address/0x6b8caCEc8A29A356589dBAacd51C67cc4c2766ce#code)： `0x6b8caCEc8A29A356589dBAacd51C67cc4c2766ce`
+
 # Audits
 The following auditors were engaged to review the project before launch:
 * [Beosin Audit](https://beosin.com/) (In Progress)

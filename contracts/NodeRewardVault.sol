@@ -8,6 +8,9 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "./interfaces/INodeRewardVault.sol";
 import "./interfaces/IValidatorNft.sol";
 
+/**
+ * @title NodeRewardVault for managing rewards
+ */
 contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
     IValidatorNft private _nftContract;
 
@@ -66,6 +69,10 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
+    /**
+     * @notice Computes the reward a nft has
+     * @param tokenId - tokenId of the validator nft
+     */
     function _rewards(uint256 tokenId) private view returns (uint256) {
         uint256 gasHeight = _nftContract.gasHeightOf(tokenId);
         uint256 low = 0;
@@ -87,8 +94,7 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
 
     /**
      * @notice Settles outstanding rewards
-     * @dev Current active validator nft will equally recieve 
-     *      all rewards earned in this era
+     * @dev Current active validator nft will equally recieve all rewards earned in this era
      */
     function _settle() private {
         uint256 outstandingRewards = address(this).balance - unclaimedRewards - daoRewards;
@@ -112,18 +118,32 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         emit Settle(block.number, averageRewards);
     }
 
+    /**
+     * @notice Returns the address of the validator nft
+     */
     function nftContract() external view override returns (address) {
         return address(_nftContract);
     }
 
+    /**
+     * @notice Computes the reward a nft has
+     * @param tokenId - tokenId of the validator nft
+     */
     function rewards(uint256 tokenId) external view override returns (uint256) {
         return _rewards(tokenId);
     }
 
+    /**
+     * @notice Gets the last recorded height which rewards was last dispersed + 1
+     */
     function rewardsHeight() external view override returns (uint256) {
         return cumArr[cumArr.length - 1].height + 1;
     }
 
+    /**
+     * @notice Returns an array of recent `RewardMetadata`
+     * @param amt - The amount of `RewardMetdata` to return, ordered according to the most recent
+     */
     function rewardsAndHeights(uint256 amt) external view override returns (RewardMetadata[] memory) {
         if (amt >= cumArr.length) {
             return cumArr;
@@ -138,31 +158,57 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         return r;
     }
 
+    /**
+     * @notice Returns the amount of comission on validator rewards
+     */
     function comission() external view override returns (uint256) {
         return _comission;
     }
 
+    /**
+     * @notice Returns the amount of tax on nft trades
+     */
     function tax() external view override returns (uint256) {
         return _tax;
     }
 
+    /**
+     * @notice Returns the dao's multisig address
+     */
     function dao() external view override returns (address) {
         return _dao;
     }
 
+    /**
+     * @notice Returns the authority's (in-charge of signing) public address
+     */
     function authority() external view override returns (address) {
         return _authority;
     }
 
+    /**
+     * @notice Returns the address of the Aggregator
+     */
     function aggregator() external view override returns (address) {
         return _aggregatorProxyAddress;
     }
 
+    /**
+     * @notice Settles outstanding rewards
+     * @dev Current active validator nft will equally recieve 
+     *      all rewards earned in this era
+     */
     function settle() external override onlyAggregator {
         _settle();
     }
 
+    /**
+     * @notice Settles outstanding rewards in the event there is no change in amount of validators
+     * @dev Current active validator nft will equally recieve 
+     *      all rewards earned in this era
+     */
     function publicSettle() external override {
+        // prevent spam attack
         if (lastPublicSettle + publicSettleLimit > block.number) {
             return;
         }
@@ -178,6 +224,10 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         emit Transferred(to, amount);
     }
 
+    /**
+     * @notice Claims the rewards belonging to a validator nft and transfer it to the owner
+     * @param tokenId - tokenId of the validator nft
+     */
     function claimRewards(uint256 tokenId) external override nonReentrant onlyAggregator {
         address owner = _nftContract.ownerOf(tokenId);
         uint256 nftRewards = _rewards(tokenId);
@@ -188,41 +238,62 @@ contract NodeRewardVault is INodeRewardVault, UUPSUpgradeable, OwnableUpgradeabl
         emit RewardClaimed(owner, nftRewards);
     }
 
+    /**
+     * @notice Claims the rewards belonging to the dao
+     */
     function claimDao() external nonReentrant {
         transfer(daoRewards, _dao);
         daoRewards = 0;
     }
 
+    /**
+     * @notice Sets the comission. Comission is currently used to fund hardware costs
+     */
     function setComission(uint256 comission_) external onlyOwner {
         require(comission_ < 10000, "Comission cannot be 100%");
         emit ComissionChanged(_comission, comission_);
         _comission = comission_;
     }
 
+    /**
+     * @notice Sets the tax for nft trading
+     */
     function setTax(uint256 tax_) external onlyOwner {
         require(tax_ < 10000, "Tax cannot be 100%");
         emit TaxChanged(_tax, tax_);
         _tax = tax_;
     }
 
+    /**
+     * @notice Sets the dao address. dao funds the hardware for running the validator
+     */
     function setDao(address dao_) external onlyOwner {
         require(dao_ != address(0), "DAO address provided invalid");
         emit DaoChanged(_dao, dao_);
         _dao = dao_;
     }
 
+    /**
+     * @notice Sets the authority address. Authority is in charge of signing & authorizing the launch of validator nodes
+     */
     function setAuthority(address authority_) external onlyOwner {
         require(authority_ != address(0), "Authority address provided invalid");
         emit AuthorityChanged(_authority, authority_);
         _authority = authority_;
     }
 
+    /**
+     * @notice Sets the aggregator address
+     */
     function setAggregator(address aggregatorProxyAddress_) external onlyOwner {
         require(aggregatorProxyAddress_ != address(0), "Aggregator address provided invalid");
         emit AggregatorChanged(_aggregatorProxyAddress, aggregatorProxyAddress_);
         _aggregatorProxyAddress = aggregatorProxyAddress_;
     }
 
+    /**
+     * @notice Sets the `PublicSettleLimit`. Determines how frequently this contract can be spammed
+     */
     function setPublicSettleLimit(uint256 publicSettleLimit_) external onlyOwner {
         emit PublicSettleLimitChanged(publicSettleLimit, publicSettleLimit_);
         publicSettleLimit = publicSettleLimit_;

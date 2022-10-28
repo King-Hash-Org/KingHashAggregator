@@ -2,7 +2,7 @@
 title: Specification on the Aggregator Contract
 ---
 
-The ChainUp Aggregator Contract exposes several APIs for user to call. While it is possible to bypass all of that with [ChainUp Aggregator API](https://chainupcloud.github.io/swagger/) or through our [frontend](https://staking.chainupcloud.com/), the goal of this document is to allow creators to come up with their own Smart Engine to interface with ChainUp Aggregator Contract.
+The KingHash Aggregator Contract exposes several APIs for user to call. While it is possible to bypass all of that with [KingHash Aggregator API](https://chainupcloud.github.io/swagger/) or through our [frontend](https://www.kinghash.com/), the goal of this document is to allow creators to come up with their own Smart Engine to interface with KingHash Aggregator Contract.
 
 # Aggregator API
 
@@ -162,8 +162,8 @@ The amount of Eth that is to be staked. It is represented as `uint256` or `bytes
 | 0x06                        | 
 
 ```
-Bytes: | OP_CODE | auth.V | auth.Address | auth.R  | auth.S  |  Auth.Block  |   Length   | Listing Info x Length |
-       |   [0]   |  [1]   |    [12:32]   | [32:64] | [64:96] |   [96:128]   |  [128:160] |   [160:length * 224]  |
+Bytes: | OP_CODE | auth.V | buyer.Address | auth.R  | auth.S  |  Auth.Block  |   Length   | Listing Info x Length |
+       |   [0]   |  [1]   |    [12:32]    | [32:64] | [64:96] |   [96:128]   |  [128:160] |   [160:length * 224]  |
 ```
 
 The layout of each Listing Info is as follows:
