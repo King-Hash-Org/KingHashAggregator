@@ -24,10 +24,11 @@ contract LidoRouter is Initializable {
      * @param lidoContract_ official Lido Contract for Staking 
      * @param lidoControllerContract_ lidoController Contract
      */
-    function __LidoRouter__init(address lidoContract_, address lidoControllerContract_, address stETHTokenAddress_) internal onlyInitializing {
+    function __LidoRouter__init(address lidoContract_, address lidoControllerContract_) internal onlyInitializing {
+
         lidoContract = ILido(lidoContract_);
         lidoController = ILidoController(lidoControllerContract_);
-        iStETH = IERC20(stETHTokenAddress_);
+        iStETH = IERC20(lidoContract_);
         lidoContractControllerAddress = lidoControllerContract_;
     }
 
