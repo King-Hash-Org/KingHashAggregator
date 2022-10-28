@@ -7,7 +7,6 @@ title: Specification on the Lido Controller Contract
  [`OwnableUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/access/OwnableUpgradeable.sol) 
  [`ReentrancyGuardUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/security/ReentrancyGuardUpgradeable.sol) 
  [`UUPSUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/proxy/utils/UUPSUpgradeable.sol) 
- 
  as the base and inherits from it.
 
 # Lido Controller API
