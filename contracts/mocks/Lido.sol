@@ -60,11 +60,7 @@ contract Lido is ILidoInterface, ISTETH {
         return true;
     }
 
-    function _transfer(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) internal virtual {
+    function _transfer(address sender, address recipient, uint256 amount) internal virtual {
         require(sender != address(0));
         _balances[recipient] += amount;
         emit Transfer(sender, recipient, amount);
