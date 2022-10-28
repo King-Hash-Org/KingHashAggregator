@@ -2,7 +2,7 @@
 title: Specification on the Lido Controller Contract
 ---
 
- Lido stakers can earn daily staking rewards by simply staking their assets through rebasing and re-onvesting through other DEFI Protocols - Yearn, Balancer, Curve, Harvest Finance , just to name afew. The Lido Controller Contract interacts with the LidoRouter and help to re-invest the user's STETH and generate yield accordingly to the selected strategy , this is available for both users and KingHash Aggregator to call.  
+ Lido stakers can earn daily staking rewards by simply staking their assets through rebasing and re-investing through other DEFI Protocols - Yearn, Balancer, Curve, Harvest Finance , just to name afew. The Lido Controller Contract interacts with the LidoRouter and help to re-invest the user's STETH and generate yield accordingly to the selected strategy , this is available for both users and KingHash Aggregator to call.  
  The Lido Controller Contract uses the following 
  [`OwnableUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/access/OwnableUpgradeable.sol) 
  [`ReentrancyGuardUpgradeable`](https://github.com/OpenZeppelin/openzeppelin-contracts-upgradeable/blob/master/contracts/security/ReentrancyGuardUpgradeable.sol) 
