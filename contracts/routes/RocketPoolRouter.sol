@@ -5,17 +5,18 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../controller-interface/IRocketController.sol";
 import "../interfaces/RocketDepositPoolInterface.sol";
-import "../controller-interface/RocketTokenRETHInterface.sol";
+// import "../controller-interface/RocketTokenRETHInterface.sol";
 import "../controller-interface/RocketStorageInterface.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-/** 
+/**
  * @title Router for RocketPool Strategy
- * @notice Routes incoming data(RocketPool strategy) to outbound contracts 
+ * @notice Routes incoming data(RocketPool strategy) to outbound contracts
  */
 contract RocketPoolRouter is Initializable {
     IRocketController public rocketController;
     RocketDepositPoolInterface public rocketDepositPool;
-    RocketTokenRETHInterface public rocketTokenRETH;
+    IERC20 public rocketTokenRETH;
     RocketStorageInterface public rocketStorage;
 
     address public rocketPoolContractControllerAddress;
@@ -29,9 +30,7 @@ contract RocketPoolRouter is Initializable {
      * @dev The RocketStorage contract also stores the addresses of all other network contracts,
      *      therefore the rocketpool-related contracts are queried before use to prevent outdated addresses.
      */
-    function __RocketPoolRouter__init(address rocketStorageAddress_, address rocketPoolControllerContract_)
-        internal
-        onlyInitializing
+    function __RocketPoolRouter__init(address rocketStorageAddress_, address rocketPoolControllerContract_) internal onlyInitializing
     {
         rocketPoolContractControllerAddress = rocketPoolControllerContract_;
         rocketController = IRocketController(rocketPoolControllerContract_);
@@ -44,7 +43,7 @@ contract RocketPoolRouter is Initializable {
             keccak256(abi.encodePacked("contract.address", "rocketTokenRETH"))
         );
 
-        rocketTokenRETH = RocketTokenRETHInterface(rocketTokenRETHAddress);
+        rocketTokenRETH = IERC20(rocketTokenRETHAddress);
         rocketDepositPool = RocketDepositPoolInterface(rocketDepositPoolAddress);
     }
 
@@ -68,8 +67,11 @@ contract RocketPoolRouter is Initializable {
         rocketDepositPool.deposit{value: stake_amount}();
         uint256 afterREthBalance = rocketTokenRETH.balanceOf(address(this));
         require(afterREthBalance > beforeREthBalance, "No rETH was minted");
+
         uint256 actualRethMinted = afterREthBalance - beforeREthBalance;
-        rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
+        bool transferSuccess = rocketTokenRETH.transfer(rocketPoolContractControllerAddress, actualRethMinted);
+        require(transferSuccess, "Transfer was not successful");
+
         rocketController.addREthBalance(msg.sender, actualRethMinted);
         emit RocketPoolDeposit(msg.sender, actualRethMinted);
 

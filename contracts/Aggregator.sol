@@ -51,7 +51,7 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
         __Pausable_init();
         __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
         __LidoRouter__init(lidoContractAddress, lidoControllerContractAddress);
-        __RocketPoolRouter__init( rocketStorageAddressContractAddress, rocketPoolControllerContractAddress);
+        __RocketPoolRouter__init(rocketStorageAddressContractAddress, rocketPoolControllerContractAddress);
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
