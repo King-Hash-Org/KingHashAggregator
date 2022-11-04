@@ -151,4 +151,4 @@ You can see further instructons for Surya [here](https://github.com/ConsenSys/su
 
 # Audits
 The following auditors were engaged to review the project before launch:
-* [Beosin Audit](https://beosin.com/) (In Progress)
+* [Beosin Audit](https://beosin.com/) (Completed)
