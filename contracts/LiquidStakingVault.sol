@@ -31,7 +31,7 @@ contract LiquidStakingVault is UUPSUpgradeable, OwnableUpgradeable, ReentrancyGu
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
         // _aggregatorProxyAddress = address(0x1);
-        _mint(_msgSender(), 10000000000000000000000);
+        // _mint(_msgSender(), 10000000000000000000000);
     }
 
 
