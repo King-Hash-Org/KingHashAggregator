@@ -3,22 +3,13 @@
 pragma solidity ^0.8.7;
 
   /**
-   * @title Interface for NodeRewardVault
-   * @notice Vault will manage methods for rewards, commissions, tax
-   */
+  * @title Interface for NodeRewardVault
+  * Vault will manage methods for rewards, commissions, tax
+  */
 interface INodeRewardVault {
-    struct RewardMetadata {
-        uint256 value;
-        uint256 height;
-    }
-
     function nftContract() external view returns (address);
 
-    function rewards(uint256 tokenId) external view returns (uint256);
-
-    function rewardsHeight() external view returns (uint256);
-
-    function rewardsAndHeights(uint256 amt) external view returns (RewardMetadata[] memory);
+    function rewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) external view returns (uint256);
 
     function comission() external view returns (uint256);
 
@@ -30,9 +21,7 @@ interface INodeRewardVault {
 
     function aggregator() external view returns (address);
 
-    function settle() external;
+    function transfer(uint256 amount, address to) external;
 
-    function publicSettle() external;
-
-    function claimRewards(uint256 tokenId) external;
+    function addClaimed(uint256 tokenId, uint256 amount) external;
 }

@@ -8,27 +8,18 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "./ERC721AQueryable.sol";
 import "../interfaces/IAggregator.sol";
 
-/** 
- * @title Validator Nft for Ethereum Network
- * @notice Each Validator Nft (vNFT) represents a validator node
- *         Apart from passive validator rewards, holders can leverage the liquidity of vNFT
- *         Integration of vNFT with other protocols is underway
- *         Holders of the nft also has full access to the underlying node & a exclusive dao (pfp coming)
- */
 contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
   address constant public OPENSEA_PROXY_ADDRESS = 0x1E0049783F008A0085193E00003D00cd54003c71;
   uint256 constant public MAX_SUPPLY = 6942069420;
 
   IAggregator private aggregator;
+  
   mapping(bytes => bool) private validatorRecords;
-  mapping(uint256 => address) private lastOwners;
-
   bytes[] public _validators;
-  uint256[] public _gasHeights;
   uint256[] public _nodeCapital;
-  uint256 public _activationDelay = 3600;
 
   bool private _isOpenSeaProxyActive = false;
+  uint256 private _totalHeight = 0;
   address private _aggregatorProxyAddress;
 
   event BaseURIChanged(string _before, string _after);
@@ -43,16 +34,14 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
   constructor() ERC721A("Validator Nft", "vNFT") {}
 
-  /**
-   * @notice Returns the aggregator's proxy address
-   */
   function aggregatorProxyAddress() external view returns (address) {
     return _aggregatorProxyAddress;
   }
 
-  /**
-   * @notice Returns the validators that are active (may contain validator that are yet active on beacon chain)
-   */
+  function totalHeight() external view returns (uint256) {
+    return _totalHeight;
+  }
+
   function activeValidators() external view returns (bytes[] memory) {
     uint256 total = _nextTokenId();
     uint256 tokenIdsIdx;
@@ -71,26 +60,14 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return validators;
   }
 
-  /**
-   * @notice Checks if a validator exists
-   * @param pubkey - A 48 bytes representing the validator's public key
-   */
   function validatorExists(bytes calldata pubkey) external view returns (bool) {
     return validatorRecords[pubkey];
   }
 
-  /**
-   * @notice Finds the validator's public key of a nft
-   * @param tokenId - tokenId of the validator nft
-   */
   function validatorOf(uint256 tokenId) external view returns (bytes memory) {
     return _validators[tokenId];
   }
 
-  /**
-   * @notice Finds all the validator's public key of a particular address
-   * @param owner - The particular address
-   */
   function validatorsOfOwner(address owner) external view returns (bytes[] memory) {
     unchecked {
       //slither-disable-next-line uninitialized-local
@@ -116,11 +93,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     }
   }
 
-  /**
-   * @notice Finds the tokenId of a validator
-   * @dev Returns MAX_SUPPLY if not found
-   * @param pubkey - A 48 bytes representing the validator's public key
-   */
   function tokenOfValidator(bytes calldata pubkey) external view returns (uint256) {
     for (uint256 i = 0; i < _validators.length; i++) {
       if (keccak256(_validators[i]) == keccak256(pubkey) && _exists(i)) {
@@ -130,31 +102,6 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     return MAX_SUPPLY;
   }
 
-  /**
-   * @notice Returns the gas height of the tokenId
-   * @param tokenId - tokenId of the validator nft
-   */
-  function gasHeightOf(uint256 tokenId) external view returns (uint256) {
-    require(_exists(tokenId), "Token does not exist");
-
-    return _gasHeights[tokenId];
-  }
-
-  /**
-   * @notice Returns the last owner before the nft is burned
-   * @param tokenId - tokenId of the validator nft
-   */
-  function lastOwnerOf(uint256 tokenId) external view returns (address) {
-    require(_ownershipAt(tokenId).burned, "Token not burned yet");
-    
-    return lastOwners[tokenId];
-  }
-
-  /**
-   * @notice Mints a Validator nft (vNFT)
-   * @param pubkey -  A 48 bytes representing the validator's public key
-   * @param _to - The recipient of the nft
-   */
   function whiteListMint(bytes calldata pubkey, address _to) external onlyAggregator {
     require(
       totalSupply() + 1 <= MAX_SUPPLY,
@@ -164,40 +111,24 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
 
     validatorRecords[pubkey] = true;
     _validators.push(pubkey);
-    _gasHeights.push(block.number + _activationDelay);
     _nodeCapital.push(32 ether);
     _safeMint(_to, 1);
   }
 
-  /**
-   * @notice Burns a Validator nft (vNFT)
-   * @param tokenId - tokenId of the validator nft
-   */
   function whiteListBurn(uint256 tokenId) external onlyAggregator {
-    lastOwners[tokenId] = ownerOf(tokenId);
     _nodeCapital[tokenId] = 0;
     _burn(tokenId);
   }
 
-  /**
-   * @notice Updates the capital value of a node as the node accrue validator rewards
-   * @param tokenId - tokenId of the validator nft
-   * @param value - The new cpaital value
-   */
   function updateNodeCapital(uint256 tokenId, uint256 value) external onlyAggregator {
     if (value > _nodeCapital[tokenId]) {
         _nodeCapital[tokenId] = value;
     }
   }
 
-  /**
-   * @notice Returns the node capital value of a validator nft
-   * @param tokenId - tokenId of the validator nft
-   */
   function nodeCapitalOf(uint256 tokenId)  external view returns (uint256) {
     require(_exists(tokenId), "Token does not exist");
-
-    return _nodeCapital[tokenId];
+     return _nodeCapital[tokenId];
   }
 
   // // metadata URI
@@ -224,34 +155,24 @@ contract ValidatorNft is Ownable, ERC721AQueryable, ReentrancyGuard {
     aggregator = IAggregator(_aggregatorProxyAddress);
   }
 
-  function setGasHeight(uint256 tokenId, uint256 value) external onlyAggregator {
-    if (value > _gasHeights[tokenId]) {
-      _gasHeights[tokenId] = value;
-    }
-  }
-
-  function setActivationDelay(uint256 delay) external onlyOwner {
-    _activationDelay = delay;
-  }
-
   function numberMinted(address owner) external view returns (uint256) {
     return _numberMinted(owner);
   }
 
-  function _beforeTokenTransfers(
-        address from,
-        address to,
-        uint256 startTokenId,
-        uint256 quantity
-    ) internal virtual override 
-  {
-    // no need to claim reward if user is minting nft
-    if (from == address(0) || from == to) {
-      return;
-    }
+  //slither-disable-next-line reentrancy-benign
+  function _claimRewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) private {
+    require(_exists(tokenId), "Token does not exist");
 
-    for (uint256 i = 0; i < quantity; i++) {
-      aggregator.disperseRewards(startTokenId + i);
+    aggregator.disperseRewards(tokenId, merkleProof, amount);
+  }
+
+  function claimRewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) external nonReentrant {
+    _claimRewards(tokenId, merkleProof, amount);
+  }
+
+  function batchClaimRewards(uint256[] calldata tokenIds, bytes32[][] calldata merkleProofs, uint256[] calldata amounts) external nonReentrant {
+    for (uint256 i = 0; i < tokenIds.length; i++) {
+      _claimRewards(tokenIds[i], merkleProofs[i], amounts[i]);
     }
   }
 
