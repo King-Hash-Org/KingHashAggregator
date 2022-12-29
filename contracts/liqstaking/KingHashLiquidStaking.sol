@@ -14,12 +14,11 @@ import "../libraries/SafeMath.sol";
 import "../libraries/UnstructuredStorage.sol";
 import "../interfaces/IAggregator.sol";
 import "../interfaces/IValidatorNft.sol";
-import "../nfts/ERC721A.sol";
+import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
-// inherit is TransferToNonERC721ReceiverImplementer
-contract KingHashLiquidStaking is Initializable, KEth, ReentrancyGuardUpgradeable, KingHashOperators, UUPSUpgradeable, ERC721A__IERC721Receiver, OwnableUpgradeable, PausableUpgradeable, IKingHash {
+contract KingHashLiquidStaking is Initializable, KEth, ReentrancyGuardUpgradeable, KingHashOperators, UUPSUpgradeable, ERC721A__IERC721ReceiverUpgradeable , OwnableUpgradeable, PausableUpgradeable, IKingHash {
 
     using SafeMath for uint256;
     using UnstructuredStorage for bytes32;

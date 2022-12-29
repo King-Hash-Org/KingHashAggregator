@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 pragma solidity ^0.8.7;
-import './IERC721AQueryable.sol';
+import 'erc721a-upgradeable/contracts/interfaces/IERC721AQueryableUpgradeable.sol';
 
-interface IValidatorNft is IERC721AQueryable {
+interface IValidatorNft is IERC721AQueryableUpgradeable {
     function totalHeight() external view returns (uint256);
 
     function validatorExists(bytes calldata pubkey) external view returns (bool);
