@@ -9,13 +9,10 @@ import "../interfaces/IAggregator.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract ValidatorNft is Initializable, OwnableUpgradeable, ERC721AUpgradeable, ReentrancyGuardUpgradeable {
-  
-  function initialize() initializer public { 
-    __Ownable_init();  
-    __ERC721A_init("Validator Nft" , "vNFT");
-  }
+contract ValidatorNft is Initializable, OwnableUpgradeable, ERC721AUpgradeable, ReentrancyGuardUpgradeable, UUPSUpgradeable {
+
   address constant private openSeaProxyAddress = 0x1E0049783F008A0085193E00003D00cd54003c71;
   uint256 constant public maxSupply = 6942069420;
 
@@ -33,8 +30,14 @@ contract ValidatorNft is Initializable, OwnableUpgradeable, ERC721AUpgradeable, 
   address public _liquidStakingAddress;
   bytes[] private _returnedPubKeys  ;
 
+  function _authorizeUpgrade(address) internal override onlyOwner {}
 
-
+  function initialize() initializer public { 
+    __Ownable_init(); 
+    __UUPSUpgradeable_init();
+    __ReentrancyGuard_init();
+    __ERC721A_init("Validator Nft" , "vNFT");
+  }
 
   modifier onlyAggregator() {
     require(_aggregatorProxyAddress == msg.sender, "Not allowed to mint/burn nft");
