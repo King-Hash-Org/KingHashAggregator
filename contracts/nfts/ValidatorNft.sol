@@ -14,7 +14,7 @@ contract ValidatorNft is Initializable, OwnableUpgradeable, ERC721AUpgradeable, 
   
   function initialize() external initializer { 
     __Ownable_init();  
-    __ERC721A_init_unchained("Validator Nft" , "vNFT");
+    __ERC721A_init("Validator Nft" , "vNFT");
   }
 
   address constant private openSeaProxyAddress = 0x1E0049783F008A0085193E00003D00cd54003c71;
