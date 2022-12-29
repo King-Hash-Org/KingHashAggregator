@@ -8,61 +8,51 @@ import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.
 import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./interfaces/IAggregator.sol";
 import "./routes/ValidatorNftRouter.sol";
-import "./routes/LidoRouter.sol";
-import "./routes/RocketPoolRouter.sol";
+import "hardhat/console.sol";
 
-
-/** @title Staking Aggregator for Eth
-  * @author ChainUp Dev
-  * @dev Accepts incoming data and and route to different startegies. 
- **/
-contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable, LidoRouter, RocketPoolRouter {
-    bytes1 private constant ETH32_STRATEGY = 0x01;  
-    bytes1 private constant LIDO_STRATEGY = 0x02; 
+/** 
+ * @title Aggregator
+ * @dev Implements staking aggregator for Eth
+ */
+//slither-disable-next-line unprotected-upgrade
+contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, ReentrancyGuardUpgradeable, PausableUpgradeable, OwnableUpgradeable {
+    bytes1 private constant ETH32_STRATEGY = 0x01;  // 1
+    bytes1 private constant LIDO_STRATEGY = 0x02; // 3
     bytes1 private constant SWELL_STRATEGY = 0x03;
-    bytes1 private constant ROCKETPOOL_STRATEGY = 0x04; 
+    bytes1 private constant ROCKETPOOL_STRATEGY = 0x04; // 4
     bytes1 private constant STAKEWISE_STRATEGY = 0x05;
     bytes1 private constant NODE_TRADE_STRATEGY = 0x06;
-    bytes1 private constant SSV_STRATEGY = 0x07; 
-    bytes1 private constant ONEINCH_STRATEGY = 0x08;  
+    bytes1 private constant SSV_STRATEGY = 0x07; // 2
+    address private kingHashLiqStaking ;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {}
 
-    /**
-    * @notice Initializes the contract by setting the required external
-    *  contracts for different strategies (Eth32,Lido,Rocket, Stakewise)
-    * ReentrancyGuardUpgradeable, OwnableUpgradeable, UUPSUpgradeable .  
-    * @dev initializer- A modifier that defines a protected initializer function that can be invoked at most once. 
-    **/
     function initialize(
         address depositContractAddress,
         address vaultAddress,
         address nftContractAddress,
-        address lidoContractAddress,
-        address lidoControllerContractAddress,
-        address rocketStorageAddressContractAddress,
-        address rocketPoolControllerContractAddress
-    ) 
-    external initializer {
+        address KingHashLiqStakingAddress_,
+        address chainupOperatorAddress_
+
+    ) external initializer {
         __Ownable_init();
         __UUPSUpgradeable_init();
         __ReentrancyGuard_init();
         __Pausable_init();
-        __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress);
-        __LidoRouter__init(lidoContractAddress, lidoControllerContractAddress);
-        __RocketPoolRouter__init( rocketStorageAddressContractAddress, rocketPoolControllerContractAddress );
+        __ValidatorNftRouter__init(depositContractAddress, vaultAddress, nftContractAddress, chainupOperatorAddress_);
+        kingHashLiqStaking = KingHashLiqStakingAddress_;
+    }
 
+    modifier onlyKingHashLiqStaking() {
+        require(kingHashLiqStaking == msg.sender, "Not allowed to transfer funds to deposit contract");
+        _;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
-    /**
-    * @dev See {IAggregator-stake}.
-    */
     function stake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         uint256 total_ether = 0;
-
         for (uint256 i = 0; i < data.length; i++) {
             require(data[i].length > 0, "Empty data provided");
             bytes1 prefix = bytes1(data[i][0]);
@@ -71,33 +61,26 @@ contract Aggregator is IAggregator, ValidatorNftRouter, UUPSUpgradeable, Reentra
                 super.eth32Route(data[i]);
                 total_ether += 32 ether;
             } else if (prefix == LIDO_STRATEGY) {
-                require(data[i].length == 64, "Lido Contract: Invalid Data Length");
-                total_ether += super.lidoRoute(data[i]);
-            } else if (prefix == ROCKETPOOL_STRATEGY) {
-                require(data[i].length == 64, "Rocket Pool Contract: Invalid Data Length");
-                total_ether += super.rocketPoolRoute(data[i]);
-            }
-             else if (prefix == NODE_TRADE_STRATEGY) {
+                // lido route
+            } else if (prefix == NODE_TRADE_STRATEGY) {
                 total_ether += super.tradeRoute(data[i]);
             }
         }
+
         require(msg.value == total_ether, "Incorrect Ether amount provided");
         return true;
     }
 
-    /**
-    * @dev See {IAggregator-unstake}.
-    */
+    function eth32LiquidStakingRoute(bytes memory pubkey,  bytes memory withdrawalCredentials, bytes memory signature, bytes32 depositDataRoot, address operator ) external payable override nonReentrant onlyKingHashLiqStaking {
+        liqStakingEth32Route(pubkey, withdrawalCredentials, signature , depositDataRoot, operator);
+    }
+
     function unstake(bytes[] calldata data) payable external override nonReentrant whenNotPaused returns (bool) {
         return data.length == 0;
     }
 
-    /**
-    * @dev See {IAggregator-disperseRewards}.
-    */
-    function disperseRewards(uint256 tokenId,  bytes32[] calldata merkleProof, uint256 amount) external override {
-        require(msg.sender == nftAddress, "Message sender is not the Nft contract");
-        rewardRoute(tokenId, merkleProof, amount);
+    function disperseRewards(uint256 tokenId, bytes32[] memory merkleProof ) external override nonReentrant {
+        rewardRoute(tokenId, merkleProof);
     }
 
     function pause() external onlyOwner {

@@ -22,5 +22,8 @@ interface IAggregator {
     * @notice Transfer earned rewards to user
     * @param tokenId - representation of user's nft
     **/
-    function disperseRewards(uint256 tokenId, bytes32[] calldata merkleProof, uint256 amount) external;
+    function disperseRewards(uint256 tokenId, bytes32[] memory merkleProof) external;
+
+    function eth32LiquidStakingRoute(bytes memory pubkey, bytes memory signature, bytes memory withdrawalCredentials, bytes32 depositDataRoot, address operator) external payable ;
+
 }

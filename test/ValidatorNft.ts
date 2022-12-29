@@ -6,337 +6,190 @@ import { Address, zeroAddress } from "ethereumjs-util";
 import { AddressZero } from "@ethersproject/constants";
 
 describe("ValidatorNft", function () {
-  async function deployBaseFixture() {
-    const [owner, otherAccount] = await ethers.getSigners();
+    async function deployBaseFixture() {
+        const [owner, otherAccount, operator ] = await ethers.getSigners();
+  
+        const NftContract = await ethers.getContractFactory("ValidatorNft");
+        const nftContract = await NftContract.deploy();
+        await nftContract.initialize();
 
-    const NftContract = await ethers.getContractFactory("ValidatorNft");
-    const nftContract = await NftContract.deploy();
+        const NodeRewardVault = await ethers.getContractFactory("NodeRewardVault");
+        const nodeRewardVault = await NodeRewardVault.deploy();
+        await nodeRewardVault.initialize(nftContract.address);
+  
+        const DepositContract = await ethers.getContractFactory("DepositContract");
+        const depositContract = await DepositContract.deploy();
+  
+        const withdrawCred = "0x00175ef0acf0386f346cc10b4f25806af2c0b7ec785ef0ae84c4098871340176" ;
+        const KingHashLiquidStakingContract = await ethers.getContractFactory("KingHashLiquidStaking");
+        const liquidStaking = await KingHashLiquidStakingContract.deploy();
+        
+        const Aggregator = await ethers.getContractFactory("Aggregator");
+        const aggregator = await Aggregator.deploy();
+        const chainupOperator = "0xd28ED4D0B1f9bd8dDBd6700b20e7E40889d37898" ;
 
-    const NodeRewardVault = await ethers.getContractFactory("NodeRewardVault");
-    const nodeRewardVault = await NodeRewardVault.deploy();
-    await nodeRewardVault.initialize(nftContract.address);
-
-    const DepositContract = await ethers.getContractFactory("DepositContract");
-    const depositContract = await DepositContract.deploy();
-
-    const LidoContract = await ethers.getContractFactory("Lido");
-    const lidoContract = await LidoContract.deploy();
-
-    const LidoControllerContract = await ethers.getContractFactory("LidoController");
-    const lidoController = await LidoControllerContract.deploy();
-    await lidoController.initialize();
-
-    const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
-    const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
-
-    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
-    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
-
-    const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
-    const rocketStorage = await RocketStorageContract.deploy();
-    rocketStorage.setAddressStorage("0x65DD923DDFC8D8AE6088F80077201D2403CBD565F0BA25E09841E2799EC90BB2", rocketDepositPoolContract.address ) ;
-    rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address ) ;
-
-    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
-
-    const RocketControllerContract = await ethers.getContractFactory("RocketController");
-    const rocketController = await RocketControllerContract.deploy();
-    await rocketController.initialize();
+        await liquidStaking.initLiqStakingVault( withdrawCred, aggregator.address , nftContract.address);
+        await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, liquidStaking.address, chainupOperator );
     
-    const Aggregator = await ethers.getContractFactory("Aggregator");
-    const aggregator = await Aggregator.deploy();
-    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address , lidoController.address, rocketStorage.address , rocketController.address );
+    
+        await nodeRewardVault.setAggregator(aggregator.address);
+        await nftContract.setAggregator(aggregator.address);
+  
+        return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, operator };
+    }
 
-    await nodeRewardVault.setAggregator(aggregator.address);
-    await nftContract.setAggregator(aggregator.address);
+    // fixture with owner as aggregator stub
+    async function deployAggregatorStubFixture() {
+        const { aggregator, nodeRewardVault, nftContract, owner, otherAccount,operator } = await deployBaseFixture();
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
-  }
+        await nftContract.setAggregator(owner.address);
 
-  // fixture with owner as aggregator stub
-  async function deployAggregatorStubFixture() {
-    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployBaseFixture();
+        return { aggregator, nodeRewardVault, nftContract, owner, otherAccount,operator };
+    }
 
-    await nftContract.setAggregator(owner.address);
+    // fixture with minted nfts
+    async function deployMintedFixture() {
+        const { aggregator, nodeRewardVault, nftContract, owner, otherAccount, operator } = await deployAggregatorStubFixture();
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
-  }
+        const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
+        const pubkey2 = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebe";
 
-  // fixture with minted nfts
-  async function deployMintedFixture() {
-    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployAggregatorStubFixture();
+        await nftContract.whiteListMint(pubkey, owner.address, operator.address);
+        await nftContract.whiteListMint(pubkey2, owner.address, operator.address);
 
-    const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
-    const pubkey2 =
-      "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebe";
+        return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
+    }
 
-    await nftContract.whiteListMint(pubkey, owner.address);
-    await nftContract.whiteListMint(pubkey2, owner.address);
+    // fixture with minted nfts by aggregator
+    async function deployMintedWithAggregatorFixture() {
+        const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployBaseFixture();
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
-  }
+        const data = "0x011c00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00ab726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c74d6236b57a7c5d40c93f00c6d16a790b88bd29496b0cdd1809befd5464c2cd35655745adc507246b9f9db13d38c3d988fab56b6b752dfc2a2ecbe43dbb0eef3";
+        await aggregator.stake([data], { value: ethers.utils.parseEther("32") });
 
-  // fixture with minted nfts by aggregator
-  async function deployMintedWithAggregatorFixture() {
-    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployBaseFixture();
+        return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
+    }
 
-    const data =
-      "0x011c00000000000000000000000000008752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf00ab726d6f3220aa98528fd846fe7b25df6483c0bbe1505ee65e98225e692f9a8eb572bed3850c2984bb2d73ee2e96081814afb6b4ff911cbc471733ee65a8629dfac9e67470886f211dc0c4702cf44c01be9469857231dae5f254e0e698f19efcee0157fc77bee8f48df268e5db163cc744954d24887cc2ecfeb81109f8f1a63e80e9628b4c5cc68045f252b1cf425b3fd3725224bb37c4846ecba70cb333850000000000000000000000000000000000000000000000000000000006e1752c74d6236b57a7c5d40c93f00c6d16a790b88bd29496b0cdd1809befd5464c2cd35655745adc507246b9f9db13d38c3d988fab56b6b752dfc2a2ecbe43dbb0eef3";
-    await aggregator.stake([data], { value: ethers.utils.parseEther("32") });
-
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
-  }
-
-  // fixture with rewards
-  async function deployMintedWithRewardsFixture() {
-    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployMintedWithAggregatorFixture();
-
-    await owner.sendTransaction({
-      to: nodeRewardVault.address,
-      value: ethers.utils.parseEther("100"), // Sends exactly 100 ether
+    describe("Aggregator setting", function () {
+        it("Should have the right default authority", async function () {
+            const { aggregator, nftContract } = await loadFixture(deployBaseFixture);
+    
+            expect(await nftContract._aggregatorProxyAddress()).to.equal(aggregator.address)
+        });
     });
 
-    await nodeRewardVault.setRoot("0xd6508985dd62f2f85a3c073df1c704c64b8ca7f2f44c1c400003bbdd3421bfc9");
+    describe("Withdrawal setting", function () {
+        it("Should be only owner allowed to withdraw", async function () {
+            const { nftContract, otherAccount } = await loadFixture(deployBaseFixture);
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
-  }
-
-  describe("Aggregator setting", function () {
-    it("Should have the right default authority", async function () {
-      const { aggregator, nftContract } = await loadFixture(deployBaseFixture);
-
-      expect(await nftContract.aggregatorProxyAddress()).to.equal(aggregator.address);
-    });
-  });
-
-  describe("Withdrawal setting", function () {
-    it("Should be only owner allowed to withdraw", async function () {
-      const { nftContract, otherAccount } = await loadFixture(deployBaseFixture);
-
-      await nftContract.withdrawMoney();
-      await expect(nftContract.connect(otherAccount).withdrawMoney()).to.be.revertedWith(
-        "Ownable: caller is not the owner"
-      );
-    });
-  });
-
-  describe("Base uri setting", function () {
-    it("Should be only owner allowed to withdraw", async function () {
-      const { nftContract } = await loadFixture(deployMintedFixture);
-
-      await nftContract.setBaseURI("www.chainupcloud.com/");
-      expect(await nftContract.tokenURI(0)).to.equal("www.chainupcloud.com/0");
-      expect(await nftContract.tokenURI(1)).to.equal("www.chainupcloud.com/1");
-    });
-  });
-
-  describe("Mint", function () {
-    it("Unauthorized aggregator mint", async function () {
-      const { nftContract, owner, otherAccount } = await loadFixture(deployAggregatorStubFixture);
-      const pubkey =
-        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
-
-      await expect(nftContract.connect(otherAccount).whiteListMint(pubkey, owner.address)).to.be.revertedWith(
-        "Not allowed to mint/burn nft"
-      );
+            await nftContract.withdrawMoney();
+            await expect(nftContract.connect(otherAccount).withdrawMoney()).to.be.revertedWith("Ownable: caller is not the owner");
+        })
     });
 
-    it("Correct authorized aggregator mint", async function () {
-      const { nftContract, owner } = await loadFixture(deployAggregatorStubFixture);
-      const pubkey =
-        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
+    describe("Base uri setting", function () {
+        it("Should be only owner allowed to withdraw", async function () {
+            const { nftContract } = await loadFixture(deployMintedFixture);
 
-      await nftContract.whiteListMint(pubkey, owner.address);
-      expect(await nftContract.validatorOf(0)).to.equal(pubkey);
-      expect(await nftContract.ownerOf(0)).to.equal(owner.address);
-      expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseEther("0")]);
-      expect(await nftContract.validatorsOfOwner(owner.address)).to.have.same.members([pubkey]);
-      expect(await nftContract.validatorExists(pubkey)).to.equal(true);
-      expect(await nftContract.activeValidators()).to.have.same.members([pubkey]);
-    });
-  });
-
-  describe("Multi mint", function () {
-    it("Incorrect duplicated mint", async function () {
-      const { nftContract, owner } = await loadFixture(deployAggregatorStubFixture);
-      const pubkey =
-        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
-
-      await nftContract.whiteListMint(pubkey, owner.address);
-
-      await expect(nftContract.whiteListMint(pubkey, owner.address)).to.be.revertedWith("Pub key already in used");
-      expect(await nftContract.numberMinted(owner.address)).to.equal(1);
+            await nftContract.setBaseURI("www.chainupcloud.com/");
+            expect(await nftContract.tokenURI(0)).to.equal("www.chainupcloud.com/0");
+            expect(await nftContract.tokenURI(1)).to.equal("www.chainupcloud.com/1");
+        })
     });
 
-    it("Correct multi mint", async function () {
-      const { nftContract, owner } = await loadFixture(deployAggregatorStubFixture);
-      const pubkey =
-        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
-      const pubkey2 =
-        "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebe";
+    describe("Mint", function () {
+        it("Unauthorized aggregator mint", async function () {
+            const { nftContract, owner, otherAccount, operator } = await loadFixture(deployAggregatorStubFixture);
+            const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf"
+    
+            await expect(nftContract.connect(otherAccount).whiteListMint(pubkey, owner.address, operator.address)).to.be.revertedWith("Not allowed to mint/burn nft");
+        });
 
-      await nftContract.whiteListMint(pubkey, owner.address);
-      await nftContract.whiteListMint(pubkey2, owner.address);
-      expect(await nftContract.validatorOf(0)).to.equal(pubkey);
-      expect(await nftContract.ownerOf(0)).to.equal(owner.address);
-      expect(await nftContract.tokenOfValidator(pubkey)).to.equal(0);
-      expect(await nftContract.validatorOf(1)).to.equal(pubkey2);
-      expect(await nftContract.ownerOf(1)).to.equal(owner.address);
-      expect(await nftContract.tokenOfValidator(pubkey2)).to.equal(1);
-      expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([
-        ethers.utils.parseEther("0"),
-        ethers.utils.parseUnits("1", 0),
-      ]);
-      expect(await nftContract.validatorsOfOwner(owner.address)).to.have.same.members([pubkey, pubkey2]);
-      expect(await nftContract.validatorExists(pubkey)).to.equal(true);
-      expect(await nftContract.validatorExists(pubkey2)).to.equal(true);
-      expect(await nftContract.numberMinted(owner.address)).to.equal(2);
-      expect(await nftContract.activeValidators()).to.have.same.members([pubkey, pubkey2]);
-    });
-  });
+        it("Correct authorized aggregator mint", async function () {
+            const { nftContract, owner, operator  } = await loadFixture(deployAggregatorStubFixture);
+            const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf"
+    
+            await nftContract.whiteListMint(pubkey, owner.address, operator.address);
+            expect(await nftContract.validatorOf(0)).to.equal(pubkey);
+            expect(await nftContract.ownerOf(0)).to.equal(owner.address);
+            expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseEther("0")]);
+            expect(await nftContract.validatorsOfOwner(owner.address)).to.have.same.members([pubkey]);
+            expect(await nftContract.validatorExists(pubkey)).to.equal(true);
 
-  describe("Mint & burn", function () {
-    it("Unauthorized aggregator burn", async function () {
-      const { nftContract, otherAccount } = await loadFixture(deployMintedFixture);
-
-      await expect(nftContract.connect(otherAccount).whiteListBurn(0)).to.be.revertedWith(
-        "Not allowed to mint/burn nft"
-      );
+            // total height should be same as gas height as there is only 1 nft
+            const totalHeight = await nftContract.totalHeight();
+            expect(totalHeight).to.greaterThanOrEqual(ethers.utils.parseEther("0"));
+            expect(await nftContract.gasHeightOf(0)).to.equal(totalHeight);
+        });
     });
 
-    // not possible to test as rewards is now issued when burn
-    it.skip("Correct authorized burn", async function () {
-      const { nftContract, owner } = await loadFixture(deployMintedFixture);
+    describe("Multi mint", function () {
+        it("Incorrect duplicated mint", async function () {
+            const { nftContract, owner, operator  } = await loadFixture(deployAggregatorStubFixture);
+            const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
+    
+            await nftContract.whiteListMint(pubkey, owner.address, operator.address );
 
-      expect(await nftContract.totalSupply()).to.equal(2);
-      await expect(nftContract.whiteListBurn(0))
-        .to.emit(nftContract, "Transfer")
-        .withArgs(owner.address, AddressZero, 0);
-      expect(await nftContract.totalSupply()).to.equal(1);
-      expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseUnits("1", 0)]);
+            await expect(nftContract.whiteListMint(pubkey, owner.address, operator.address)).to.be.revertedWith("Pub key already in used");
+            expect(await nftContract.numberMinted(owner.address)).to.equal(1);
+        });
+
+        it("Correct multi mint", async function () {
+            const { nftContract, owner, operator  } = await loadFixture(deployAggregatorStubFixture);
+            const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
+            const pubkey2 = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebe";
+    
+            await nftContract.whiteListMint(pubkey, owner.address, operator.address);
+            await nftContract.whiteListMint(pubkey2, owner.address, operator.address);
+            expect(await nftContract.validatorOf(0)).to.equal(pubkey);
+            expect(await nftContract.ownerOf(0)).to.equal(owner.address);
+            expect(await nftContract.validatorOf(1)).to.equal(pubkey2);
+            expect(await nftContract.ownerOf(1)).to.equal(owner.address);
+            expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseEther("0"), ethers.utils.parseUnits("1", 0)]);
+            expect(await nftContract.validatorsOfOwner(owner.address)).to.have.same.members([pubkey, pubkey2]);
+            expect(await nftContract.validatorExists(pubkey)).to.equal(true);
+            expect(await nftContract.validatorExists(pubkey2)).to.equal(true);
+            expect(await nftContract.numberMinted(owner.address)).to.equal(2);
+        });
     });
 
-    // not possible to test as rewards is now issued when burn
-    it.skip("Dual burn", async function () {
-      const { nftContract, owner } = await loadFixture(deployMintedFixture);
+    describe("Mint & burn", function () {
+        it("Unauthorized aggregator burn", async function () {
+            const { nftContract, otherAccount } = await loadFixture(deployMintedFixture);
+    
+            await expect(nftContract.connect(otherAccount).whiteListBurn(0)).to.be.revertedWith("Not allowed to mint/burn nft");
+        });
 
-      await expect(nftContract.whiteListBurn(0))
-        .to.emit(nftContract, "Transfer")
-        .withArgs(owner.address, AddressZero, 0);
-      await expect(nftContract.whiteListBurn(0)).to.be.revertedWithCustomError(
-        nftContract,
-        "OwnerQueryForNonexistentToken"
-      );
-    });
-  });
+        it("Correct authorized burn", async function () {
+            const { nftContract, owner } = await loadFixture(deployMintedFixture);
 
-  describe("Claim rewards", function () {
-    it("Regular reward claiming zero rewards", async function () {
-      const { nftContract, owner, aggregator } = await loadFixture(deployMintedWithAggregatorFixture);
+            expect(await nftContract.totalSupply()).to.equal(2);
+            await expect(nftContract.whiteListBurn(0)).to.emit(nftContract, "Transfer").withArgs(owner.address, AddressZero, 0);
+            expect(await nftContract.totalSupply()).to.equal(1);
+            expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseUnits("1", 0)]);
+        });
 
-      await expect(nftContract.claimRewards(0, [], 0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
-    });
+        it("Dual burn", async function () {
+            const { nftContract, owner } = await loadFixture(deployMintedFixture);
 
-    it("Other ppl helping to claim zero rewards", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithAggregatorFixture);
-
-      await expect(nftContract.connect(otherAccount).claimRewards(0, [], 0))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
+            await expect(nftContract.whiteListBurn(0)).to.emit(nftContract, "Transfer").withArgs(owner.address, AddressZero, 0);
+            await expect(nftContract.whiteListBurn(0)).to.be.revertedWithCustomError(nftContract, "OwnerQueryForNonexistentToken");
+        });
     });
 
-    it("Reward claim with incorrect proof", async function () {
-      const { nftContract } = await loadFixture(deployMintedWithRewardsFixture);
+    describe("Claim rewards", function () {
+        it("Gas height change after reward claim", async function () {
+            const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithAggregatorFixture);
 
-      await expect(nftContract.claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c80"], 100))
-        .to.be.revertedWith("Incorrect proof");
+            const prevGasHeight = await nftContract.gasHeightOf(0);
+            const prevTotalHeight = await nftContract.totalHeight();
+            await expect(nftContract["safeTransferFrom(address,address,uint256)"](owner.address, otherAccount.address, 0)).to.emit(aggregator, "RewardClaimed").withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
+            const currGasHeight = await nftContract.gasHeightOf(0);
+            const currTotalHeight = await nftContract.totalHeight();
+            
+            expect(currGasHeight).to.greaterThan(prevGasHeight);
+            expect(currTotalHeight).to.greaterThan(prevTotalHeight);
+            expect(currTotalHeight.sub(prevTotalHeight)).to.equal(currGasHeight.sub(prevGasHeight));
+        });
     });
-
-    it("Regular reward claim", async function () {
-      const { nftContract, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
-
-      await expect(nftContract.claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
-    });
-
-    it("Other ppl helping to claim", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
-
-      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
-    });
-
-    it("Claim and then claim again", async function () {
-      const { nftContract, otherAccount, owner, aggregator, nodeRewardVault } = await loadFixture(deployMintedWithRewardsFixture);
-
-      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
-      
-      await nodeRewardVault.setRoot("0xabd4c6752c34b5710474d14ab4ce35ebfe0bf7289c4e6f0b7f9d85f85e00b359");
-
-      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0xb5d2c532a1f69274274218b8ebd23d4d7a0e9dd7b4f02cc673d422fad5b0e9ac"], 200))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
-    });
-
-    it("Claim again with no rewards", async function () {
-      const { nftContract, otherAccount, owner, aggregator } = await loadFixture(deployMintedWithRewardsFixture);
-
-      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
-
-      await expect(nftContract.connect(otherAccount).claimRewards(0, ["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"], 100))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("0", 0), ethers.utils.parseUnits("0", 0));
-    });
-  });
-
-  describe("Bulk claim rewards of Nft", function () {
-    it("With rewards behaviour", async function () {
-      const { aggregator, owner, nftContract } = await loadFixture(deployMintedWithRewardsFixture);
-
-      await expect(nftContract.batchClaimRewards([0], [["0x75307ea008dc324a00e3355178806383067feafdcaaba95b2b00be58aa667c8b"]], [100]))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseUnits("90", 0), ethers.utils.parseUnits("100", 0));
-    });
-
-    it("No rewards behaviour", async function () {
-      const { aggregator, owner, nftContract } = await loadFixture(deployMintedWithAggregatorFixture);
-
-      await expect(nftContract.batchClaimRewards([0], [[]], [0]))
-        .to.emit(aggregator, "RewardClaimed")
-        .withArgs(owner.address, ethers.utils.parseEther("0"), ethers.utils.parseEther("0"));
-    });
-  });
-
-  describe("Set opensea proxy", function () {
-    it("Should set", async function () {
-      const { nftContract } = await loadFixture(deployBaseFixture);
-
-      await expect(nftContract.setIsOpenSeaProxyActive(true))
-        .to.emit(nftContract, "OpenSeaState")
-        .withArgs(true);
-    });
-
-    it("Should unset", async function () {
-      const { nftContract } = await loadFixture(deployBaseFixture);
-
-      await expect(nftContract.setIsOpenSeaProxyActive(false))
-        .to.emit(nftContract, "OpenSeaState")
-        .withArgs(false);
-    });
-
-    it("Should be unathourized", async function () {
-      const { nftContract, otherAccount } = await loadFixture(deployBaseFixture);
-
-      await expect(nftContract.connect(otherAccount).setIsOpenSeaProxyActive(true))
-        .to.be.revertedWith("Ownable: caller is not the owner");
-    });
-  });
 });

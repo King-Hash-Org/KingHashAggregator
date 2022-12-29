@@ -4,25 +4,15 @@ pragma solidity ^0.8.7;
 import './IERC721AQueryable.sol';
 
 interface IValidatorNft is IERC721AQueryable {
-    function activeValidators() external view returns (bytes[] memory);
+    function totalHeight() external view returns (uint256);
 
     function validatorExists(bytes calldata pubkey) external view returns (bool);
 
     function validatorOf(uint256 tokenId) external view returns (bytes memory);
 
-    function validatorsOfOwner(address owner) external view returns (bytes[] memory);
+    function gasHeightOf(uint256 tokenId) external view returns (uint256);
 
-    function tokenOfValidator(bytes calldata pubkey) external view returns (uint256);
-
-    function whiteListMint(bytes calldata data, address _to) external payable;
+    function whiteListMint(bytes calldata data, address _to, address operator) external payable;
 
     function whiteListBurn(uint256 tokenId) external;
-
-    function claimRewards(uint256 tokenId) external;
-
-    function batchClaimRewards(uint256[] calldata tokenIds) external;
-
-    function updateNodeCapital(uint256 tokenId, uint256 value) external;
-
-    function nodeCapitalOf(uint256 tokenId)  external view returns (uint256);
 }
