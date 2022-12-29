@@ -3,20 +3,19 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "../interfaces/IAggregator.sol";
 import "hardhat/console.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "erc721a-upgradeable/contracts/ERC721AUpgradeable.sol";
 
-contract ValidatorNft is Initializable, OwnableUpgradeable, ERC721AUpgradeable, ReentrancyGuard {
+contract ValidatorNft is Initializable, OwnableUpgradeable, ERC721AUpgradeable, ReentrancyGuardUpgradeable {
   
-  function initialize() external initializer { 
+  function initialize() initializer public { 
     __Ownable_init();  
     __ERC721A_init("Validator Nft" , "vNFT");
   }
-
   address constant private openSeaProxyAddress = 0x1E0049783F008A0085193E00003D00cd54003c71;
   uint256 constant public maxSupply = 6942069420;
 
