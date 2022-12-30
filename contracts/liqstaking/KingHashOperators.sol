@@ -1,44 +1,62 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
-// import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 
-contract KingHashOperators is Initializable  {
-    mapping(address => bool) public kingHashOperators;
+contract KingHashOperators is Initializable, OwnableUpgradeable {
     mapping(bytes32 => address) public nameToAddress;
-    mapping(address => uint256) public operatorsPool;
-    address chainUpAddress = 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2; //ChainUp // for adding to tests later.
-    uint256 public totalOperatorCount  ;
+    mapping(address => bool) public operators;
+    mapping(address => uint256) public operatorPoolBalances;
+    address public chainUpAddress = 0xAb8483F64d9C6d1EcF9b849Ae677dD3315835cb2; //ChainUp // for adding to tests later.
+    uint256 public totalOperatorCount;
+
+    function __Operators__init() internal onlyInitializing {
+        __Ownable_init();
+    }
 
     function getChainUp() public view returns (address) {
-        return  chainUpAddress;
+        return chainUpAddress;
     }
 
-    function _isKingHashDAO(address operator) internal view returns (bool) {
-        return kingHashOperators[operator];
+    function _isValidOperator(address operator) internal view returns (bool) {
+        return operators[operator];
     }
 
-    function addToOperatorPool(address operator, uint256 amount) internal {
-        require(kingHashOperators[operator], "Not part of operatorsPool");
-        operatorsPool[operator] += amount;
+    function isValidOperator(address operator) external view returns (bool) {
+        return _isValidOperator(operator);
     }
 
-    function subtractFromOperatorPool(address operator) internal {
-        require(kingHashOperators[operator], "Not part of operatorsPool");
-        require(operatorsPool[operator] >= 32 ether , "This operator has less than 32 ETH in the Pool");
-
-        operatorsPool[operator] -= 32 ether;
+    function addToOperatorBalance(address operator, uint256 amount) internal {
+        require(operators[operator], "Not part of operatorsPool");
+        operatorPoolBalances[operator] += amount;
     }
 
-    function checkif32ETH(address operator) internal view returns (bool) {
-        return operatorsPool[operator] >= 32 ether;
+    function subtractFromOperatorBalance(address operator, uint256 amount) internal {
+        require(operators[operator], "Not part of operatorsPool");
+        require(operatorPoolBalances[operator] >= amount, "This operator has insufficient amount");
+
+        operatorPoolBalances[operator] -= amount;
     }
 
-    function operatorEthBalance(address operator) public view returns (uint256) {
-        return operatorsPool[operator];
+    function operatorBalance(address operator) public view returns (uint256) {
+        return operatorPoolBalances[operator];
     }
 
     function addressOf(string memory name) external view returns (address) {
         return nameToAddress[keccak256(abi.encodePacked(name))];
+    }
+
+    function addOperator(address operator, string memory name) external onlyOwner {
+        require(operator != address(0), "DAO should not be zero address");
+        operators[operator] = true;
+        nameToAddress[keccak256(abi.encodePacked(name))] = operator;
+        totalOperatorCount++;
+    }
+
+    function removeOperator(address operator, string memory name) external onlyOwner {
+        require(operators[operator] == true || nameToAddress[keccak256(abi.encodePacked(name))] == operator, "DAO name does not match address");
+        operators[operator] = false;
+        nameToAddress[keccak256(abi.encodePacked(name))] = address(0);
+        totalOperatorCount--;
     }
 }

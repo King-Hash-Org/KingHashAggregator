@@ -5,52 +5,34 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../interfaces/IDepositContract.sol";
 import "../interfaces/IValidatorNft.sol";
 import "../interfaces/INodeRewardVault.sol";
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
+/** 
+ * @title Router for Validator NFT Strategy
+ * @notice Routes incoming data to various Validator NFT Strategies such as trading, minting & more.
+ */
 contract ValidatorNftRouter is Initializable {
-    struct Signature {
-        address signer;
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-    }
-
-    struct UserListing {
-        uint256 tokenId; 
-        uint256 rebate;
-        uint256 expiredHeight; // listing expiry block height
-        Signature signature;
-    }
-
-    struct Trade {
-        uint256[] prices;
-        uint256 expiredHeight; // trade expiry block height
-        address receiver;
-        UserListing[] userListings;
-        Signature signature;
-    }
-
+    event NodeTrade(uint256 _tokenId, address _from, address _to, uint256 _amount);
     event Eth32Deposit(bytes _pubkey, bytes _withdrawal, address _owner);
-    event Eth32LiqStakingDeposit(bytes _pubkey, bytes _withdrawal, address _owner);
 
-    event RewardClaimed(address _owner, uint256 _amount, uint256 _total);
-
-    INodeRewardVault private vault;
-    IValidatorNft private nftContract;
-    IDepositContract private depositContract;
-    address public chainupOperator;
+    IValidatorNft public nftContract;
+    INodeRewardVault public vault;
+    IDepositContract public depositContract;
 
     address public nftAddress;
+    mapping(uint256 => uint64) public nonces;
 
-    function __ValidatorNftRouter__init(address depositContract_, address vault_, address nftContract_, address chainupOperator_) internal onlyInitializing {
+    function __ValidatorNftRouter__init(address depositContract_, address vault_, address nftContract_) internal onlyInitializing {
         depositContract = IDepositContract(depositContract_);
         vault = INodeRewardVault(vault_);
         nftContract = IValidatorNft(nftContract_);
         nftAddress = nftContract_;
-        chainupOperator = chainupOperator_ ;
     }
 
+    /**
+     * @notice Pre-processing before performing the signer verification.  
+     * @return bytes32 hashed value of the pubkey, withdrawalCredentials, signature,
+     *         depositDataRoot, bytes32(blockNumber)
+     */
     //slither-disable-next-line calls-loop
     function precheck(bytes calldata data) private view returns (bytes32) {
         bytes calldata pubkey = data[16:64];
@@ -60,49 +42,82 @@ contract ValidatorNftRouter is Initializable {
         uint256 blockNumber = uint256(bytes32(data[224:256]));
 
         require(!nftContract.validatorExists(pubkey), "Pub key already in used");
-        uint256 currentBlock = block.number ;
-        require(blockNumber > currentBlock , "Block height too old, please generate a new transaction");
+        require(blockNumber > block.number, "Block height too old, please generate a new transaction");
 
         return keccak256(abi.encodePacked(pubkey, withdrawalCredentials, signature, depositDataRoot, bytes32(blockNumber)));
     }
 
+    /**
+     * @notice Performs signer verification to prevent unauthorized usage
+     * @param v, r, and s parts of a signature
+     * @param hash_ - hashed value from precheck
+     * @param signer_ - authentic signer to check against
+     */
     function signercheck(bytes32 s, bytes32 r, uint8 v, bytes32 hash_, address signer_) private pure {
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, hash_));
         address signer = ecrecover(prefixedHash, v, r, s);
 
-        require(signer == signer_, "ChainUp did not authorized to launch node");
+        require(signer == signer_, "Not authorized");
         require(signer != address(0), "ECDSA: invalid signature");
     }
 
+    /**
+     * @notice Routes incoming data (Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+     *         and calls internal functions for pre-processing and signer verfication
+     *         check for expired transaction through block height
+     * @return uint256 sum of the trades
+     */
     //slither-disable-next-line calls-loop
-    function _tradeRoute(Trade memory trade) private returns (uint256) {
-        require(trade.expiredHeight > block.number, "Trade has expired");
+    function _tradeRoute(bytes calldata data) private returns (uint256) {
+        require(address(bytes20(data[12:32])) == msg.sender, "Not allowed to make this trade");
+        require(uint256(bytes32(data[96:128])) > block.number, "Trade has expired");
 
-        // change this in the future
         uint256 sum = 0;
         uint256 i = 0;
-        for (i = 0; i < trade.prices.length; i++) {
-            sum += trade.prices[i];
-        }
 
-        // change this in the future
-        bytes32 masterHash;
-        for (i = 0; i < trade.userListings.length; i++) {
-            UserListing memory userListing = trade.userListings[i];
-            bytes32 hash = keccak256(abi.encodePacked(userListing.tokenId, userListing.rebate, userListing.expiredHeight));
-            signercheck(userListing.signature.s, userListing.signature.r, userListing.signature.v, hash, userListing.signature.signer);
+        for (i = 0; i < uint256(bytes32(data[128:160])); i++) {
+            uint256 price = uint256(bytes32(data[160 + i * 224:192 + i * 224]));
+            uint256 tokenId = uint256(bytes32(data[192 + i * 224:224 + i * 224]));
+            uint256 rebate = uint256(bytes32(data[224 + i * 224:256 + i * 224]));
+            uint256 expiredHeight = uint256(bytes32(data[256 + i * 224:288 + i * 224]));
+            address signer = address(bytes20(data[352 + i * 224:372 + i * 224]));
+            uint64 nonce = uint64(bytes8(data[376 + i * 224:384 + i * 224]));
+
+            require(expiredHeight > block.number, "Listing has expired");
+            require(nftContract.ownerOf(tokenId) == signer, "Not owner");
+            require(nonce == nonces[tokenId], "Incorrect nonce");
             
-            masterHash = keccak256(abi.encodePacked(hash, masterHash));
-            nftContract.safeTransferFrom(nftContract.ownerOf(userListing.tokenId), trade.receiver, userListing.tokenId);
+            nonces[tokenId]++;
+            sum += price;
+
+            bytes32 hash = keccak256(abi.encodePacked(tokenId, rebate, expiredHeight, nonce));
+            signercheck(bytes32(data[320 + i * 224:352 + i * 224]), bytes32(data[288 + i * 224:320 + i * 224]), uint8(bytes1(data[372 + i * 224])), hash, signer);
+            
+            uint256 nodeCapital = nftContract.nodeCapitalOf(tokenId);
+            uint256 userPrice = price;
+            if (price > nodeCapital) {
+                userPrice = price - (price - nodeCapital) * vault.comission() / 10000;
+                payable(vault.dao()).transfer(price - userPrice);
+            }
+            require(userPrice > 30 ether, "Node too cheap");
+
+            payable(signer).transfer(userPrice);
+            nftContract.safeTransferFrom(signer, msg.sender, tokenId);
+            nftContract.updateNodeCapital(tokenId, price);
+            
+            emit NodeTrade(tokenId, signer, msg.sender, price);
         }
 
-        masterHash = keccak256(abi.encodePacked(trade.prices, trade.expiredHeight, trade.receiver, masterHash));
-        signercheck(trade.signature.s, trade.signature.r, trade.signature.v, masterHash, vault.authority());
+        bytes32 authHash = keccak256(abi.encodePacked(data[160:], uint256(bytes32(data[96:128])), msg.sender));
+        signercheck(bytes32(data[64:96]), bytes32(data[32:64]), uint8(bytes1(data[1])), authHash, vault.authority());
 
         return sum;
     }
 
+    /**
+     * @notice Allows transfer funds of 32 ETH to the ETH2 Official Deposit Contract
+     */
     //slither-disable-next-line reentrancy-events
     function deposit(bytes calldata data) private {
         bytes calldata pubkey = data[16:64];
@@ -115,71 +130,52 @@ contract ValidatorNftRouter is Initializable {
         emit Eth32Deposit(pubkey, withdrawalCredentials, msg.sender);
     }
 
+    /**
+     * @notice Routes incoming data(ETH32 Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+     *         and calls internal functions for pre-processing and signer verfication, minting of nft to user.
+     */
     //slither-disable-next-line calls-loop
     function eth32Route(bytes calldata data) internal returns (bool) {
         bytes32 hash = precheck(data);
         signercheck(bytes32(data[256:288]), bytes32(data[288:320]), uint8(bytes1(data[1])), hash, vault.authority());
         deposit(data);
-        nftContract.whiteListMint(data[16:64], msg.sender, chainupOperator);
+
+        vault.settle(); // we can optimize this to settle only a particular vault
+        //nftContract.whiteListMint(data[16:64], msg.sender);
+
         return true;
     }
-    
-    function liqStakingEth32Route(bytes memory pubkey, bytes memory withdrawalCredentials, bytes memory signature, bytes32 depositDataRoot, address operator ) internal returns (bool) {
-        liqStakingDeposit(pubkey, withdrawalCredentials, signature, depositDataRoot);
+
+    function liquidRoute(
+        bytes memory pubkey,
+        bytes memory withdrawalCredentials,
+        bytes memory signature,
+        bytes32 depositDataRoot,
+        address operator
+    ) internal {
+        depositContract.deposit{value: 32 ether}(pubkey, withdrawalCredentials, signature, depositDataRoot);
+        emit Eth32Deposit(pubkey, withdrawalCredentials, msg.sender);
+
+        vault.settle(); // we can optimize this to settle only a particular vault
         nftContract.whiteListMint(pubkey, msg.sender, operator);
-        return true;
     }
 
-    function liqStakingDeposit(bytes memory pubkey, bytes memory withdrawalCredentials, bytes memory signature, bytes32 depositDataRoot) private {
-        depositContract.deposit{value: msg.value }(pubkey, withdrawalCredentials, signature, depositDataRoot);
-        emit Eth32LiqStakingDeposit(pubkey, withdrawalCredentials, msg.sender);
-    }
-
+    /**
+     * @notice Routes incoming data(Trade Strategy) to outbound contracts, ETH2 Official Deposit Contract 
+     *         and calls internal functions for pre-processing and signer verfication
+     *         check for expired transaction through block height
+     * @return uint256 sum of the trades
+     */
     function tradeRoute(bytes calldata data) internal returns (uint256) {
-        //slither-disable-next-line uninitialized-local
-        Trade memory trade;
-
-        uint256 i = 0;
-        trade.signature.signer = address(0);
-        trade.signature.v = uint8(bytes1(data[1]));
-        trade.receiver = address(bytes20(data[12:32]));
-        trade.signature.r = bytes32(data[32:64]);
-        trade.signature.s = bytes32(data[64:96]);
-        trade.expiredHeight = uint256(bytes32(data[96:128]));
-
-        uint256 len = uint256(bytes32(data[128:160]));
-        uint256[] memory prices = new uint256[](len);
-        for (i = 0; i < len; i++) {
-            prices[i] = uint256(bytes32(data[160 + i * 32:192 + i * 32]));
-        }
-        trade.prices = prices;
-
-        UserListing[] memory userListings = new UserListing[](len);
-        for (i = 0; i < len + len; i++) {
-            userListings[i].tokenId = uint256(bytes32(data[192 + i * 192:224 + i * 192]));
-            userListings[i].rebate = uint256(bytes32(data[224 + i * 192:256 + i * 192]));
-            userListings[i].expiredHeight = uint256(bytes32(data[256 + i * 192:288 + i * 192]));
-            userListings[i].signature.r = bytes32(data[288 + i * 192:320 + i * 192]);
-            userListings[i].signature.s = bytes32(data[320 + i * 192:352 + i * 192]);
-            userListings[i].signature.signer = address(bytes20(data[352 + i * 192:372 + i * 192]));
-            userListings[i].signature.v = uint8(bytes1(data[372 + i * 192]));
-        }
-        trade.userListings = userListings;
-
-        return _tradeRoute(trade);
+        return _tradeRoute(data);
     }
 
+    /**
+     * @dev See {IAggregator-disperseRewards}.
+     */
     //slither-disable-next-line reentrancy-events
-    function rewardRoute(uint256 tokenId, bytes32[] memory merkleProof ) internal {
-        address owner = nftContract.ownerOf(tokenId);
-        uint256 amount = 0 ; 
-        require(msg.sender == owner || msg.sender == nftAddress, "Message sender is neither owner of Nft nor Nft contract");
-
-        uint256 rewards = vault.rewards(tokenId, merkleProof , amount);
-        uint256 userReward = (10000 - vault.comission()) * rewards / 10000;
-
-        vault.transfer(userReward, msg.sender);
-        vault.transfer(rewards - userReward, vault.dao());
-        emit RewardClaimed(owner, userReward, rewards);
+    function rewardRoute(uint256 tokenId) internal {
+        vault.claimRewards(tokenId);
+        nftContract.setGasHeight(tokenId, vault.rewardsHeight());
     }
 }

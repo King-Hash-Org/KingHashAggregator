@@ -51,7 +51,7 @@ contract BeaconOracle is Initializable, UUPSUpgradeable, ReentrancyGuardUpgradea
     }
 
     function reportBeacon(uint256 epochId, uint256 data, bytes32 nodeRankingCommitment) external {
-        require(getKingHash().isKingHashOperator(msg.sender), "Not part of KingHash DAOs' trusted list of addresses");
+        require(getKingHash().isValidOperator(msg.sender), "Not part of KingHash DAOs' trusted list of addresses");
         require(epochId == EXPECTED_EPOCH_POSITION.getStorageUint256(), "The epoch submitted is not expected.");
         require(hasSubmitted[epochId][msg.sender]== false , "This msg.sender has already submitted the vote.");
 
@@ -80,7 +80,7 @@ contract BeaconOracle is Initializable, UUPSUpgradeable, ReentrancyGuardUpgradea
     }
 
     function resetEpectedEpoch() external onlyOwner {
-        require(getKingHash().isKingHashOperator(msg.sender), "Not part of KingHash DAOs' trusted list of addresses");
+        require(getKingHash().isValidOperator(msg.sender), "Not part of KingHash DAOs' trusted list of addresses");
 
         EXPECTED_EPOCH_POSITION.setStorageUint256(_getFirstEpochOfDay(_getCurrentEpochId()) + EPOCHS_PER_FRAME);
     }
