@@ -5,7 +5,7 @@ pragma solidity ^0.8.7;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "../interfaces/IDepositContract.sol";
-import "./KEth.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "./KingHashOperators.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./IKingHashRewardsVault.sol";
@@ -20,7 +20,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 
 contract KingHashLiquidStaking is
     Initializable,
-    KEth,
+    ERC20Upgradeable,
     KingHashOperators,
     ReentrancyGuardUpgradeable,
     UUPSUpgradeable,
@@ -34,12 +34,8 @@ contract KingHashLiquidStaking is
     // event DepositReceived(address indexed from, uint256 amount, uint256 time, address indexed _referral);
     // event ReferralSubmitted(address indexed _referral , uint256 amount, uint256 time);
     event DepositReceived(address indexed from, uint256 amount, address indexed _referral);
-    event FeeDistributionSet(
-        uint256 treasuryFeeBasisPoints,
-        uint256 protocolFeeBasisPoints,
-        uint256 operatorsFeeBasisPoints
-    );
     event ELRewardsReceived(uint256 balance);
+    event EtherDeposited(address from, uint256 balance, uint256 height);
 
     bytes32 internal constant ORACLE_POSITION = keccak256("KingHash.oracle");
     bytes32 internal constant BEACON_BALANCE_POSITION = keccak256("KingHash.beaconBalance");
@@ -117,8 +113,31 @@ contract KingHashLiquidStaking is
     //whenNotStopped
     function _mintKETH(address _recipient, uint256 _ethAmount) internal {
         require(_recipient != address(0), "MINT_TO_THE_ZERO_ADDRESS");
-        addTotalETHBalance(_ethAmount);
         _mint(_recipient, getKethValue(_ethAmount));
+    }
+
+    // Calculate the amount of ETH backing an amount of kETH
+    function getEthValue(uint256 _kethAmount) public view returns (uint256) {
+        uint256 kEthSupply = totalSupply();
+        if (kEthSupply == 0) {
+            // Use 1:1 ratio if no kETH is minted
+            return _kethAmount;
+        }
+
+        uint256 totalEthBalance = _getTotalPooledEther();
+        return (_kethAmount * totalEthBalance) / (kEthSupply);
+    }
+
+    function getKethValue(uint256 _ethAmount) public view returns (uint256) {
+        uint256 kEthSupply = totalSupply();
+        if (kEthSupply == 0) {
+            // Use 1:1 ratio if no kETH is minted
+            return _ethAmount;
+        }
+
+        uint256 totalEthBalance = _getTotalPooledEther();
+        require(totalEthBalance > 0, "Cannot calculate kETH token amount while total network balance is zero");
+        return (_ethAmount * kEthSupply) / totalEthBalance;
     }
 
     function registerValidator(
@@ -193,44 +212,22 @@ contract KingHashLiquidStaking is
         return buffered;
     }
 
+    function _getTransientBalance() internal view returns (uint256) {
+        uint256 depositedValidators = DEPOSITED_VALIDATORS_POSITION.getStorageUint256();
+        uint256 beaconValidators = BEACON_VALIDATORS_POSITION.getStorageUint256();
+        // beaconValidators can never be less than deposited ones.
+        assert(depositedValidators >= beaconValidators);
+        return depositedValidators.sub(beaconValidators).mul(DEPOSIT_SIZE);
+    }
+
+    function _getTotalPooledEther() internal view returns (uint256) {
+        return _getBufferedEther().add(
+            BEACON_BALANCE_POSITION.getStorageUint256()
+        ).add(_getTransientBalance());
+    }
+
     function getNodeOperatorCount() external view returns (uint256) {
         return totalOperatorCount;
-    }
-
-    function setFeeDistribution(
-        uint256 _treasuryFeeBasisPoints,
-        uint256 _protocolFeeBasisPoints,
-        uint256 _operatorsFeeBasisPoints
-    ) external onlyOwner {
-        require(
-            TOTAL_BASIS_POINTS == _treasuryFeeBasisPoints.add(_protocolFeeBasisPoints).add(_operatorsFeeBasisPoints),
-            "FEES_DONT_ADD_UP"
-        );
-        TREASURY_FEE_POSITION.setStorageUint256(_treasuryFeeBasisPoints);
-        PROTOCOL_FEE_POSITION.setStorageUint256(_protocolFeeBasisPoints);
-        NODE_OPERATORS_FEE_POSITION.setStorageUint256(_operatorsFeeBasisPoints);
-        emit FeeDistributionSet(_treasuryFeeBasisPoints, _protocolFeeBasisPoints, _operatorsFeeBasisPoints);
-    }
-
-    function getFeeDistribution()
-        public
-        view
-        returns (
-            uint256 treasuryFeeBasisPoints,
-            uint256 protocolFeeBasisPoints,
-            uint256 operatorsFeeBasisPoints
-        )
-    {
-        treasuryFeeBasisPoints = TREASURY_FEE_POSITION.getStorageUint256();
-        protocolFeeBasisPoints = PROTOCOL_FEE_POSITION.getStorageUint256();
-        operatorsFeeBasisPoints = NODE_OPERATORS_FEE_POSITION.getStorageUint256();
-    }
-
-    /**
-     * @notice Returns the treasury address
-     */
-    function getTreasury() public view returns (address) {
-        return TREASURY_POSITION.getStorageAddress();
     }
 
     function handleOracleReport(uint256 data, bytes32 nodeRankingCommitment) external {
@@ -247,6 +244,10 @@ contract KingHashLiquidStaking is
         BEACON_BALANCE_POSITION.setStorageUint256(_beaconBalance);
         BEACON_VALIDATORS_POSITION.setStorageUint256(_beaconValidators);
         NODE_RANKING_COMMITMENT.setStorageBytes32(nodeRankingCommitment); // overwrite with new merkle root of node ranking
+
+
+
+        // here change logic
         uint256 executionLayerRewards;
         address executionLayerRewardsVaultAddress = getELRewardsVault();
 
@@ -286,5 +287,15 @@ contract KingHashLiquidStaking is
         );
 
         emit ELRewardsReceived(msg.value);
+    }
+
+    function getName() public view returns (string memory) {
+        return name();
+    }
+
+    // Receive an ETH deposit from a minipool or generous individual
+    receive() external payable {
+        // Emit ether deposited event
+        emit EtherDeposited(msg.sender, msg.value, block.timestamp);
     }
 }
