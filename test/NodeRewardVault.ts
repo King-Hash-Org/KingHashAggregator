@@ -17,32 +17,18 @@ describe("NodeRewardVault", function () {
     await nodeRewardVault.initialize(nftContract.address);
 
     const DepositContract = await ethers.getContractFactory("DepositContract");
-    const depositContract = await DepositContract.deploy();
-
-    const LidoContract = await ethers.getContractFactory("Lido");
-    const lidoContract = await LidoContract.deploy();
-
-    const LidoControllerContract = await ethers.getContractFactory("LidoController");
-    const lidoController = await LidoControllerContract.deploy();
-
-    const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
-    const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
-
-    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
-    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
-
-    const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
-    const rocketStorage = await RocketStorageContract.deploy();
-
-    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
-
-    const RocketControllerContract = await ethers.getContractFactory("RocketController");
-    const rocketController = await RocketControllerContract.deploy();
-    await rocketController.initialize();
+    const depositContract = await DepositContract.deploy();  
+    
+    const withdrawCred = "0x00175ef0acf0386f346cc10b4f25806af2c0b7ec785ef0ae84c4098871340176" ;
+    const KingHashLiquidStakingContract = await ethers.getContractFactory("KingHashLiquidStaking");
+    const liquidStaking = await KingHashLiquidStakingContract.deploy();
     
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
+    const chainupOperator = "0xd28ED4D0B1f9bd8dDBd6700b20e7E40889d37898" ;
+
+    await liquidStaking.initLiqStakingVault( withdrawCred, aggregator.address , nftContract.address);
+    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, liquidStaking.address, chainupOperator );
 
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);

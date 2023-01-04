@@ -7,7 +7,7 @@ import { AddressZero } from "@ethersproject/constants";
 
 describe("ValidatorNft", function () {
   async function deployBaseFixture() {
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, otherAccount, operator] = await ethers.getSigners();
 
     const NftContract = await ethers.getContractFactory("ValidatorNft");
     const nftContract = await NftContract.deploy();
@@ -18,61 +18,43 @@ describe("ValidatorNft", function () {
 
     const DepositContract = await ethers.getContractFactory("DepositContract");
     const depositContract = await DepositContract.deploy();
-
-    const LidoContract = await ethers.getContractFactory("Lido");
-    const lidoContract = await LidoContract.deploy();
-
-    const LidoControllerContract = await ethers.getContractFactory("LidoController");
-    const lidoController = await LidoControllerContract.deploy();
-    await lidoController.initialize();
-
-    const RocketDepositPoolContract = await ethers.getContractFactory("RocketDepositPool");
-    const rocketDepositPoolContract = await RocketDepositPoolContract.deploy();
-
-    const RocketTokenRETHContract = await ethers.getContractFactory("RocketTokenRETH");
-    const rocketTokenRETH = await RocketTokenRETHContract.deploy();
-
-    const RocketStorageContract = await ethers.getContractFactory("RocketStorage");
-    const rocketStorage = await RocketStorageContract.deploy();
-    rocketStorage.setAddressStorage("0x65DD923DDFC8D8AE6088F80077201D2403CBD565F0BA25E09841E2799EC90BB2", rocketDepositPoolContract.address ) ;
-    rocketStorage.setAddressStorage("0xE3744443225BFF7CC22028BE036B80DE58057D65A3FDCA0A3DF329F525E31CCC", rocketTokenRETH.address ) ;
-
-    await rocketDepositPoolContract.setRocketAddress(rocketTokenRETH.address) ;
-
-    const RocketControllerContract = await ethers.getContractFactory("RocketController");
-    const rocketController = await RocketControllerContract.deploy();
-    await rocketController.initialize();
+    
+    const withdrawCred = "0x00175ef0acf0386f346cc10b4f25806af2c0b7ec785ef0ae84c4098871340176" ;
+    const KingHashLiquidStakingContract = await ethers.getContractFactory("KingHashLiquidStaking");
+    const liquidStaking = await KingHashLiquidStakingContract.deploy();
     
     const Aggregator = await ethers.getContractFactory("Aggregator");
     const aggregator = await Aggregator.deploy();
-    await aggregator.initialize(depositContract.address, nodeRewardVault.address, nftContract.address, lidoContract.address, lidoController.address, rocketStorage.address, rocketController.address);
+    const chainupOperator = "0xd28ED4D0B1f9bd8dDBd6700b20e7E40889d37898" ;
 
+    await liquidStaking.initLiqStakingVault( withdrawCred, aggregator.address , nftContract.address);
+    await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, liquidStaking.address, chainupOperator );
     await nodeRewardVault.setAggregator(aggregator.address);
     await nftContract.setAggregator(aggregator.address);
     await nftContract.setActivationDelay(0);
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
+    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, operator };
   }
 
   // fixture with owner as aggregator stub
   async function deployAggregatorStubFixture() {
-    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployBaseFixture();
+    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount, operator } = await deployBaseFixture();
 
     await nftContract.setAggregator(owner.address);
 
-    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
+    return { aggregator, nodeRewardVault, nftContract, owner, otherAccount, operator };
   }
 
   // fixture with minted nfts
   async function deployMintedFixture() {
-    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount } = await deployAggregatorStubFixture();
+    const { aggregator, nodeRewardVault, nftContract, owner, otherAccount, operator } = await deployAggregatorStubFixture();
 
     const pubkey = "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
     const pubkey2 =
       "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebe";
 
-    await nftContract.whiteListMint(pubkey, owner.address);
-    await nftContract.whiteListMint(pubkey2, owner.address);
+    await nftContract.whiteListMint(pubkey, owner.address, operator.address);
+    await nftContract.whiteListMint(pubkey2, owner.address, operator.address);
 
     return { aggregator, nodeRewardVault, nftContract, owner, otherAccount };
   }
@@ -133,21 +115,21 @@ describe("ValidatorNft", function () {
 
   describe("Mint", function () {
     it("Unauthorized aggregator mint", async function () {
-      const { nftContract, owner, otherAccount } = await loadFixture(deployAggregatorStubFixture);
+      const { nftContract, owner, otherAccount, operator  } = await loadFixture(deployAggregatorStubFixture);
       const pubkey =
         "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
 
-      await expect(nftContract.connect(otherAccount).whiteListMint(pubkey, owner.address)).to.be.revertedWith(
+      await expect(nftContract.connect(otherAccount).whiteListMint(pubkey, owner.address, operator.address)).to.be.revertedWith(
         "Not allowed to mint/burn nft"
       );
     });
 
     it("Correct authorized aggregator mint", async function () {
-      const { nftContract, owner } = await loadFixture(deployAggregatorStubFixture);
+      const { nftContract, owner, operator } = await loadFixture(deployAggregatorStubFixture);
       const pubkey =
         "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
 
-      await nftContract.whiteListMint(pubkey, owner.address);
+      await nftContract.whiteListMint(pubkey, owner.address, operator.address);
       expect(await nftContract.validatorOf(0)).to.equal(pubkey);
       expect(await nftContract.ownerOf(0)).to.equal(owner.address);
       expect(await nftContract.tokensOfOwner(owner.address)).to.have.deep.members([ethers.utils.parseEther("0")]);
@@ -159,25 +141,25 @@ describe("ValidatorNft", function () {
 
   describe("Multi mint", function () {
     it("Incorrect duplicated mint", async function () {
-      const { nftContract, owner } = await loadFixture(deployAggregatorStubFixture);
+      const { nftContract, owner, operator } = await loadFixture(deployAggregatorStubFixture);
       const pubkey =
         "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
 
-      await nftContract.whiteListMint(pubkey, owner.address);
+      await nftContract.whiteListMint(pubkey, owner.address, operator.address);
 
-      await expect(nftContract.whiteListMint(pubkey, owner.address)).to.be.revertedWith("Pub key already in used");
+      await expect(nftContract.whiteListMint(pubkey, owner.address, operator.address)).to.be.revertedWith("Pub key already in used");
       expect(await nftContract.numberMinted(owner.address)).to.equal(1);
     });
 
     it("Correct multi mint", async function () {
-      const { nftContract, owner } = await loadFixture(deployAggregatorStubFixture);
+      const { nftContract, owner, operator } = await loadFixture(deployAggregatorStubFixture);
       const pubkey =
         "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebf";
       const pubkey2 =
         "0x8752fc8b9516d203a8828b0d8e5d8f6122c85ff9daccd8e44e9d6df9a6b6884f491db7cd4a31e51c4bdf7b7dd0c56ebe";
 
-      await nftContract.whiteListMint(pubkey, owner.address);
-      await nftContract.whiteListMint(pubkey2, owner.address);
+      await nftContract.whiteListMint(pubkey, owner.address, operator.address);
+      await nftContract.whiteListMint(pubkey2, owner.address, operator.address);
       expect(await nftContract.validatorOf(0)).to.equal(pubkey);
       expect(await nftContract.ownerOf(0)).to.equal(owner.address);
       expect(await nftContract.tokenOfValidator(pubkey)).to.equal(0);

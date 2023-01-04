@@ -33,9 +33,9 @@ describe("LiqStaking", function () {
 
         await liquidStaking.initLiqStakingVault( withdrawCred, aggregator.address , nftContract.address);
         await aggregator.initialize( depositContract.address, nodeRewardVault.address, nftContract.address, liquidStaking.address, chainupOperator );
-        await liquidStaking.addKingHashDAOList(daoAcc1.address, "ChainUp") ;
-        await liquidStaking.addKingHashDAOList(daoAcc2.address, "X-Hash") ;
-        await liquidStaking.addKingHashDAOList(daoAcc3.address, "Bitman") ;
+        await liquidStaking.addOperator(daoAcc1.address, "ChainUp") ;
+        await liquidStaking.addOperator(daoAcc2.address, "X-Hash") ;
+        await liquidStaking.addOperator(daoAcc3.address, "Bitman") ;
 
         await nodeRewardVault.setAggregator(aggregator.address);
         await nftContract.setAggregator(aggregator.address);
@@ -57,7 +57,7 @@ describe("LiqStaking", function () {
             expect ( await ethers.provider.getBalance(liquidStaking.address)).to.equal(BigInt(36000000000000000000) ) ; 
             console.log("balance1: ", balance1) ; 
             // check operator pool balance
-            console.log("balance2: ", await liquidStaking.operatorEthBalance(daoAcc1.address)) ; 
+            console.log("balance2: ", await liquidStaking.operatorBalance(daoAcc1.address)) ; 
             // expect (await liquidStaking.operatorEthBalance(daoAcc1.address)).to.equal(BigInt(36000000000000000000  * 9995 / 10000) ) ; 
             // expect (await liquidStaking.operatorEthBalance(daoAcc1.address)).to.equal(   ) ; 
             // check keth balance
@@ -101,11 +101,11 @@ describe("LiqStaking", function () {
 
         console.log("await ethers.provider.getBalance(liquidStaking.address): ", await ethers.provider.getBalance(liquidStaking.address)) ; 
         // check operator pool balance
-        expect (await liquidStaking.operatorEthBalance(daoAcc1.address)).to.equal(BigInt(33983000000000000000) ) ; 
+        expect (await liquidStaking.operatorBalance(daoAcc1.address)).to.equal(BigInt(33983000000000000000) ) ; 
 
-        expect (await liquidStaking.operatorEthBalance(daoAcc1.address)).to.equal(ethers.utils.parseEther("33.983") ) ; 
+        expect (await liquidStaking.operatorBalance(daoAcc1.address)).to.equal(ethers.utils.parseEther("33.983") ) ; 
 
-        expect (await liquidStaking.operatorEthBalance(daoAcc1.address)).to.equal(BigInt(34000000000000000000  * 9995 / 10000) ) ; 
+        expect (await liquidStaking.operatorBalance(daoAcc1.address)).to.equal(BigInt(34000000000000000000  * 9995 / 10000) ) ; 
 
         //check if user has gotten correct amt of keth
         console.log("keth balance of wallet2: ", await liquidStaking.balanceOf(wallet2.address) );
@@ -148,7 +148,7 @@ describe("LiqStaking", function () {
             const pubkey1 = "0x865d71e31f640fc69dfd5577d07d15debe57feed483d7c6fb4f456f0fcacbb2364221e543941ed497993f754bf661cc6" ;
             const signature1 = "0xb5ac7e8ef6474cc7fd628e057c5d9bb3ae5a5ab301770729a16bbb0dbadffabcdf8b1528200d8d5aa305d7746ca2df8d037a5c4b982252b0d5aa0931185d04f988bcf478dc364e1e26bf2933fdbeb296d512f1af0c66745103ae4da82649c148" ;
             const deposit_data_root1 = "0x48d7d909e5125f507d30c6a20ceb5de604f99d5692a486a00a0a01768eb0a692" ;
-            console.log("liquidStaking.operatorEthBalance(daoAcc1.address): ", await liquidStaking.operatorEthBalance(daoAcc1.address));
+            console.log("liquidStaking.operatorEthBalance(daoAcc1.address): ", await liquidStaking.operatorBalance(daoAcc1.address));
 
             await liquidStaking.connect(daoAcc1).registerValidator(pubkey1, signature1, deposit_data_root1) ;
             await expect(liquidStaking.connect(daoAcc1).registerValidator(pubkey1, signature1, deposit_data_root1)).to.be.revertedWith("Pub key already in used");
@@ -166,7 +166,7 @@ describe("LiqStaking", function () {
             await expect(liquidStaking.connect(daoAcc3).registerValidator(pubkey3, signature3, deposit_data_root3)).to.be.rejectedWith("The pool has less than 32 Eth")  ;
             await liquidStaking.stake(referral2.address, daoAcc3.address , { value: ethers.utils.parseEther("40") } )  ;
             await liquidStaking.connect(daoAcc3).registerValidator(pubkey3, signature3, deposit_data_root3) ;
-            console.log("liquidStaking.operatorEthBalance(daoAcc3.address)", await liquidStaking.operatorEthBalance(daoAcc3.address) )  ;
+            console.log("liquidStaking.operatorEthBalance(daoAcc3.address)", await liquidStaking.operatorBalance(daoAcc3.address) )  ;
             // expect (await liquidStaking.operatorEthBalance(daoAcc1.address)).to.equal(BigInt(40000000000000000000  * 9995 / 10000) ) ; 
 
             // await liquidStaking.connect(daoAcc3).registerValidator(pubkey3, signature3, deposit_data_root3) ;

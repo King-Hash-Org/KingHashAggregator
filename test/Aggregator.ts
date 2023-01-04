@@ -16,6 +16,7 @@ describe("Aggregator", function () {
     const NftContract = await ethers.getContractFactory("ValidatorNft");
     const nftContract = await NftContract.deploy();
     await nftContract.initialize();
+    
     const NodeRewardVault = await ethers.getContractFactory("NodeRewardVault");
     const nodeRewardVault = await NodeRewardVault.deploy();
     await nodeRewardVault.initialize(nftContract.address);
