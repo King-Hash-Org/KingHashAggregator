@@ -9,7 +9,6 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "./interfaces/IAggregator.sol";
 import "./routes/ValidatorNftRouter.sol";
 
-
 /**
  * @title Staking Aggregator for Ethereum Network
  * @notice Accepts incoming data and route the Ether to different strategies
