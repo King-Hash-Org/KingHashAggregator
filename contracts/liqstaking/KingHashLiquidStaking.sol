@@ -79,8 +79,6 @@ contract KingHashLiquidStaking is
         __Operators__init();
         __ReentrancyGuard_init();
         __ERC20_init("kETH", "King Ether");
-        // _mint(_msgSender(), 10000000000000000000000);
-        // addTotalETHBalance(10000000000000000000000);
         withdrawalCredentials = withdrawalCreds;
         BUFFERED_ETHER_POSITION.setStorageUint256(0);
 

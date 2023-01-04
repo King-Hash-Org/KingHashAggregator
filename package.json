@@ -21,9 +21,8 @@
     "hardhat": "^2.11.2",
     "istanbul-badges-readme": "^1.8.2",
     "prettier": "2.7.1",
-    "run": "^1.4.0"
-  },
-  "dependencies": {
+    "run": "^1.4.0", 
     "erc721a-upgradeable": "^4.2.3"
+
   }
 }
